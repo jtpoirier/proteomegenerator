@@ -1,0 +1,306 @@
+# variables
+PY = '/ifs/opt/common/CentOS_6/python/python-2.7.8/bin/python'
+PICARD = '/ifs/e63data/poirierj/bin/picard-tools-1.134/picard.jar'
+BEDTOOLS = '/ifs/opt/common/CentOS_6/bedtools/bedtools-2.22.0/bin/bedtools'
+BEDOPS = '/ifs/e63data/poirierj/bin/bedops/bin'
+STRINGTIE='/ifs/e63data/poirierj/bin/stringtie-1.3.3b.Linux_x86_64/stringtie'
+GTF='/ifs/e63data/poirierj/indexes/GRCh38/gencode.v20.annotation.gtf'
+FASTA='/ifs/e63data/poirierj/indexes/GRCh38/GRCh38.genome.fa'
+TD="/ifs/e63data/poirierj/bin/TransDecoder"
+GFFREAD="/ifs/e63data/poirierj/bin/gffread/gffread-0.9.8.Linux_x86_64"
+GFFCOMPARE="/ifs/e63data/poirierj/bin/gffcompare/gffcompare-0.9.8.Linux_x86_64/gffcompare"
+BLAST="/ifs/e63data/poirierj/bin/ncbi-blast-2.2.31+/bin"
+HMMSCAN="/ifs/e63data/poirierj/bin/hmmer-3.1b2-linux-intel-x86_64/binaries/hmmscan"
+UNIPROT="/ifs/e63data/poirierj/indexes/uniprot/UP000005640.fasta"
+PFAM="/ifs/e63data/poirierj/indexes/pfam/Pfam-A.hmm"
+FEATURECOUNTS="/ifs/e63data/poirierj/bin/subread-1.5.0-p2-Linux-x86_64/bin/featureCounts"
+PGX="/ifs/e63data/poirierj/bin/PGx"
+RSCRIPT='/ifs/opt/common/CentOS_6/R/R-3.2.0/bin/Rscript'
+SCRIPTS='/home/poirierj/scripts'
+TMP = '/scratch/poirierj'
+
+snakemake.utils.makedirs('/scratch/poirierj')
+snakemake.utils.makedirs('out/benchmarks')
+snakemake.utils.makedirs('out/all-merge')
+
+
+rule BuildBamIndex:
+    input: "out/{sample}.Aligned.sortedByCoord.out.bam"
+    output: "out/{sample}.Aligned.sortedByCoord.out.bai"
+    benchmark: "out/benchmarks/{sample}.BuildBamIndex.txt"
+    params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.snake", name="BuildBamIndex"
+    shell: "java -Djava.io.tmpdir={TMP} -Xmx6g -jar {PICARD} \
+            BuildBamIndex \
+            INPUT={input}"
+
+
+rule StringTie:
+    input: bam="out/{sample}.Aligned.sortedByCoord.out.bam", bai="out/{sample}.Aligned.sortedByCoord.out.bai"
+    output: "out/{sample}-stringtie.gtf"
+    benchmark: "out/benchmarks/{sample}.StringTie.txt"
+    params: pe="6", mem="h_vmem=20G,virtual_free=18G", err="~/error/error.snake", name="StringTie"
+    shell: "{STRINGTIE} \
+            -G {GTF} \
+            {input.bam} \
+            -p {params.pe} \
+            -o {output}"
+
+
+snakemake.utils.makedirs('out/all-merge')
+
+# rule merge_model:
+#     input: "out/{sample}-stringtie.gtf"
+#     output: "out/{sample}-stringtie.clean.gtf"
+#     benchmark: "out/benchmarks/gtf_file_to_cDNA_seqs.txt"
+#     params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.gtf_file_to_cDNA_seqs", name="gtf_file_to_cDNA_seqs"
+#     shell: "{GFFREAD}/gffread {input} -T -o {output} \
+#         --no-pseudo \
+#         --force-exons \
+#         -M -Q"
+
+
+rule merge:
+    input: expand("out/{sample}-stringtie.gtf",sample=SAMPLES)
+    output: "out/all-merge/merged.gtf"
+    benchmark: "out/benchmarks/merge.txt"
+    params: pe="12", mem="h_vmem=4G,virtual_free=3G", err="~/error/error.merge", name="merge"
+    shell: "{STRINGTIE} \
+            --merge \
+            -o {output} \
+            -p {params.pe} \
+            -c 0 \
+            -T 1 \
+            -f .1 \
+            -i \
+            {input}"
+
+
+# rule gffcompare:
+#     input: "out/all-merge/merged.gtf"
+#     output: gtf="out/all-merge/gffcmp.annotated.gtf", stats="out/all-merge/gffcmp.stats"
+#     benchmark: "out/benchmarks/gffcompare.txt"
+#     params: pe="1", mem="h_vmem=8G,virtual_free=7G", err="~/error/error.gffcompare", name="gffcompare"
+#     shell: "{GFFCOMPARE} \
+#             -G \
+#             -r {GTF} \
+#             -R \
+#             -s {FASTA} \
+#             -o out/all-merge/gffcmp \
+#             {input}"
+
+
+rule UCSC:
+    input: "out/all-merge/merged.gtf"
+    output: merged="out/all-merge/merged-UCSC.gtf", reference="out/all-merge/reference-UCSC.gtf"
+    benchmark: "out/benchmarks/UCSC.txt"
+    params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.snake", name="UCSC"
+    shell: "cat {GTF} | grep chr > {output.reference}; \
+        cat {input} | grep chr > {output.merged}"
+
+
+rule gtf_file_to_cDNA_seqs:
+    input: "out/all-merge/{model}-UCSC.gtf"
+    output: fasta="out/all-merge/{model}.transcripts.fasta",
+        gtf="out/all-merge/{model}.transcripts.gtf"
+    benchmark: "out/benchmarks/gtf_file_to_cDNA_seqs.txt"
+    params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.gtf_file_to_cDNA_seqs", name="gtf_file_to_cDNA_seqs"
+    shell: "{GFFREAD}/gffread {input} -T -o {output.gtf} \
+        --no-pseudo \
+        --force-exons \
+        -M -Q; \
+        {GFFREAD}/gffread -w {output.fasta} -g {FASTA} {output.gtf}"
+
+
+# rule index_cdna_seqs:
+#     input: "out/all-merge/{model}.transcripts.fasta"
+#     output: "out/all-merge/{model}.transcripts.fasta.idx"
+#     benchmark: "out/benchmarks/{model}.index_cdna_seqs.txt"
+#     params: pe="1", mem="h_vmem=20G,virtual_free=18G", err="~/error/error.idx", name="idx"
+#     shell: "{SF}/util/index_cdna_seqs.pl {input}"
+
+
+rule LongOrfs:
+    input: "out/all-merge/{model}.transcripts.fasta"#,"out/all-merge/{model}.transcripts.fasta.idx"
+    output: "out/all-merge/{model}.transcripts.fasta.transdecoder_dir/longest_orfs.pep"
+    benchmark: "out/benchmarks/{model}.LongOrfs.json"
+    params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.LongOrfs", name="LongOrfs"
+    shell: "cd out/all-merge ; \
+        {TD}/TransDecoder.LongOrfs \
+        -t {wildcards.model}.transcripts.fasta \
+        -p 0"
+
+rule blastp:
+    input: "out/all-merge/{model}.transcripts.fasta.transdecoder_dir/longest_orfs.pep"
+    output: "out/all-merge/{model}.blastp.outfmt6"
+    benchmark: "out/benchmarks/{model}.blastp.json"
+    params: pe="12", mem="h_vmem=4G,virtual_free=3G", err="~/error/error.blastp", name="blastp"
+    shell: "{BLAST}/blastp \
+        -num_threads {params.pe} \
+        -query {input}  \
+        -db {UNIPROT}  \
+        -max_target_seqs 1 \
+        -outfmt 6 \
+        -evalue 1e-5 \
+        > {output}"
+
+# rule pfam:
+#     input: "out/all-merge/transcripts.fasta.transdecoder_dir/{model}.longest_orfs.pep"
+#     output: "out/all-merge/{model}.pfam.domtblout"
+#     benchmark: "out/benchmarks/{model}.pfam.json"
+#     params: pe="12", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.pfam", name="pfam"
+#     shell: "{HMMSCAN} \
+#         --cpu {params.pe} \
+#         --domtblout {output} \
+#         {PFAM} \
+#         {input}"
+
+rule Predict:
+    input: orfs="out/all-merge/{model}.transcripts.fasta.transdecoder_dir/longest_orfs.pep",
+        fasta="out/all-merge/{model}.transcripts.fasta",
+        blastp="out/all-merge/{model}.blastp.outfmt6"
+    output: "out/all-merge/{model}.transcripts.fasta.transdecoder.pep",
+        gff3="out/all-merge/{model}.transcripts.fasta.transdecoder.gff3"
+    benchmark: "out/benchmarks/{model}.Predict.json"
+#    params: pe="1", mem="h_vmem=225G,virtual_free=200G", err="~/error/error.Predict", name="Predict"
+    params: pe="12", mem="h_vmem=18G,virtual_free=16G", err="~/error/error.Predict", name="Predict"
+    shell: "cd out/all-merge; {TD}/TransDecoder.Predict \
+        -t {wildcards.model}.transcripts.fasta \
+        --single_best_orf \
+        --cpu {params.pe} \
+       --retain_blastp_hits {wildcards.model}.blastp.outfmt6"
+
+
+rule gtf_to_alignment_gff3:
+    input: "out/all-merge/{model}.transcripts.gtf"
+    output: "out/all-merge/{model}/transcripts.gff3"
+    benchmark: "out/benchmarks/{model}.gtf_to_alignment_gff3.txt"
+    params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.gtf_to_alignment_gff3", name="gtf_to_alignment_gff3"
+    shell: "{TD}/util/cufflinks_gtf_to_alignment_gff3.pl {input} > {output}"
+
+
+rule cdna_alignment_orf_to_genome_orf:
+    input: gff3="out/all-merge/{model}/transcripts.gff3",
+        fasta_td="out/all-merge/{model}.transcripts.fasta",
+        gff3_td="out/all-merge/{model}.transcripts.fasta.transdecoder.gff3"
+    output: "out/all-merge/{model}/transcripts.genome.gff3"
+    benchmark: "out/benchmarks/{model}.cdna_alignment_orf_to_genome_orf.txt"
+    params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.cdna_alignment_orf_to_genome_orf", name="cdna_alignment_orf_to_genome_orf"
+    shell: "{TD}/util/cdna_alignment_orf_to_genome_orf.pl {input.gff3_td} {input.gff3} {input.fasta_td} > {output}"
+
+
+rule gff3_file_to_bed:
+    input: "out/all-merge/{model}/transcripts.genome.gff3"
+    output: "out/all-merge/{model}/proteome.bed"
+    benchmark: "out/benchmarks/{model}.gff3_file_to_bed.txt"
+    params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.gff3_file_to_bed", name="gff3_file_to_bed"
+    shell: "cat {input} | grep -P \"\tCDS\t\" | {GFFREAD}/gffread --force-exons - -o- | {TD}/util/gff3_file_to_bed.pl /dev/stdin | tail -n +2 > {output}"#"| awk '{{ print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12; OFS=\"\t\" }}' > {output}"
+#&& [[ -s {output} ]]
+
+# rule gff3_file_to_bed:
+#     input: "out/all-merge/{model}/transcripts.genome.gff3"
+#     output: "out/all-merge/{model}/proteome.bed"
+#     benchmark: "out/benchmarks/{model}.gff3_file_to_bed.txt"
+#     params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.gff3_file_to_bed", name="gff3_file_to_bed"
+#     shell: "awk '($3==\"CDS\") {{OFS=\"\t\"; print $1,$4-1,$5,\"\\t\\t\\t\\t\\t\\t\\t\\t\"}}' {input} > {output}"
+
+
+rule gff3_file_to_proteins:
+    input: "out/all-merge/{model}/transcripts.genome.gff3"
+    output: "out/all-merge/{model}/proteome.fasta"
+    benchmark: "out/benchmarks/{model}.gff3_file_to_proteins.txt"
+    params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.gff3_file_to_proteins", name="gff3_file_to_proteins"
+    shell: "cat {input} | grep -P \"\tCDS\t\" | {GFFREAD}/gffread --force-exons - -o- | {TD}/util/gff3_file_to_proteins_jtp.pl /dev/stdin {FASTA} | egrep -o '^[^*]+' > {output}"
+
+
+# rule gff3_file_to_proteins:
+#     input: "out/all-merge/{model}/transcripts.genome.gff3"
+#     output: fasta="out/all-merge/{model}/proteome.fasta",
+#         gff3="out/all-merge/{model}/proteome.gff3"
+#     benchmark: "out/benchmarks/{model}.gff3_file_to_proteins.txt"
+#     params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.gff3_file_to_proteins", name="gff3_file_to_proteins"
+#     shell: "cat {input} | grep -P \"\tCDS\t\" | {GFFREAD}/gffread - -g {FASTA} -y {output.fasta} -F --force-exons -o {output.gff3}"
+
+
+# rule convert2bed:
+#     input: "out/all-merge/{model}/proteome.gff3"
+#     output: "out/all-merge/{model}/proteome.bed"
+#     benchmark: "out/benchmarks/{model}.gff2bed.txt"
+#     params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.gff2bed", name="gff2bed"
+#     shell: "{BEDOPS}/convert2bed -i gff < {input} > {output}"
+
+
+# rule gff3_file_to_bed:
+#     input: "out/all-merge/{model}/proteome.gff3"
+#     output: "out/all-merge/{model}/proteome.bed"
+#     benchmark: "out/benchmarks/{model}.gff3_file_to_bed.txt"
+#     params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.gff3_file_to_bed", name="gff3_file_to_bed"
+#     shell: "{TD}/util/gff3_file_to_bed.pl {input} | tail -n +2 > {output}"#"| awk '{{ print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12; OFS=\"\t\" }}' > {output}"
+
+
+rule reorderFASTA:
+    input: "out/all-merge/{model}/proteome.fasta"
+    output: "out/all-merge/{model}/proteome.unique.fasta"
+    benchmark: "out/benchmarks/{model}.reorderFASTA.txt"
+    params: pe="1", mem="h_vmem=2G,virtual_free=1G", err="~/error/error.reorderFASTA", name="reorderFASTA"
+    shell: "{RSCRIPT} {SCRIPTS}/reorderFASTA.R {WD}/{input} {WD}/{output}"
+
+
+# rule getfasta:
+#     input: "out/all-merge/{model}/proteome.bed"
+#     output: "out/all-merge/{model}/proteome.fasta"
+#     benchmark: "out/benchmarks/{model}.getfasta.txt"
+#     params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.getfasta", name="getfasta"
+#     shell: "{BEDTOOLS} getfasta -name -s -fi {FASTA} -bed {input} -fo /dev/stdout | {EMBOSS}/transeq -sequence /dev/stdin -outseq {output}"
+
+
+# rule PGx_prepare:
+#     input: "out/all-merge/{model}/transcripts.genome.gff3"
+#     output: fasta="out/all-merge/{model}/proteome.fasta",
+#         bed="out/all-merge/{model}/proteome.bed"
+#     benchmark: "out/benchmarks/{model}.PGx_prepare.txt"
+#     params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.PGx_prepare", name="PGx_prepare"
+#     shell: "{RSCRIPT} {SCRIPTS}/reorderFASTA.R {WD}/{input} {WD}/{output.fasta} {WD}/{output.bed}"
+
+
+rule PGx_index:
+    input: fasta="out/all-merge/{model}/proteome.fasta",
+        bed="out/all-merge/{model}/proteome.bed"
+    output: "out/all-merge/{model}/proteome.pickle"
+    benchmark: "out/benchmarks/{model}.PGx_index.txt"
+    params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.PGx_index", name="PGx_index"
+    shell: "{PY} {PGX}/pgx_index.py \
+        out/all-merge/{wildcards.model}"
+
+
+rule PGx_query:
+    input: pep="out/all-merge/{model}/peptides.txt",
+        index="out/all-merge/{model}/proteome.pickle"
+    output: hits="out/all-merge/{model}/hits.txt"
+    benchmark: "out/benchmarks/{model}.PGx_index.txt"
+    params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.PGx_query", name="PGx_query"
+    shell: "{PY} {PGX}/pgx_query.py \
+        out/all-merge/{wildcards.model} \
+        {input.pep} > {output}"
+
+
+rule PGx_bed:
+    input: hits="out/all-merge/{model}/hits.txt",
+        index="out/all-merge/{model}/proteome.pickle"
+    output: bed="out/all-merge/{model}/hits.bed"
+    benchmark: "out/benchmarks/{model}.PGx_index.txt"
+    params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.PGx_bed", name="PGx_bed"
+    shell: "{PY} {PGX}/pgx_bed.py \
+        out/all-merge/{wildcards.model} \
+        {input.hits} \
+        > {output}"
+
+rule pepdigest:
+    input: "out/all-merge/{db}.db.fasta"
+    output: "out/all-merge/{db}.db.fasta.pepdigest"
+    benchmark: "out/benchmarks/{db}.pepdigest.txt"
+    params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.pepdigest", name="pepdigest"
+    shell: "{EMBOSS}/pepdigest \
+            -seqall {input} \
+            -menu 1 \
+            -outfile {output} \
+            -auto"
