@@ -1,5 +1,5 @@
 # variables
-PY = '/ifs/opt/common/CentOS_6/python/python-2.7.8/bin/python'
+PY = '/home/kwokn/miniconda2/bin/python'
 PICARD = '/ifs/e63data/poirierj/bin/picard-tools-1.134/picard.jar'
 BEDTOOLS = '/ifs/opt/common/CentOS_6/bedtools/bedtools-2.22.0/bin/bedtools'
 BEDOPS = '/ifs/e63data/poirierj/bin/bedops/bin'
@@ -11,20 +11,17 @@ GFFREAD="/ifs/e63data/poirierj/bin/gffread/gffread-0.9.8.Linux_x86_64"
 GFFCOMPARE="/ifs/e63data/poirierj/bin/gffcompare/gffcompare-0.9.8.Linux_x86_64/gffcompare"
 BLAST="/ifs/e63data/poirierj/bin/ncbi-blast-2.2.31+/bin"
 HMMSCAN="/ifs/e63data/poirierj/bin/hmmer-3.1b2-linux-intel-x86_64/binaries/hmmscan"
-UNIPROT="/ifs/e63data/poirierj/indexes/uniprot/UP000005640.fasta"
+UNIPROT="/home/kwokn/proteomegenerator/indexes/uniprot/UP000005640.fasta"
 PFAM="/ifs/e63data/poirierj/indexes/pfam/Pfam-A.hmm"
 FEATURECOUNTS="/ifs/e63data/poirierj/bin/subread-1.5.0-p2-Linux-x86_64/bin/featureCounts"
-PGX="/ifs/e63data/poirierj/bin/PGx"
-RSCRIPT='/ifs/opt/common/CentOS_6/R/R-3.2.0/bin/Rscript'
-SCRIPTS='/home/poirierj/scripts'
-TMP = '/scratch/poirierj'
+PGX="/home/kwokn/PGx"
+RSCRIPT='/opt/common/CentOS_7/R/R-3.3.3/bin/Rscript'
+SCRIPTS='/home/kwokn/scripts'
+TMP = '/scratch/kwokn'
+EMBOSS = "~/miniconda2/pkgs/emboss-6.5.7-2/bin"
 
 SAMPLES = "FCH9EFLADXX-HUMbghEAACRAAPEI-225"
 OUTLOG = "logs"
-
-MODELS = 'merged reference'.split()
-ADBS = expand('adb{n}',n=range(1,8))
-DBS = ADBS + 'merged reference uniprot Ecoli loki'.split()
 
 MODELS = 'merged reference'.split()
 ADBS = expand('adb{n}',n=range(1,8))
@@ -64,7 +61,7 @@ rule StringTie:
     shell: "stringtie \
             -G {GTF} \
             {input.bam} \
-            -p {params.n} \
+            -p {cluster.nCPUs} \
             -o {output}"
     #params: pe="6", mem="h_vmem=20G,virtual_free=18G", err="~/error/error.snake", name="StringTie"
     #shell: "{STRINGTIE} \
@@ -97,7 +94,7 @@ rule merge:
     shell: "stringtie \
             --merge \
             -o {output} \
-            -p {params.n} \
+            -p {cluster.nCPUs} \
             -c 2.5 \
             -T 1 \
             -f .1 \
@@ -175,10 +172,10 @@ rule LongOrfs:
     input: "out/all-merge/{model}.transcripts.fasta"#,"out/all-merge/{model}.transcripts.fasta.idx"
     output: "out/all-merge/{model}.transcripts.fasta.transdecoder_dir/longest_orfs.pep"
     benchmark: "out/benchmarks/{model}.LongOrfs.json"
-    params: n="1", R="span[ptile=64] rusage[mem=10]", J="LongOrfs"
+    params: n="16", R="span[ptile=16] rusage[mem=8]", J="LongOrfs"
     shell: "cd out/all-merge; \
             TransDecoder.LongOrfs \
-            -t {wildcards.model}.transcripts.fasta \
+	    -t {wildcards.model}.transcripts.fasta \
             -p 0"
     #params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.LongOrfs", name="LongOrfs"
     #shell: "cd out/all-merge ; \
@@ -190,9 +187,9 @@ rule blastp:
     input: "out/all-merge/{model}.transcripts.fasta.transdecoder_dir/longest_orfs.pep"
     output: "out/all-merge/{model}.blastp.outfmt6"
     benchmark: "out/benchmarks/{model}.blastp.json"
-    params: n="12", R="span[ptile=64] rusage[mem=4]", J="blastp"
+    params: n="64", R="span[hosts=1] rusage[mem=4]", J="blastp"
     shell: "blastp \
-            -num_threads {params.n} \
+            -num_threads {cluster.nCPUs} \
             -query {input} \
             -db {UNIPROT} \
             -max_target_seqs 1 \
@@ -228,11 +225,12 @@ rule Predict:
         gff3="out/all-merge/{model}.transcripts.fasta.transdecoder.gff3"
     benchmark: "out/benchmarks/{model}.Predict.json"
 #    params: pe="1", mem="h_vmem=225G,virtual_free=200G", err="~/error/error.Predict", name="Predict"
-    params: pe="12", mem="h_vmem=18G,virtual_free=16G", err="~/error/error.Predict", name="Predict"
-    shell: "cd out/all-merge; {TD}/TransDecoder.Predict \
+    #params: pe="12", mem="h_vmem=18G,virtual_free=16G", err="~/error/error.Predict", name="Predict"
+    params: n="64", R="span[ptile=64] rusage[mem=4]", J="Predict"
+    shell: "cd out/all-merge; TransDecoder.Predict \
         -t {wildcards.model}.transcripts.fasta \
         --single_best_orf \
-        --cpu {params.pe} \
+        --cpu {cluster.nCPUs} \
        --retain_blastp_hits {wildcards.model}.blastp.outfmt6"
 
 
@@ -240,8 +238,8 @@ rule gtf_to_alignment_gff3:
     input: "out/all-merge/{model}.transcripts.gtf"
     output: "out/all-merge/{model}/transcripts.gff3"
     benchmark: "out/benchmarks/{model}.gtf_to_alignment_gff3.txt"
-    params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.gtf_to_alignment_gff3", name="gtf_to_alignment_gff3"
-    shell: "{TD}/util/cufflinks_gtf_to_alignment_gff3.pl {input} > {output}"
+    params: n="8", R="span[ptile=8] rusage[mem=16]", J="gtf_to_alignment_gff3"
+    shell: "cufflinks_gtf_to_alignment_gff3.pl {input} > {output}"
 
 
 rule cdna_alignment_orf_to_genome_orf:
@@ -250,16 +248,16 @@ rule cdna_alignment_orf_to_genome_orf:
         gff3_td="out/all-merge/{model}.transcripts.fasta.transdecoder.gff3"
     output: "out/all-merge/{model}/transcripts.genome.gff3"
     benchmark: "out/benchmarks/{model}.cdna_alignment_orf_to_genome_orf.txt"
-    params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.cdna_alignment_orf_to_genome_orf", name="cdna_alignment_orf_to_genome_orf"
-    shell: "{TD}/util/cdna_alignment_orf_to_genome_orf.pl {input.gff3_td} {input.gff3} {input.fasta_td} > {output}"
+    params: n="8", R="span[ptile=8] rusage[mem=16]", J="cdna_alignment_orf_to_genome_orf"
+    shell: "cdna_alignment_orf_to_genome_orf.pl {input.gff3_td} {input.gff3} {input.fasta_td} > {output}"
 
 
 rule gff3_file_to_bed:
     input: "out/all-merge/{model}/transcripts.genome.gff3"
     output: "out/all-merge/{model}/proteome.bed"
     benchmark: "out/benchmarks/{model}.gff3_file_to_bed.txt"
-    params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.gff3_file_to_bed", name="gff3_file_to_bed"
-    shell: "cat {input} | grep -P \"\tCDS\t\" | {GFFREAD}/gffread --force-exons - -o- | {TD}/util/gff3_file_to_bed.pl /dev/stdin | tail -n +2 > {output}"#"| awk '{{ print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12; OFS=\"\t\" }}' > {output}"
+    params: n="8", R="span[ptile=8] rusage[mem=16]", err="~/error/error.gff3_file_to_bed", J="gff3_file_to_bed"
+    shell: "cat {input} | grep -P \"\tCDS\t\" | gffread --force-exons - -o- | gff3_file_to_bed.pl /dev/stdin | tail -n +2 > {output}"#"| awk '{{ print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12; OFS=\"\t\" }}' > {output}"
 #&& [[ -s {output} ]]
 
 # rule gff3_file_to_bed:
@@ -274,8 +272,8 @@ rule gff3_file_to_proteins:
     input: "out/all-merge/{model}/transcripts.genome.gff3"
     output: "out/all-merge/{model}/proteome.fasta"
     benchmark: "out/benchmarks/{model}.gff3_file_to_proteins.txt"
-    params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.gff3_file_to_proteins", name="gff3_file_to_proteins"
-    shell: "cat {input} | grep -P \"\tCDS\t\" | {GFFREAD}/gffread --force-exons - -o- | {TD}/util/gff3_file_to_proteins_jtp.pl /dev/stdin {FASTA} | egrep -o '^[^*]+' > {output}"
+    params: n="8", R="span[ptile=8] rusage[mem=16]", err="~/error/error.gff3_file_to_proteins", J="gff3_file_to_proteins"
+    shell: "cat {input} | grep -P \"\tCDS\t\" | gffread --force-exons - -o- | gff3_file_to_proteins_jtp.pl /dev/stdin {FASTA} | egrep -o '^[^*]+' > {output}"
 
 
 # rule gff3_file_to_proteins:
@@ -307,8 +305,8 @@ rule reorderFASTA:
     input: "out/all-merge/{model}/proteome.fasta"
     output: "out/all-merge/{model}/proteome.unique.fasta"
     benchmark: "out/benchmarks/{model}.reorderFASTA.txt"
-    params: pe="1", mem="h_vmem=2G,virtual_free=1G", err="~/error/error.reorderFASTA", name="reorderFASTA"
-    shell: "{RSCRIPT} {SCRIPTS}/reorderFASTA.R {WD}/{input} {WD}/{output}"
+    params: n="4", R="span[hosts=1] rusage[mem=4]" , err="~/error/error.reorderFASTA", name="reorderFASTA"
+    shell: "{RSCRIPT} {SCRIPTS}/reorderFASTA.R {input} {output}"
 
 
 # rule getfasta:
@@ -333,7 +331,7 @@ rule PGx_index:
         bed="out/all-merge/{model}/proteome.bed"
     output: "out/all-merge/{model}/proteome.pickle"
     benchmark: "out/benchmarks/{model}.PGx_index.txt"
-    params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.PGx_index", name="PGx_index"
+    params: n="4", mem="span[hosts=1] rusage=[4]", err="~/error/error.PGx_index", name="PGx_index"
     shell: "{PY} {PGX}/pgx_index.py \
         out/all-merge/{wildcards.model}"
 
@@ -346,7 +344,7 @@ rule PGx_query:
     params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.PGx_query", name="PGx_query"
     shell: "{PY} {PGX}/pgx_query.py \
         out/all-merge/{wildcards.model} \
-        {input.pep} > {output}"
+        {input.index} > {output}"
 
 
 rule PGx_bed:
@@ -370,3 +368,11 @@ rule pepdigest:
             -menu 1 \
             -outfile {output} \
             -auto"
+
+#rule MSFragger:
+#    input: spectra='out/all-merge/{model}.mzXML',
+#        peptide_db=''
+#    output: 'out/all-merge/{model}.pepXML'
+#    benchmark: 'benchmarks/{sample}.fragger'
+#    shell: 'cd {MSFRAG_DIR}; \
+#            java -Xmx32G -jar MSFragger.jar fragger.params {input}'

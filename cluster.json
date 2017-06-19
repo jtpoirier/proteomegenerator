@@ -1,0 +1,34 @@
+{
+    "__default__" :
+    {
+        "queue"     : "general",
+        "nCPUs"     : "4",
+        "resources" : "\"rusage[mem=8] span[hosts=1]\"",
+        "name"      : "pgm.{rule}.{sample}",
+        "output"    : "logs/{wildcards.model}.{rule}.out",
+        "error"     : "logs/{wildcards.model}.{rule}.err",
+        "time"      : "00:30"
+    },
+
+    "StringTie" :
+    {
+        "nCPUs"     : "16"
+    },
+
+    "LongOrfs" :
+    {
+        "nCPUs"     : "16"
+    },
+
+    "blastp" :
+    {
+        "nCPUs"     : "64",
+        "resources" : "\"rusage[mem=4] span[hosts=1]\"",
+        "time"      : "03:00"
+    }
+
+    "MSFragger" :
+    {
+        "time"      : "00:20"
+    }
+}
