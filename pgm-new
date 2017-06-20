@@ -1,34 +1,28 @@
+WD="/home/kwokn/test"
+workdir: WD
 # variables
 PY = '/home/kwokn/miniconda2/bin/python'
-#PICARD = '/ifs/e63data/poirierj/bin/picard-tools-1.134/picard.jar'
-#BEDTOOLS = '/ifs/opt/common/CentOS_6/bedtools/bedtools-2.22.0/bin/bedtools'
-#BEDOPS = '/ifs/e63data/poirierj/bin/bedops/bin'
-#STRINGTIE='/ifs/e63data/poirierj/bin/stringtie-1.3.3b.Linux_x86_64/stringtie'
 GTF='/home/kwokn/proteomegenerator/indexes/GRCh38/gencode.v20.annotation.gtf'
 FASTA='/home/kwokn/proteomegenerator/indexes/GRCh38.genome.fa'
-#TD="/ifs/e63data/poirierj/bin/TransDecoder"
-#GFFREAD="/ifs/e63data/poirierj/bin/gffread/gffread-0.9.8.Linux_x86_64"
-#GFFCOMPARE="/ifs/e63data/poirierj/bin/gffcompare/gffcompare-0.9.8.Linux_x86_64/gffcompare"
-#BLAST="/ifs/e63data/poirierj/bin/ncbi-blast-2.2.31+/bin"
-#HMMSCAN="/ifs/e63data/poirierj/bin/hmmer-3.1b2-linux-intel-x86_64/binaries/hmmscan"
 UNIPROT="/home/kwokn/proteomegenerator/indexes/uniprot/UP000005640.fasta"
-#PFAM="/ifs/e63data/poirierj/indexes/pfam/Pfam-A.hmm"
-#FEATURECOUNTS="/ifs/e63data/poirierj/bin/subread-1.5.0-p2-Linux-x86_64/bin/featureCounts"
 PGX="/home/kwokn/PGx"
 RSCRIPT='/opt/common/CentOS_7/R/R-3.3.3/bin/Rscript'
 SCRIPTS='/home/kwokn/scripts'
 TMP = '/scratch/kwokn'
-EMBOSS = "~/miniconda2/pkgs/emboss-6.5.7-2/bin"
+EMBOSS = "/home/kwokn/miniconda2/pkgs/emboss-6.5.7-2/bin"
+MSFRAG = "/home/kwokn/MSFragger_20170103"
 
 #SAMPLES, = glob_wildcards("out/{sample}.Aligned.sortedByCoord.out.bam")
 SAMPLES = "FCH9EFLADXX-HUMbghEAACRAAPEI-225".split()
-OUTLOG = "logs"
+SPECTRA_SAMPLES = "b1906_293T_proteinID_01A".split()
+
+DB_PATTERN = "\(= \).*\(.fasta\)"
+EXT_PATTERN = "\(= \).*\(TSV\)"
 
 MODELS = 'merged reference'.split()
 ADBS = expand('adb{n}',n=range(1,8))
 DBS = ADBS + 'merged reference uniprot Ecoli loki'.split()
 
-snakemake.utils.makedirs('/scratch/kwokn')
 snakemake.utils.makedirs('out/benchmarks')
 snakemake.utils.makedirs('out/all-merge')
 snakemake.utils.makedirs('logs/cluster')
@@ -38,7 +32,7 @@ rule all:
         #expand("out/all-merge/{db}.db.fasta.pepdigest",db=DBS),
         expand("out/all-merge/{model}/proteome.bed",model=MODELS),
         expand("out/all-merge/{model}/proteome.fasta",model=MODELS),
-	expand("out/{sample}.Aligned.sortedByCoord.out.bam",sample=SAMPLES)
+        expand("out/{spectra_sample}.{model}-db.TSV",model=MODELS,spectra_sample=SPECTRA_SAMPLES)
 
 rule BuildBamIndex:
     input: "out/{sample}.Aligned.sortedByCoord.out.bam"
@@ -331,7 +325,7 @@ rule PGx_index:
         bed="out/all-merge/{model}/proteome.bed"
     output: "out/all-merge/{model}/proteome.pickle"
     benchmark: "out/benchmarks/{model}.PGx_index.txt"
-    params: n="4", mem="'span[hosts=1] rusage=[4]'", J="PGx_index", \
+    params: n="4", R="'span[hosts=1] rusage[mem=4]'", J="PGx_index", \
 	    o="logs/{model}.PGx_index.out", eo="logs/{model}.PGx_index.err"
     shell: "{PY} {PGX}/pgx_index.py \
         out/all-merge/{wildcards.model}"
@@ -342,7 +336,7 @@ rule PGx_query:
         index="out/all-merge/{model}/proteome.pickle"
     output: hits="out/all-merge/{model}/hits.txt"
     benchmark: "out/benchmarks/{model}.PGx_index.txt"
-    params: n="4", mem="'span[hosts=1] rusage=[4]'", J="PGx_query", \
+    params: n="4", R="'span[hosts=1] rusage[mem=4]'", J="PGx_query", \
 	    o="logs/{model}.PGx_query.out", eo="logs/{model}.PGx_query.err"
     shell: "{PY} {PGX}/pgx_query.py \
         out/all-merge/{wildcards.model} \
@@ -354,7 +348,7 @@ rule PGx_bed:
         index="out/all-merge/{model}/proteome.pickle"
     output: bed="out/all-merge/{model}/hits.bed"
     benchmark: "out/benchmarks/{model}.PGx_index.txt"
-    params: n="4", mem="'span[hosts=1] rusage=[4]'", J="PGx_bed", \
+    params: n="4", R="'span[hosts=1] rusage[mem=4]'", J="PGx_bed", \
 	    o="logs/{model}.PGx_bed.out", eo="logs/{model}.PGx_bed.err"
     shell: "{PY} {PGX}/pgx_bed.py \
         out/all-merge/{wildcards.model} \
@@ -372,13 +366,18 @@ rule PGx_bed:
 #            -outfile {output} \
 #            -auto"
 
-#rule MSFragger:
-#    input: spectra='out/all-merge/{model}.mzXML',
-#        peptide_db=''
-#    output: 'out/all-merge/{model}.pepXML'
-#    benchmark: 'benchmarks/{sample}.fragger'
-#    shell: 'cd {MSFRAG_DIR}; \
-#            java -Xmx32G -jar MSFragger.jar fragger.params {input}'
-#
-#snakemake --snakefile pgm-new --cluster "bsub -J {params.J} -n {params.n} -R {params.R} -W 3:00 -o ‘logs/{params.J}.stdout' -eo ‘logs/{params.J}.stderr'" -j 100 -k --ri --latency-wait 30 -np
+rule MSFragger:
+    input: spectra=expand('out/{spectra_sample}.mzXML',spectra_sample=SPECTRA_SAMPLES),
+        proteome_db='out/all-merge/{model}/proteome.unique.fasta'
+    output: 'out/{spectra_sample}.{model}-db.TSV'
+    benchmark: 'out/benchmarks/{model}.MSFragger.txt'
+    params: n="64", R="'span[hosts=1] rusage[mem=4]'", J="MSFragger", \
+	o="logs/{model}.MSFragger.out", eo="logs/{model}.MSFragger.err"
+    shell: "cd {MSFRAG}; \
+            cat fragger.params | sed '1s@{DB_PATTERN}@\\1{WD}/{input.proteome_db}@' \
+	       | sed '33s@{EXT_PATTERN}@\\1{wildcards.model}-db\.\\2@' > temp.params.{wildcards.model}; \
+            java -Xmx32G -jar MSFragger.jar temp.params.{wildcards.model} {WD}/{input.spectra}; \
+	    rm temp.params.{wildcards.model}"
+
+#snakemake --snakefile pgm-new --cluster "bsub -J {params.J} -n {params.n} -R {params.R} -W 3:00 -o {params.o} -eo {params.eo}" -j 100 -k --ri --latency-wait 30 -np
 #
