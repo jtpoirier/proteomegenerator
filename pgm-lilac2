@@ -1,0 +1,487 @@
+WD="/data/kentsis/testing_scratchpad"
+workdir: WD
+# variables
+PY = '/home/kwokn/miniconda2/bin/python'
+GTF='/home/kwokn/proteomegenerator/indexes/GRCh37.p13/gencode.v19.annotation.gtf'
+UNIPROT="/home/kwokn/proteomegenerator/indexes/uniprot/UP000005640.fasta"
+PGX="/home/kwokn/PGx"
+RSCRIPT='/opt/common/CentOS_7/R/R-3.3.3/bin/Rscript'
+SCRIPTS='/home/kwokn/scripts'
+TMP = '/scratch/kwokn'
+EMBOSS = "/home/kwokn/miniconda2/pkgs/emboss-6.5.7-2/bin"
+MSFRAG = "/home/kwokn/MSFragger_20170103"
+
+#SAMPLES, = glob_wildcards("out/{sample}.Aligned.sortedByCoord.out.bam")
+SAMPLES = "FCH9EFLADXX-HUMbghEAACRAAPEI-225".split()
+#SAMPLES = "NA12878".split()
+SPECTRA_SAMPLES = "b1906_293T_proteinID_01A".split()
+
+#MODELS = 'merged reference'.split()
+MODELS = 'K0562'.split()
+ADBS = expand('adb{n}',n=range(1,8))
+DBS = ADBS + 'merged reference uniprot Ecoli loki'.split()
+
+REF_FASTA='/home/kwokn/proteomegenerator/indexes/GRCh38/GRCh38.genome.fa'
+
+snakemake.utils.makedirs('out/benchmarks')
+snakemake.utils.makedirs('out/all-merge')
+snakemake.utils.makedirs('out/logs')
+
+rule all:
+    input: 
+        #expand("out/all-merge/{db}.db.fasta.pepdigest",db=DBS),
+        expand("out/all-merge/{model}/proteome.bed",model=MODELS),
+        expand("out/all-merge/{model}/proteome.fasta",model=MODELS),
+        expand("out/{spectra_sample}.{model}-db.TSV",model=MODELS,spectra_sample=SPECTRA_SAMPLES)
+	#expand("out/{sample}.altRef.fasta",sample=SAMPLES)
+
+#rule MakeAltRefFasta:
+#    input: "out/{sample}.vcf"
+#    output: "out/{sample}.altRef.fasta"
+#    benchmark: "out/benchmarks/{sample}.MakeAltRefFasta.txt"
+#    params: n="64", R="'span[hosts=1] rusage[mem=4]'", \
+#	    o="out/logs/MakeAltRefFasta.out", eo="out/logs/MakeAltRefFasta.err", \
+#	    J="MakeAltRefFasta"
+#    shell: "gatk -T FastaAlternateReferenceMaker -Xmx16g -V {input} -R {REF_FASTA} -o {output}" 
+
+#snakemake.utils.makedirs('out/altRef_index')
+
+#rule MakeAltRefIndex:
+#    input: "out/{sample}.altRef.fasta"
+#    output: "out/{sample}.altRef_index", "out/{sample}.altRef_index/Genome","out/{sample}.altRef_index/SAIndex"
+#    benchmark: "out/benchmarks/{sample}.MakeAltRefIndex"
+#    params: n="64", R="'span[hosts=1] rusage[mem=4]'", \
+#	    o="out/logs/MakeAltRefIndex.out", eo="out/logs/MakeAltRefIndex.err", \
+#	    J="MakeAltRefIndex"
+#    shell: "STAR --runMode genomeGenerate --runThreadN {params.n} --genomeDir {WD}/out/{wildcards.sample}.altRef_index \
+#	    --genomeFastaFiles {input} --sjdbGTFfile {GTF} --sjdbOverhang 100"
+
+rule STAR:
+    input: l1r1="/data/kentsis/K0562_RNAseq/{sample}_L1_1.fq.gz", l2r1="/data/kentsis/K0562_RNAseq/{sample}_L2_1.fq.gz", \
+	   l1r2="/data/kentsis/K0562_RNAseq/{sample}_L1_2.fq.gz", l2r2="/data/kentsis/K0562_RNAseq/{sample}_L2_2.fq.gz"
+    output: "out/{sample}.Aligned.sortedByCoord.out.bam", "out/{sample}.Chimeric.out.junction"
+    benchmark: "out/benchmarks/{sample}.STARalign.txt"
+    params: n="64", R="'span[hosts=1] rusage[mem=4]'", \
+	    o="out/logs/STAR.align.out", eo="out/logs/STAR.align.err", \
+	    J="STAR_align"
+    shell: "STAR \
+        --genomeDir {REF_FASTA} \
+        --readFilesIn {input.l1r1},{input.l2r1} {input.l1r2},{input.l2r2} \
+        --outFileNamePrefix out/{wildcards.sample}. \
+        --outSAMattributes NH HI \
+        --outSAMattrRGline ID:{wildcards.sample} LB:1 PL:illumina PU:1 SM:{wildcards.sample} \
+        --runThreadN {params.n} \
+        --outSAMtype BAM SortedByCoordinate \
+        --clip3pAdapterSeq AGATCGGAAGAG \
+        --readFilesCommand zcat \
+        --outSAMmapqUnique 60 \
+        --twopassMode Basic \
+        --chimOutType WithinBAM \
+        --outSAMstrandField intronMotif \
+        --outFilterIntronMotifs RemoveNoncanonical \
+        --outReadsUnmapped None \
+        --chimSegmentMin 15 \
+        --chimJunctionOverhangMin 15 \
+        --alignMatesGapMax 200000 \
+        --alignIntronMax 200000"
+
+rule BuildBamIndex:
+    input: "out/{sample}.Aligned.sortedByCoord.out.bam"
+    output: "out/{sample}.Aligned.sortedByCoord.out.bai"
+    benchmark: "out/benchmarks/{sample}.BuildBamIndex.txt"
+    params: n="1", R="'span[hosts=1] rusage[mem=10]'", \
+            o="out/logs/out.buildbamindex", eo="out/logs/error.buildbamindex", \
+            J="BuildBamIndex"
+    shell: "picard BuildBamIndex -Xmx6g TMP_DIR={TMP} I={input} O={output}"
+
+rule StringTie:
+    input: bam="out/{sample}.Aligned.sortedByCoord.out.bam", bai="out/{sample}.Aligned.sortedByCoord.out.bai"
+    output: "out/{sample}-stringtie.gtf"
+    benchmark: "out/benchmarks/{sample}.StringTie.txt"
+    params: n="16", R="'span[hosts=1] rusage[mem=8]'", \
+            o="out/logs/out.stringtie", eo="out/logs/error.stringtie", \
+	    J="StringTie"
+    shell: "stringtie \
+            -G {GTF} \
+            {input.bam} \
+            -p {params.n} \
+            -o {output}"
+
+snakemake.utils.makedirs('out/all-merge')
+
+# rule merge_model:
+#     input: "out/{sample}-stringtie.gtf"
+#     output: "out/{sample}-stringtie.clean.gtf"
+#     benchmark: "out/benchmarks/gtf_file_to_cDNA_seqs.txt"
+#     params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.gtf_file_to_cDNA_seqs", name="gtf_file_to_cDNA_seqs"
+#     shell: "{GFFREAD}/gffread {input} -T -o {output} \
+#         --no-pseudo \
+#         --force-exons \
+#         -M -Q"
+
+
+rule merge:
+    #input: "out/{sample}-stringtie.gtf"
+    input: expand("out/{sample}-stringtie.gtf",sample=SAMPLES)
+    output: "out/all-merge/merged.gtf"
+    benchmark: "out/benchmarks/merge.txt"
+    params: n="12", R="'span[ptile=72] rusage[mem=4]'", \
+            o="out/logs/out.merge", eo="out/logs/error.merge", \
+            J="merge"
+    shell: "stringtie \
+            --merge \
+            -o {output} \
+            -p {params.n} \
+            -c 0 \
+            -T 1 \
+            -f .1 \
+            -i \
+            {input}"        
+    #params: pe="12", mem="h_vmem=4G,virtual_free=3G", err="~/error/error.merge", name="merge"
+    #shell: "{STRINGTIE} \
+    #        --merge \
+    #        -o {output} \
+    #        -p {params.pe} \
+    #        -c 0 \
+    #        -T 1 \
+    #        -f .1 \
+    #        -i \
+    #        {input}"
+
+
+# rule gffcompare:
+#     input: "out/all-merge/merged.gtf"
+#     output: gtf="out/all-merge/gffcmp.annotated.gtf", stats="out/all-merge/gffcmp.stats"
+#     benchmark: "out/benchmarks/gffcompare.txt"
+#     params: pe="1", mem="h_vmem=8G,virtual_free=7G", err="~/error/error.gffcompare", name="gffcompare"
+#     shell: "{GFFCOMPARE} \
+#             -G \
+#             -r {GTF} \
+#             -R \
+#             -s {REF_FASTA} \
+#             -o out/all-merge/gffcmp \
+#             {input}"
+
+
+rule UCSC:
+    input: "out/all-merge/merged.gtf"
+    output: merged="out/all-merge/merged-UCSC.gtf", reference="out/all-merge/reference-UCSC.gtf"
+    benchmark: "out/benchmarks/UCSC.txt"
+    params: n="1", R="'span[hosts=1] rusage[mem=10]'", \
+            o="out/logs/UCSC.out", eo="out/logs/UCSC.err", \
+            J="UCSC"
+    shell: "cat {GTF} | grep chr > {output.reference}; \
+        cat {input} | grep chr > {output.merged}"
+    #params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.snake", name="UCSC"
+    #shell: "cat {GTF} | grep chr > {output.reference}; \
+    #    cat {input} | grep chr > {output.merged}"
+
+rule SeparateSNPsFromIndels:
+    input: expand("out/{model}.vcf",model=MODELS)
+    #input: "out/FCH9EFLADXX-HUMbghEAACRAAPEI-225.vcf"
+    output: "out/{model}_snps_only.recode.vcf", "out/{model}_indels_only.recode.vcf"
+    benchmark: "out/benchmarks/separate_vcfs.txt"
+    params: n="1", R="'span[hosts=1] rusage[mem=16]'", \
+	    o="out/logs/separate_vcfs.out", eo="out/logs/separate_vcfs.err", \
+	    J="separate_vcfs"
+    shell: "source activate g2gtools; vcftools --vcf {input} --out out/snps_only --remove-indels --recode --recode-INFO-all; vcftools --vcf {input} --out out/indels_only --keep-only-indels --recode --recode-INFO-all"
+
+rule IndexSeparatedVcfs:
+    input: snps="out/{model}_snps_only.recode.vcf", indels="out/{model}_indels_only.recode.vcf" 	
+    output: "out/{model}_snps_only.recode.vcf.gz.tbi", "out/{model}_indels_only.recode.vcf.gz.tbi", \
+    	    snps_gz="out/{model}_snps_only.recode.vcf.gz", indels_gz="out/{model}_indels_only.recode.vcf.gz"
+    benchmark: "out/benchmarks/index_separated_vcfs.txt"
+    params: n="1", R="'span[hosts=1] rusage[mem=16]'", \
+	    o="out/logs/index_separated_vcfs.out", eo="out/logs/index_separated_vcfs.err", \
+	    J="index_separated_vcfs"
+    shell: "source activate g2gtools; bgzip {input.snps}; tabix -p vcf {output.snps_gz}; \
+	    bgzip {input.indels}; tabix -p vcf {output.indels_gz}"
+
+#STRAIN="K0562"
+# for testing purposes, replaced STRAIN with model
+
+rule CreateCustomRefGenome:
+    input: snps_gz="out/{model}_snps_only.recode.vcf.gz", indels_gz="out/{model}_indels_only.recode.vcf.gz"
+    output: chain="out/REF-to-{model}.chain", patched="out/{model}.patched.fa", \
+	    custom_ref="out/{model}.fa"
+    benchmark: "out/benchmarks/create_custom_ref.txt"
+    params: n="4", R="'span[hosts=1] rusage[mem=16]'", \
+	    o="out/logs/create_custom_ref.out", eo="out/logs/create_custom_ref.err", \
+	    J="create_custom_ref"
+    shell: "source activate g2gtools; g2gtools vcf2chain -f {REF_FASTA} -i {input.indels_gz} -s {wildcards.model} -o {output.chain}; g2gtools patch -i {REF_FASTA} -s {wildcards.model} -v {input.snps_gz} -o {output.patched}; \
+	    g2gtools transform -i {output.patched} -c {output.chain} -o {output.custom_ref}"
+
+rule CreateCustomGTF:
+    input: custom_ref="out/{model}.fa", gtf="out/all-merge/merged-UCSC.gtf", chain="out/REF-to-{model}.chain"
+    output: "out/all-merge/{model}.gtf"
+    benchmark: "out/benchmarks/create_custom_gtf.txt"
+    params: n="4", R="'span[hosts=1] rusage[mem=16]'", \
+	    o="out/logs/create_custom_gtf.out", eo= "out/logs/create_custom_gtf.err", \
+	    J="create_custom_gtf"
+    shell: "source activate g2gtools; \
+	    g2gtools convert -c {input.chain} -i out/all-merge/merged-UCSC.gtf -f gtf -o {output}"
+
+rule gtf_file_to_cDNA_seqs:
+    input: gtf="out/all-merge/{model}.gtf", custom_ref="out/{model}.fa"
+    output: fasta="out/all-merge/{model}.transcripts.fasta",
+            gtf="out/all-merge/{model}.transcripts.gtf"
+    benchmark: "out/benchmarks/gtf_file_to_cDNA_seqs.txt"
+    params: n="1", R="'span[hosts=1] rusage[mem=16]'", \
+            o="out/logs/{model}.gtf_file_to_cDNA_seqs.out", eo="out/logs/{model}.gtf_file_to_cDNA_seqs.err", \
+            J="gtf2cDNA_{model}"
+    shell: "gffread {input.gtf} -T -o {output.gtf} \
+        --no-pseudo \
+        --force-exons \
+        -M -Q; \
+	gffread -w {output.fasta} -g {input.custom_ref} {output.gtf}"
+        #gffread -w {output.fasta} -g {REF_FASTA} {output.gtf}"
+    #params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.gtf_file_to_cDNA_seqs", name="gtf_file_to_cDNA_seqs"
+    #shell: "{GFFREAD}/gffread {input} -T -o {output.gtf} \
+    #    --no-pseudo \
+    #    --force-exons \
+    #    -M -Q; \
+    #    {GFFREAD}/gffread -w {output.fasta} -g {REF_FASTA} {output.gtf}"
+
+
+# rule index_cdna_seqs:
+#     input: "out/all-merge/{model}.transcripts.fasta"
+#     output: "out/all-merge/{model}.transcripts.fasta.idx"
+#     benchmark: "out/benchmarks/{model}.index_cdna_seqs.txt"
+#     params: pe="1", mem="h_vmem=20G,virtual_free=18G", err="~/error/error.idx", name="idx"
+#     shell: "{SF}/util/index_cdna_seqs.pl {input}"
+
+
+rule LongOrfs:
+    input: "out/all-merge/{model}.transcripts.fasta"#,"out/all-merge/{model}.transcripts.fasta.idx"
+    output: "out/all-merge/{model}.transcripts.fasta.transdecoder_dir/longest_orfs.pep"
+    benchmark: "out/benchmarks/{model}.LongOrfs.json"
+    params: n="16", R="'span[ptile=16] rusage[mem=8]'", J="LongOrfs_{model}", \
+	    o="out/logs/{model}.LongOrfs.out", eo="out/logs/{model}.LongOrfs.err"
+    shell: "cd {WD}/out/all-merge; \
+            TransDecoder.LongOrfs \
+	    -t {wildcards.model}.transcripts.fasta \
+            -p 0"
+    #params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.LongOrfs", name="LongOrfs"
+    #shell: "cd out/all-merge ; \
+    #    {TD}/TransDecoder.LongOrfs \
+    #    -t {wildcards.model}.transcripts.fasta \
+    #    -p 0"
+
+rule blastp:
+    input: "out/all-merge/{model}.transcripts.fasta.transdecoder_dir/longest_orfs.pep"
+    output: "out/all-merge/{model}.blastp.outfmt6"
+    benchmark: "out/benchmarks/{model}.blastp.json"
+    params: n="64", R="'span[hosts=1] rusage[mem=4]'", J="blastp_{model}", \
+	    o="out/logs/{model}.blastp.out", eo="out/logs/{model}.blastp.err"
+    shell: "blastp \
+            -num_threads {params.n} \
+            -query {input} \
+            -db {UNIPROT} \
+            -max_target_seqs 1 \
+            -outfmt 6 \
+            -evalue 1e-5 \
+            > {output}"
+    #params: pe="12", mem="h_vmem=4G,virtual_free=3G", err="~/error/error.blastp", name="blastp"
+    #shell: "{BLAST}/blastp \
+    #    -num_threads {params.pe} \
+    #    -query {input}  \
+    #    -db {UNIPROT}  \
+    #    -max_target_seqs 1 \
+    #    -outfmt 6 \
+    #    -evalue 1e-5 \
+    #    > {output}"
+
+# rule pfam:
+#     input: "out/all-merge/transcripts.fasta.transdecoder_dir/{model}.longest_orfs.pep"
+#     output: "out/all-merge/{model}.pfam.domtblout"
+#     benchmark: "out/benchmarks/{model}.pfam.json"
+#     params: pe="12", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.pfam", name="pfam"
+#     shell: "{HMMSCAN} \
+#         --cpu {params.pe} \
+#         --domtblout {output} \
+#         {PFAM} \
+#         {input}"
+
+rule Predict:
+    input: orfs="out/all-merge/{model}.transcripts.fasta.transdecoder_dir/longest_orfs.pep",
+        fasta="out/all-merge/{model}.transcripts.fasta",
+        blastp="out/all-merge/{model}.blastp.outfmt6"
+    output: "out/all-merge/{model}.transcripts.fasta.transdecoder.pep",
+        gff3="out/all-merge/{model}.transcripts.fasta.transdecoder.gff3"
+    benchmark: "out/benchmarks/{model}.Predict.json"
+#    params: pe="1", mem="h_vmem=225G,virtual_free=200G", err="~/error/error.Predict", name="Predict"
+    #params: pe="12", mem="h_vmem=18G,virtual_free=16G", err="~/error/error.Predict", name="Predict"
+    params: n="64", R="'span[ptile=64] rusage[mem=4]'", J="Predict_{model}", \
+	    o="out/logs/{model}.Predict.out", eo="out/logs/{model}.Predict.err"
+    shell: "cd {WD}/out/all-merge; TransDecoder.Predict \
+        -t {wildcards.model}.transcripts.fasta \
+        --single_best_orf \
+        --cpu {params.n} \
+        --retain_blastp_hits {wildcards.model}.blastp.outfmt6"
+    #shell: "cd {WD}/out/all-merge; TransDecoder.Predict \
+    #    -t {wildcards.model}.transcripts.fasta \
+    #    --single_best_orf \
+    #    --cpu {params.n} \
+    #   --retain_blastp_hits {wildcards.model}.blastp.outfmt6"
+
+
+rule gtf_to_alignment_gff3:
+    input: "out/all-merge/{model}.transcripts.gtf"
+    output: "out/all-merge/{model}/transcripts.gff3"
+    benchmark: "out/benchmarks/{model}.gtf_to_alignment_gff3.txt"
+    params: n="8", R="'span[ptile=8] rusage[mem=16]'", J="gtf2align_gff3_{model}", \
+	    o="out/logs/{model}.gtf_to_alignment_gff3.out", eo="out/logs/{model}.gtf_to_alignment_gff3.err"
+    shell: "cufflinks_gtf_to_alignment_gff3.pl {input} > {output}"
+
+
+rule cdna_alignment_orf_to_genome_orf:
+    input: gff3="out/all-merge/{model}/transcripts.gff3",
+        fasta_td="out/all-merge/{model}.transcripts.fasta",
+        gff3_td="out/all-merge/{model}.transcripts.fasta.transdecoder.gff3"
+    output: "out/all-merge/{model}/transcripts.genome.gff3"
+    benchmark: "out/benchmarks/{model}.cdna_alignment_orf_to_genome_orf.txt"
+    params: n="8", R="'span[ptile=8] rusage[mem=16]'", J="cdna_orf2genome_orf_{model}", \
+	    o="out/logs/{model}.cdna_alignment_orf_to_genome_orf.out", eo="out/logs/{model}.cdna_alignment_orf_to_genome_orf.err"
+    shell: "cdna_alignment_orf_to_genome_orf.pl {input.gff3_td} {input.gff3} {input.fasta_td} > {output}"
+
+
+rule gff3_file_to_bed:
+    input: "out/all-merge/{model}/transcripts.genome.gff3"
+    output: "out/all-merge/{model}/proteome.bed"
+    benchmark: "out/benchmarks/{model}.gff3_file_to_bed.txt"
+    params: n="8", R="'span[ptile=8] rusage[mem=16]'", err="~/error/error.gff3_file_to_bed", J="gff2bed_{model}", \
+	    o="out/logs/{model}.gff3_file_to_bed.out", eo="out/logs/{model}.gff3_file_to_bed.err"
+    shell: "cat {input} | grep -P \"\tCDS\t\" | gffread --force-exons - -o- | gff3_file_to_bed.pl /dev/stdin | tail -n +2 > {output}"#"| awk '{{ print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12; OFS=\"\t\" }}' > {output}"
+#&& [[ -s {output} ]]
+
+# rule gff3_file_to_bed:
+#     input: "out/all-merge/{model}/transcripts.genome.gff3"
+#     output: "out/all-merge/{model}/proteome.bed"
+#     benchmark: "out/benchmarks/{model}.gff3_file_to_bed.txt"
+#     params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.gff3_file_to_bed", name="gff3_file_to_bed"
+#     shell: "awk '($3==\"CDS\") {{OFS=\"\t\"; print $1,$4-1,$5,\"\\t\\t\\t\\t\\t\\t\\t\\t\"}}' {input} > {output}"
+
+
+rule gff3_file_to_proteins:
+    input: gff3="out/all-merge/{model}/transcripts.genome.gff3", custom_ref="out/{model}.fa"
+    output: "out/all-merge/{model}/proteome.fasta"
+    benchmark: "out/benchmarks/{model}.gff3_file_to_proteins.txt"
+    params: n="8", R="'span[ptile=8] rusage[mem=16]'", err="~/error/error.gff3_file_to_proteins", J="gff2proteins_{model}", \
+	    o="out/logs/{model}.gff3_file_to_proteins.out", eo="out/logs/{model}.gff3_file_to_proteins.err"
+    shell: "cat {input.gff3} | grep -P \"\tCDS\t\" | gffread --force-exons - -o- | gff3_file_to_proteins_jtp.pl /dev/stdin {input.custom_ref} | egrep -o '^[^*]+' > {output}"
+
+
+# rule gff3_file_to_proteins:
+#     input: "out/all-merge/{model}/transcripts.genome.gff3"
+#     output: fasta="out/all-merge/{model}/proteome.fasta",
+#         gff3="out/all-merge/{model}/proteome.gff3"
+#     benchmark: "out/benchmarks/{model}.gff3_file_to_proteins.txt"
+#     params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.gff3_file_to_proteins", name="gff3_file_to_proteins"
+#     shell: "cat {input} | grep -P \"\tCDS\t\" | {GFFREAD}/gffread - -g {REF_FASTA} -y {output.fasta} -F --force-exons -o {output.gff3}"
+
+
+# rule convert2bed:
+#     input: "out/all-merge/{model}/proteome.gff3"
+#     output: "out/all-merge/{model}/proteome.bed"
+#     benchmark: "out/benchmarks/{model}.gff2bed.txt"
+#     params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.gff2bed", name="gff2bed"
+#     shell: "{BEDOPS}/convert2bed -i gff < {input} > {output}"
+
+
+# rule gff3_file_to_bed:
+#     input: "out/all-merge/{model}/proteome.gff3"
+#     output: "out/all-merge/{model}/proteome.bed"
+#     benchmark: "out/benchmarks/{model}.gff3_file_to_bed.txt"
+#     params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.gff3_file_to_bed", name="gff3_file_to_bed"
+#     shell: "{TD}/util/gff3_file_to_bed.pl {input} | tail -n +2 > {output}"#"| awk '{{ print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12; OFS=\"\t\" }}' > {output}"
+
+
+rule reorderFASTA:
+    input: "out/all-merge/{model}/proteome.fasta"
+    output: "out/all-merge/{model}/proteome.unique.fasta"
+    benchmark: "out/benchmarks/{model}.reorderFASTA.txt"
+    params: n="4", R="'span[hosts=1] rusage[mem=4]'", J="reorderFASTA_{model}", \
+	    o="out/logs/{model}.reorderFASTA.out", eo="out/logs/{model}.reorderFASTA.err"
+    shell: "{RSCRIPT} {SCRIPTS}/reorderFASTA.R {input} {output}"
+
+# rule getfasta:
+#     input: "out/all-merge/{model}/proteome.bed"
+#     output: "out/all-merge/{model}/proteome.fasta"
+#     benchmark: "out/benchmarks/{model}.getfasta.txt"
+#     params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.getfasta", name="getfasta"
+#     shell: "{BEDTOOLS} getfasta -name -s -fi {REF_FASTA} -bed {input} -fo /dev/stdout | {EMBOSS}/transeq -sequence /dev/stdin -outseq {output}"
+
+
+# rule PGx_prepare:
+#     input: "out/all-merge/{model}/transcripts.genome.gff3"
+#     output: fasta="out/all-merge/{model}/proteome.fasta",
+#         bed="out/all-merge/{model}/proteome.bed"
+#     benchmark: "out/benchmarks/{model}.PGx_prepare.txt"
+#     params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.PGx_prepare", name="PGx_prepare"
+#     shell: "{RSCRIPT} {SCRIPTS}/reorderFASTA.R {WD}/{input} {WD}/{output.fasta} {WD}/{output.bed}"
+
+
+rule PGx_index:
+    input: fasta="out/all-merge/{model}/proteome.fasta",
+        bed="out/all-merge/{model}/proteome.bed"
+    output: "out/all-merge/{model}/proteome.pickle"
+    benchmark: "out/benchmarks/{model}.PGx_index.txt"
+    params: n="4", R="'span[hosts=1] rusage[mem=4]'", J="PGx_index_{model}", \
+	    o="out/logs/{model}.PGx_index.out", eo="out/logs/{model}.PGx_index.err"
+    shell: "{PY} {PGX}/pgx_index.py \
+        out/all-merge/{wildcards.model}"
+
+
+rule PGx_query:
+    input: pep="out/all-merge/{model}/peptides.txt",
+        index="out/all-merge/{model}/proteome.pickle"
+    output: hits="out/all-merge/{model}/hits.txt"
+    benchmark: "out/benchmarks/{model}.PGx_index.txt"
+    params: n="4", R="'span[hosts=1] rusage[mem=4]'", J="PGx_query_{model}", \
+	    o="out/logs/{model}.PGx_query.out", eo="out/logs/{model}.PGx_query.err"
+    shell: "{PY} {PGX}/pgx_query.py \
+        out/all-merge/{wildcards.model} \
+        {input.index} > {output}"
+
+
+rule PGx_bed:
+    input: hits="out/all-merge/{model}/hits.txt",
+        index="out/all-merge/{model}/proteome.pickle"
+    output: bed="out/all-merge/{model}/hits.bed"
+    benchmark: "out/benchmarks/{model}.PGx_index.txt"
+    params: n="4", R="'span[hosts=1] rusage[mem=4]'", J="PGx_bed_{model}", \
+	    o="out/logs/{model}.PGx_bed.out", eo="out/logs/{model}.PGx_bed.err"
+    shell: "{PY} {PGX}/pgx_bed.py \
+        out/all-merge/{wildcards.model} \
+        {input.hits} \
+        > {output}"
+
+#rule pepdigest:
+#    input: "out/all-merge/{db}.db.fasta"
+#    output: "out/all-merge/{db}.db.fasta.pepdigest"
+#    benchmark: "out/benchmarks/{db}.pepdigest.txt"
+#    params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.pepdigest", name="pepdigest"
+#    shell: "{EMBOSS}/pepdigest \
+#            -seqall {input} \
+#            -menu 1 \
+#            -outfile {output} \
+#            -auto"
+
+DB_PATTERN = "\(= \).*\(.fasta\)"
+EXT_PATTERN = "\(= \).*\(TSV\)"
+
+rule MSFragger:
+    input: spectra=expand('out/{spectra_sample}.mzXML',spectra_sample=SPECTRA_SAMPLES),
+        proteome_db='out/all-merge/{model}/proteome.unique.fasta'
+    output: 'out/{spectra_sample}.{model}-db.TSV'
+    benchmark: 'out/benchmarks/{model}.MSFragger.txt'
+    params: n="64", R="'span[hosts=1] rusage[mem=4]'", J="msfrag_{spectra_sample}_{model}", \
+	o="out/logs/{model}.MSFragger.out", eo="out/logs/{model}.MSFragger.err"
+    shell: "cd {MSFRAG}; \
+            cat fragger.params | sed '1s@{DB_PATTERN}@\\1{WD}/{input.proteome_db}@' \
+	       | sed '33s@{EXT_PATTERN}@\\1{wildcards.model}-db\.\\2@' > temp.params.{wildcards.model}; \
+	    java -Xmx32G -jar MSFragger.jar temp.params.{wildcards.model} {WD}/{input.spectra}; \
+	    rm temp.params.{wildcards.model}"
+
+#snakemake --snakefile pgm-lilac --cluster "bsub -J {params.J} -n {params.n} -R {params.R} -W 3:00 -o {params.o} -eo {params.eo}" -j 100 -k --ri --latency-wait 30 -np
+#
