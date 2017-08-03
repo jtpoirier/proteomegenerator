@@ -1,6 +1,6 @@
 import glob,os,subprocess
 
-SAMPLES= "s_OA_amlcl_003_CL".split() # should only ever list 1 sample
+SAMPLES= "s_OA_amlcl_003_CL_no_refannotation".split() # should only ever list 1 sample
 
 WD="/data/kentsis/testing_scratchpad/" + SAMPLES[0]
 workdir: WD
@@ -8,13 +8,8 @@ workdir: WD
 SAMPLE_VCF = "/data/kentsis/testing_scratchpad/K052_3/out/s_OA_amlcl_003_CL.realigned_ubam_merged.RGmerged.dedup.fixedtags.recal.finished.vcf"
 VCF_INDIVIDUAL = subprocess.check_output(['bcftools','query','-l',SAMPLE_VCF]).decode('ASCII').strip()
 
-#SAMPLE='NA12878'
-#REF_FASTA='/data/kentsis/indexes/hg19/hg19.fa'
-#SAMPLE_VCF = "/data/kentsis/testing_scratchpad/NA12878/out/NA12878.vcf"
-
 REF_FASTA='/data/kentsis/indexes/GRCh38/GRCh38.genome.fa'
 REF_GTF='/data/kentsis/indexes/GRCh38/gencode.v20.annotation.gtf'
-
 
 # variables
 PY = '/home/kwokn/miniconda2/bin/python'
@@ -33,7 +28,6 @@ TD_DIR='~/miniconda2/opt/transdecoder'
 SPECTRA_SAMPLES=[os.path.abspath(a) for a in glob.glob("/data/kentsis/proteomics/K052/*.mzXML")]
 MS_DIR="/data/kentsis/proteomics/K052"
 MS_RELATIVE_DIR=os.path.relpath(MS_DIR,WD)
-print(MS_RELATIVE_DIR)
 MS_SAMPLES=['160116_K052_OffLRP_RP_f','20160205_PGM_K052_SCX_RP_']
 MS_RUNS=[str(x).zfill(2) for x in list(range(1,24+1))]
 
@@ -55,7 +49,6 @@ snakemake.utils.makedirs('out/benchmarks')
 snakemake.utils.makedirs('out/all-merge')
 snakemake.utils.makedirs('out/logs')
 snakemake.utils.makedirs('out/rnaseq_runs')
-snakemake.utils.makedirs('out/{SAMPLES[0]}.proteome')
 
 rule all:
     input: expand("out/{SAMPLE}.proteome/proteome.pickle",SAMPLE=SAMPLES), \
@@ -63,10 +56,6 @@ rule all:
         #expand("out/all-merge/{db}.db.fasta.pepdigest",db=DBS),
 
 rule STAR:
-    #input: l1r1="/data/kentsis/RNAseq/K0562/FCH9EFLADXX-HUMbghEAACRAAPEI-225_L1_1.fq.gz", \
-#	   l1r2="/data/kentsis/RNAseq/K0562/FCH9EFLADXX-HUMbghEAACRAAPEI-225_L1_2.fq.gz", \
-#           l2r1="/data/kentsis/RNAseq/K0562/FCH9EFLADXX-HUMbghEAACRAAPEI-225_L2_1.fq.gz", \
-#	   l2r2="/data/kentsis/RNAseq/K0562/FCH9EFLADXX-HUMbghEAACRAAPEI-225_L2_2.fq.gz"
     input: expand(RNASEQ_DIR+"/"+RNASEQ_SAMPLE+"_L{lane}_{{run}}.fq.gz",lane=RNASEQ_LANES)
     output: "out/rnaseq_runs/run{run}.Aligned.sortedByCoord.out.bam", "out/rnaseq_runs/run{run}.Chimeric.out.junction"
     benchmark: "out/benchmarks/{run}.STARalign.txt"
@@ -93,10 +82,6 @@ rule STAR:
         --chimJunctionOverhangMin 15 \
         --alignMatesGapMax 200000 \
         --alignIntronMax 200000"
-
-
-#--readFilesIn {input.l1r1},{input.l2r1},{input.l1r2},{input.l2r2} \
-
 
 rule BuildBamIndex:
     input: "out/rnaseq_runs/run{run}.Aligned.sortedByCoord.out.bam"
@@ -132,7 +117,6 @@ rule merge:
             J="merge"
     shell: "stringtie \
             --merge \
-            -G {REF_GTF} \
 	    -o {output} \
             -p {params.n} \
             -c 0 \
@@ -140,15 +124,6 @@ rule merge:
             -f .1 \
             -i \
 	    {input}"        
-    #shell: "stringtie \
-    #        --merge \
-    #        -o {output} \
-    #        -p {params.n} \
-    #        -c 0 \
-    #        -t 1 \
-    #        -f .1 \
-    #        -i \
-    #        {input}"        
 
 rule UCSC:
     input: "out/all-merge/merged.gtf"
@@ -207,7 +182,6 @@ rule PatchRefGenome:
 	    o="out/logs/patch_ref.out", eo="out/logs/patch_ref.err", \
 	    J="patch_ref"
     shell: "source activate g2gtools; g2gtools patch -i {input.ref} -s {VCF_INDIVIDUAL} -v {input.snps_gz} -o {output}; cat '{input.ref}.fai' | grep 'chr' > '{output}.fai'"
-    #shell: "source activate g2gtools; g2gtools patch -i {input.ref} -s {VCF_INDIVIDUAL} -v {input.snps_gz} -o {output}; mv '{output}.fai' '{output}_allcontigs.fai'; cat '{output}_allcontigs.fai' | grep 'chr' > '{output}.fai'"
 
 rule CreateSampleRef:
     input: patched="out/custom_ref/snps_patched.fa",chain="out/custom_ref/REF-to-"+VCF_INDIVIDUAL+".chain"
@@ -215,7 +189,7 @@ rule CreateSampleRef:
     params: n="4", R="'span[hosts=1] rusage[mem=16]'", \
 	    o="out/logs/create_sample_ref.out", eo="out/logs/create_sample_ref.err", \
 	    J="create_sample_ref"
-    shell: "source activate g2gtools; g2gtools transform -i {input.patched} -c {input.chain} -o {output}; cp '{input.patched}.fai' '{output}.fai'"
+    shell: "source activate g2gtools; g2gtools transform -i {input.patched} -c {input.chain} -o {output}" #; cp '{input.patched}.fai' '{output}.fai'"
 
 rule CreateSampleGTF:
     input: custom_ref="out/custom_ref/sampleRef.fa", gtf="out/all-merge/merged-UCSC.gtf", chain="out/custom_ref/REF-to-" + VCF_INDIVIDUAL + ".chain"
@@ -264,27 +238,17 @@ rule blastp:
     input: "out/all-merge/{SAMPLE}.transcripts.fasta.transdecoder_dir/longest_orfs.pep"
     output: "out/all-merge/{SAMPLE}.blastp.outfmt6"
     benchmark: "out/benchmarks/{SAMPLE}.blastp.json"
-    params: n="36", R="'span[hosts=1] rusage[mem=4]'", J="blastp_{SAMPLE}", \
-	    o="out/logs/{SAMPLE}.blastp.out", eo="out/logs/{SAMPLE}.blastp.err"
+    params: n="36", R="'span[hosts=1] rusage[mem=4]'", J="blastp", \
+	    o="out/logs/blastp.out", eo="out/logs/blastp.err"
     shell: "blastp \
             -num_threads {params.n} \
             -query {input} \
             -db {UNIPROT} \
             -max_target_seqs 1 \
             -outfmt 6 \
-            -evalue 10 \
+            -evalue 1e-5 \
             > {output}"
     
-
-    #shell: "blastp \
-    #        -num_threads {params.n} \
-    #        -query {input} \
-    #        -db {UNIPROT} \
-    #        -max_target_seqs 1 \
-    #        -outfmt 6 \
-    #        -evalue 1e-5 \
-    #        > {output}"
-
 rule Predict:
     input: orfs="out/all-merge/{SAMPLE}.transcripts.fasta.transdecoder_dir/longest_orfs.pep",
         fasta="out/all-merge/{SAMPLE}.transcripts.fasta",
@@ -296,10 +260,10 @@ rule Predict:
 	    o="out/logs/{SAMPLE}.Predict.out", eo="out/logs/{SAMPLE}.Predict.err"
     shell: "cd {WD}/out/all-merge; {TD_DIR}/TransDecoder.Predict \
         -t {wildcards.SAMPLE}.transcripts.fasta \
-        --single_best_orf \
         --cpu {params.n} \
-        --retain_blastp_hits {wildcards.SAMPLE}.blastp.outfmt6"
-
+	--single_best_orf \
+	--retain_blastp_hits {wildcards.SAMPLE}.blastp.outfmt6"
+    
 rule gtf_to_alignment_gff3:
     input: "out/all-merge/{SAMPLE}.transcripts.gtf"
     output: "out/all-merge/{SAMPLE}.transcripts.gff3"
@@ -410,6 +374,8 @@ rule PGx_index:
 DB_PATTERN = "\(= \).*\(.fasta\)"
 EXT_PATTERN = "\(= \).*\(pepXML\)"
 
+snakemake.utils.makedirs('out/logs/fragger')
+
 rule MSFragger:
     #input: spectra=expand('{spectra_sample}',spectra_sample=SPECTRA_SAMPLES),\
     input: spectra=MS_RELATIVE_DIR+'/{ms_sample}{run}.mzXML', \
@@ -418,7 +384,7 @@ rule MSFragger:
     output: MS_RELATIVE_DIR+'/{ms_sample}{run}.{SAMPLE}.db.pepXML'
     benchmark: 'out/benchmarks/{SAMPLE}.MSFragger.txt'
     params: n="16", R="'span[hosts=1] rusage[mem=4]'", J="msfrag_{ms_sample}{run}_{SAMPLE}", \
-	o="out/logs/{SAMPLE}.MSFragger.out", eo="out/logs/{SAMPLE}.MSFragger.err"
+	o="out/logs/fragger/{ms_sample}{run}.out", eo="out/logs/{ms_sample}{run}.err"
     shell: "cd {MSFRAG}; \
             cat {input.fragger_params} | sed '1s@{DB_PATTERN}@\\1{WD}/{input.proteome_db}@' \
 	       | sed '34s@{EXT_PATTERN}@\\1{wildcards.SAMPLE}\.db\.\\2@' > temp.params.{wildcards.SAMPLE}; \
