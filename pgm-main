@@ -1,6 +1,6 @@
 import glob,os,subprocess
 
-SAMPLES= "s_OA_amlcl_003_CL_no_refannotation".split() # should only ever list 1 sample
+SAMPLES= "s_OA_amlcl_003_CL_with_reftrack".split() # should only ever list 1 sample
 
 WD="/data/kentsis/testing_scratchpad/" + SAMPLES[0]
 workdir: WD
@@ -10,6 +10,10 @@ VCF_INDIVIDUAL = subprocess.check_output(['bcftools','query','-l',SAMPLE_VCF]).d
 
 REF_FASTA='/data/kentsis/indexes/GRCh38/GRCh38.genome.fa'
 REF_GTF='/data/kentsis/indexes/GRCh38/gencode.v20.annotation.gtf'
+REF_FASTA_NAME=os.path.split(config['ref'])[1].strip('.fa')
+print(REF_FASTA_NAME)
+REF_DIR=os.path.split(config['ref'])[0]
+
 
 # variables
 PY = '/home/kwokn/miniconda2/bin/python'
@@ -51,8 +55,9 @@ snakemake.utils.makedirs('out/logs')
 snakemake.utils.makedirs('out/rnaseq_runs')
 
 rule all:
-    input: expand("out/{SAMPLE}.proteome/proteome.pickle",SAMPLE=SAMPLES), \
-           expand(MS_RELATIVE_DIR+'/{ms_sample}{run}.{SAMPLE}.db.pepXML',ms_sample=MS_SAMPLES,run=MS_RUNS,SAMPLE=SAMPLES)
+    input: expand("out/{model}.proteome/proteome.pickle",model=['sample','reference'])
+	   #expand("out/{SAMPLE}.proteome/proteome.pickle",SAMPLE=SAMPLES), \
+           #expand(MS_RELATIVE_DIR+'/{ms_sample}{run}.{SAMPLE}.db.pepXML',ms_sample=MS_SAMPLES,run=MS_RUNS,SAMPLE=SAMPLES)
         #expand("out/all-merge/{db}.db.fasta.pepdigest",db=DBS),
 
 rule STAR:
@@ -110,7 +115,7 @@ snakemake.utils.makedirs('out/all-merge')
 
 rule merge:
     input: expand("out/rnaseq_runs/run{run}.stringtie.gtf",run=RNASEQ_RUNS)
-    output: "out/all-merge/merged.gtf"
+    output: "out/all-merge/stringtie.merged.gtf"
     benchmark: "out/benchmarks/merge.txt"
     params: n="12", R="'span[ptile=72] rusage[mem=4]'", \
             o="out/logs/out.merge", eo="out/logs/error.merge", \
@@ -125,16 +130,17 @@ rule merge:
             -i \
 	    {input}"        
 
+
+## both outputs for this rule are identical. done this way for the sake of semantics downstream ##
 rule UCSC:
-    input: "out/all-merge/merged.gtf"
-    output: "out/all-merge/merged-UCSC.gtf"#, reference="out/all-merge/reference-UCSC.gtf"
+    input: "out/all-merge/stringtie.merged.gtf"
+    output: sample="out/all-merge/sample-UCSC.gtf", reference="out/all-merge/reference.gtf"
     benchmark: "out/benchmarks/UCSC.txt"
     params: n="1", R="'span[hosts=1] rusage[mem=10]'", \
             o="out/logs/UCSC.out", eo="out/logs/UCSC.err", \
             J="UCSC"
-    shell: "cat {input} | grep chr > {output}"
-    #shell: "cat {REF_GTF} | grep chr > {output.reference}; \
-    #    cat {input} | grep chr > {output.merged}"
+    shell: "cat {input} | grep chr > {output.reference}; \
+            cat {input} | grep chr > {output.sample}"
 
 snakemake.utils.makedirs('out/all-merge/custom_ref')
 
@@ -185,15 +191,15 @@ rule PatchRefGenome:
 
 rule CreateSampleRef:
     input: patched="out/custom_ref/snps_patched.fa",chain="out/custom_ref/REF-to-"+VCF_INDIVIDUAL+".chain"
-    output: "out/custom_ref/sampleRef.fa"
+    output: "out/custom_ref/sample.fa"
     params: n="4", R="'span[hosts=1] rusage[mem=16]'", \
 	    o="out/logs/create_sample_ref.out", eo="out/logs/create_sample_ref.err", \
 	    J="create_sample_ref"
     shell: "source activate g2gtools; g2gtools transform -i {input.patched} -c {input.chain} -o {output}" #; cp '{input.patched}.fai' '{output}.fai'"
 
 rule CreateSampleGTF:
-    input: custom_ref="out/custom_ref/sampleRef.fa", gtf="out/all-merge/merged-UCSC.gtf", chain="out/custom_ref/REF-to-" + VCF_INDIVIDUAL + ".chain"
-    output: "out/custom_ref/sampleRef.gtf"
+    input: custom_ref="out/custom_ref/sample.fa", gtf="out/all-merge/sample-UCSC.gtf", chain="out/custom_ref/REF-to-" + VCF_INDIVIDUAL + ".chain"
+    output: "out/all-merge/sample.gtf"
     benchmark: "out/benchmarks/create_sample_gtf.txt"
     params: n="4", R="'span[hosts=1] rusage[mem=8]'", \
 	    o="out/logs/create_custom_gtf.out", eo= "out/logs/create_custom_gtf.err", \
@@ -201,45 +207,53 @@ rule CreateSampleGTF:
     shell: "source activate g2gtools; g2gtools convert -c {input.chain} -i {input.gtf} -f gtf -o {output}"
 
 rule CreateSampleDB:
-    input: "out/custom_ref/sampleRef.gtf"
-    output: "out/custom_ref/sampleRef.gtf.db"
+    input: "out/all-merge/sample.gtf"
+    output: "out/all-merge/sample.gtf.db"
     benchmark: "out/benchmarks/create_sample_db.txt"
     params: n="1", R="'span[hosts=1] rusage[mem=8]'", \
 	    o="out/logs/create_sample_gtf.out", eo= "out/logs/create_sample_gtf.err", \
 	    J="create_sample_gtf"
     shell: "source activate g2gtools; g2gtools gtf2db -i {input} -o {output}"
 
-rule gtf_file_to_cDNA_seqs:
-    input: gtf="out/custom_ref/sampleRef.gtf", custom_ref="out/custom_ref/sampleRef.fa"
-    output: fasta="out/all-merge/{SAMPLE}.transcripts.fasta",
-            gtf="out/all-merge/{SAMPLE}.transcripts.gtf"
+rule TempCopyRefGenome:
+    input: REF_DIR+"/"+REF_FASTA_NAME+".fa"
+    output: fa=temp("out/custom_ref/reference.fa"),idx="out/custom_ref/reference.fa.fai"
+    params: n="1", R="'span[hosts=1] rusage[mem=8]'", \
+	    o="out/logs/copy_ref_genome.out", eo= "out/logs/copy_ref_genome.err", \
+	    J="copy_ref_genome"
+    shell: "cp {input} {WD}/out/custom_ref/reference.fa; cp {input}.fai {WD}/out/custom_ref/reference.fa.fai"
+
+rule gtf_file_to_cDNA_seqs: 
+    input: gtf="out/all-merge/{model}.gtf", ref_genome="out/custom_ref/{model}.fa"
+    output: fasta="out/all-merge/{model}.transcripts.fasta",
+            gtf="out/all-merge/{model}.transcripts.gtf"
     benchmark: "out/benchmarks/gtf_file_to_cDNA_seqs.txt"
     params: n="1", R="'span[hosts=1] rusage[mem=16]'", \
-            o="out/logs/{SAMPLE}.gtf_file_to_cDNA_seqs.out", eo="out/logs/{SAMPLE}.gtf_file_to_cDNA_seqs.err", \
-            J="gtf2cDNA_{SAMPLE}"
+            o="out/logs/{model}.gtf_file_to_cDNA_seqs.out", eo="out/logs/{model}.gtf_file_to_cDNA_seqs.err", \
+            J="gtf2cDNA_{model}"
     shell: "gffread {input.gtf} -T -o {output.gtf} \
         --no-pseudo \
         --force-exons \
         -M -Q; \
-	gffread -w {output.fasta} -g {input.custom_ref} {output.gtf}"
+	gffread -w {output.fasta} -g {input.ref_genome} {output.gtf}"
 
 rule LongOrfs:
-    input: "out/all-merge/{SAMPLE}.transcripts.fasta"#,"out/all-merge/{SAMPLE}.transcripts.fasta.idx"
-    output: "out/all-merge/{SAMPLE}.transcripts.fasta.transdecoder_dir/longest_orfs.pep"
-    benchmark: "out/benchmarks/{SAMPLE}.LongOrfs.json"
-    params: n="16", R="'span[ptile=16] rusage[mem=8]'", J="LongOrfs_{SAMPLE}", \
-	    o="out/logs/{SAMPLE}.LongOrfs.out", eo="out/logs/{SAMPLE}.LongOrfs.err"
+    input: "out/all-merge/{model}.transcripts.fasta"#,"out/all-merge/{SAMPLE}.transcripts.fasta.idx"
+    output: "out/all-merge/{model}.transcripts.fasta.transdecoder_dir/longest_orfs.pep"
+    benchmark: "out/benchmarks/{model}.LongOrfs.json"
+    params: n="16", R="'span[ptile=16] rusage[mem=8]'", J="LongOrfs_{model}", \
+	    o="out/logs/{model}.LongOrfs.out", eo="out/logs/{model}.LongOrfs.err"
     shell: "cd {WD}/out/all-merge; \
             TransDecoder.LongOrfs \
-	    -t {wildcards.SAMPLE}.transcripts.fasta \
+	    -t {wildcards.model}.transcripts.fasta \
             -p 0"
 
 rule blastp:
-    input: "out/all-merge/{SAMPLE}.transcripts.fasta.transdecoder_dir/longest_orfs.pep"
-    output: "out/all-merge/{SAMPLE}.blastp.outfmt6"
-    benchmark: "out/benchmarks/{SAMPLE}.blastp.json"
+    input: "out/all-merge/{model}.transcripts.fasta.transdecoder_dir/longest_orfs.pep"
+    output: "out/all-merge/{model}.blastp.outfmt6"
+    benchmark: "out/benchmarks/{model}.blastp.json"
     params: n="36", R="'span[hosts=1] rusage[mem=4]'", J="blastp", \
-	    o="out/logs/blastp.out", eo="out/logs/blastp.err"
+	    o="out/logs/{model}.blastp.out", eo="out/logs/{model}.blastp.err"
     shell: "blastp \
             -num_threads {params.n} \
             -query {input} \
@@ -250,61 +264,61 @@ rule blastp:
             > {output}"
     
 rule Predict:
-    input: orfs="out/all-merge/{SAMPLE}.transcripts.fasta.transdecoder_dir/longest_orfs.pep",
-        fasta="out/all-merge/{SAMPLE}.transcripts.fasta",
-        blastp="out/all-merge/{SAMPLE}.blastp.outfmt6"
-    output: "out/all-merge/{SAMPLE}.transcripts.fasta.transdecoder.pep",
-        gff3="out/all-merge/{SAMPLE}.transcripts.fasta.transdecoder.gff3"
-    benchmark: "out/benchmarks/{SAMPLE}.Predict.json"
-    params: n="36", R="'span[hosts=1] rusage[mem=4]'", J="Predict_{SAMPLE}", \
-	    o="out/logs/{SAMPLE}.Predict.out", eo="out/logs/{SAMPLE}.Predict.err"
+    input: orfs="out/all-merge/{model}.transcripts.fasta.transdecoder_dir/longest_orfs.pep",
+        fasta="out/all-merge/{model}.transcripts.fasta",
+        blastp="out/all-merge/{model}.blastp.outfmt6"
+    output: "out/all-merge/{model}.transcripts.fasta.transdecoder.pep",
+        gff3="out/all-merge/{model}.transcripts.fasta.transdecoder.gff3"
+    benchmark: "out/benchmarks/{model}.Predict.json"
+    params: n="36", R="'span[hosts=1] rusage[mem=4]'", J="Predict_{model}", \
+	    o="out/logs/{model}.Predict.out", eo="out/logs/{model}.Predict.err"
     shell: "cd {WD}/out/all-merge; {TD_DIR}/TransDecoder.Predict \
-        -t {wildcards.SAMPLE}.transcripts.fasta \
+        -t {wildcards.model}.transcripts.fasta \
         --cpu {params.n} \
 	--single_best_orf \
-	--retain_blastp_hits {wildcards.SAMPLE}.blastp.outfmt6"
+	--retain_blastp_hits {wildcards.model}.blastp.outfmt6"
     
 rule gtf_to_alignment_gff3:
-    input: "out/all-merge/{SAMPLE}.transcripts.gtf"
-    output: "out/all-merge/{SAMPLE}.transcripts.gff3"
-    benchmark: "out/benchmarks/{SAMPLE}.gtf_to_alignment_gff3.txt"
-    params: n="8", R="'span[ptile=8] rusage[mem=16]'", J="gtf2align_gff3_{SAMPLE}", \
-	    o="out/logs/{SAMPLE}.gtf_to_alignment_gff3.out", eo="out/logs/{SAMPLE}.gtf_to_alignment_gff3.err"
+    input: "out/all-merge/{model}.transcripts.gtf"
+    output: "out/all-merge/{model}.transcripts.gff3"
+    benchmark: "out/benchmarks/{model}.gtf_to_alignment_gff3.txt"
+    params: n="8", R="'span[ptile=8] rusage[mem=16]'", J="gtf2align_gff3_{model}", \
+	    o="out/logs/{model}.gtf_to_alignment_gff3.out", eo="out/logs/{model}.gtf_to_alignment_gff3.err"
     shell: "cufflinks_gtf_to_alignment_gff3.pl {input} > {output}"
 
 rule cdna_alignment_orf_to_genome_orf:
-    input: gff3="out/all-merge/{SAMPLE}.transcripts.gff3",
-        fasta_td="out/all-merge/{SAMPLE}.transcripts.fasta",
-        gff3_td="out/all-merge/{SAMPLE}.transcripts.fasta.transdecoder.gff3"
-    output: "out/all-merge/{SAMPLE}.transcripts.genome.gff3"
-    benchmark: "out/benchmarks/{SAMPLE}.cdna_alignment_orf_to_genome_orf.txt"
-    params: n="8", R="'span[ptile=8] rusage[mem=16]'", J="cdna_orf2genome_orf_{SAMPLE}", \
-	    o="out/logs/{SAMPLE}.cdna_alignment_orf_to_genome_orf.out", eo="out/logs/{SAMPLE}.cdna_alignment_orf_to_genome_orf.err"
+    input: gff3="out/all-merge/{model}.transcripts.gff3",
+        fasta_td="out/all-merge/{model}.transcripts.fasta",
+        gff3_td="out/all-merge/{model}.transcripts.fasta.transdecoder.gff3"
+    output: "out/all-merge/{model}.transcripts.genome.gff3"
+    benchmark: "out/benchmarks/{model}.cdna_alignment_orf_to_genome_orf.txt"
+    params: n="8", R="'span[ptile=8] rusage[mem=16]'", J="cdna_orf2genome_orf_{model}", \
+	    o="out/logs/{model}.cdna_alignment_orf_to_genome_orf.out", eo="out/logs/{model}.cdna_alignment_orf_to_genome_orf.err"
     shell: "cdna_alignment_orf_to_genome_orf.pl {input.gff3_td} {input.gff3} {input.fasta_td} > {output}"
 
 rule gff3_file_to_bed:
-    input: "out/all-merge/{SAMPLE}.transcripts.genome.gff3"
-    output: "out/{SAMPLE}.proteome/proteome.bed"
-    #output: "out/all-merge/{SAMPLE}.proteome.bed"
-    benchmark: "out/benchmarks/{SAMPLE}.gff3_file_to_bed.txt"
-    params: n="8", R="'span[ptile=8] rusage[mem=16]'", err="~/error/error.gff3_file_to_bed", J="gff2bed_{SAMPLE}", \
-	    o="out/logs/{SAMPLE}.gff3_file_to_bed.out", eo="out/logs/{SAMPLE}.gff3_file_to_bed.err"
+    input: "out/all-merge/{model}.transcripts.genome.gff3"
+    output: "out/{model}.proteome/proteome.bed"
+    #output: "out/all-merge/{model}.proteome.bed"
+    benchmark: "out/benchmarks/{model}.gff3_file_to_bed.txt"
+    params: n="8", R="'span[ptile=8] rusage[mem=16]'", err="~/error/error.gff3_file_to_bed", J="gff2bed_{model}", \
+	    o="out/logs/{model}.gff3_file_to_bed.out", eo="out/logs/{model}.gff3_file_to_bed.err"
     shell: "cat {input} | grep -P \"\tCDS\t\" | gffread --force-exons - -o- | gff3_file_to_bed.pl /dev/stdin | tail -n +2 > {output}"#"| awk '{{ print $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12; OFS=\"\t\" }}' > {output}"
 
 rule gff3_file_to_proteins:
-    input: gff3="out/all-merge/{SAMPLE}.transcripts.genome.gff3", custom_ref="out/custom_ref/sampleRef.fa"
-    output: "out/{SAMPLE}.proteome/proteome.fasta"
-    benchmark: "out/benchmarks/{SAMPLE}.gff3_file_to_proteins.txt"
-    params: n="8", R="'span[ptile=8] rusage[mem=16]'", err="~/error/error.gff3_file_to_proteins", J="gff2proteins_{SAMPLE}", \
-	    o="out/logs/{SAMPLE}.gff3_file_to_proteins.out", eo="out/logs/{SAMPLE}.gff3_file_to_proteins.err"
-    shell: "cat {input.gff3} | grep -P \"\tCDS\t\" | gffread --force-exons - -o- | {TD_DIR}/util/gff3_file_to_proteins_jtp.pl /dev/stdin {input.custom_ref} | egrep -o '^[^*]+' > {output}"
+    input: gff3="out/all-merge/{model}.transcripts.genome.gff3", ref="out/custom_ref/{model}.fa"
+    output: "out/{model}.proteome/proteome.fasta"
+    benchmark: "out/benchmarks/{model}.gff3_file_to_proteins.txt"
+    params: n="8", R="'span[ptile=8] rusage[mem=16]'", err="~/error/error.gff3_file_to_proteins", J="gff2proteins_{model}", \
+	    o="out/logs/{model}.gff3_file_to_proteins.out", eo="out/logs/{model}.gff3_file_to_proteins.err"
+    shell: "cat {input.gff3} | grep -P \"\tCDS\t\" | gffread --force-exons - -o- | {TD_DIR}/util/gff3_file_to_proteins_jtp.pl /dev/stdin {input.ref} | egrep -o '^[^*]+' > {output}"
 
 rule reorderFASTA:
-    input: "out/{SAMPLE}.proteome/proteome.fasta"
-    output: "out/{SAMPLE}.proteome/proteome.unique.fasta"
-    benchmark: "out/benchmarks/{SAMPLE}.reorderFASTA.txt"
-    params: n="4", R="'span[hosts=1] rusage[mem=4]'", J="reorderFASTA_{SAMPLE}", \
-	    o="out/logs/{SAMPLE}.reorderFASTA.out", eo="out/logs/{SAMPLE}.reorderFASTA.err"
+    input: "out/{model}.proteome/proteome.fasta"
+    output: "out/{model}.proteome/proteome.unique.fasta"
+    benchmark: "out/benchmarks/{model}.reorderFASTA.txt"
+    params: n="4", R="'span[hosts=1] rusage[mem=4]'", J="reorderFASTA_{model}", \
+	    o="out/logs/{model}.reorderFASTA.out", eo="out/logs/{model}.reorderFASTA.err"
     shell: "{RSCRIPT} {SCRIPTS}/reorderFASTA.R {input} {output}"
 
 # rule getfasta:
@@ -325,14 +339,14 @@ rule reorderFASTA:
 
 
 rule PGx_index:
-    input: fasta="out/{SAMPLE}.proteome/proteome.fasta",
-        bed="out/{SAMPLE}.proteome/proteome.bed"
-    output: "out/{SAMPLE}.proteome/proteome.pickle"
-    benchmark: "out/benchmarks/{SAMPLE}.PGx_index.txt"
-    params: n="4", R="'span[hosts=1] rusage[mem=4]'", J="PGx_index_{SAMPLE}", \
-	    o="out/logs/{SAMPLE}.PGx_index.out", eo="out/logs/{SAMPLE}.PGx_index.err"
+    input: fasta="out/{model}.proteome/proteome.fasta",
+        bed="out/{model}.proteome/proteome.bed"
+    output: "out/{model}.proteome/proteome.pickle"
+    benchmark: "out/benchmarks/{model}.PGx_index.txt"
+    params: n="4", R="'span[hosts=1] rusage[mem=4]'", J="PGx_index_{model}", \
+	    o="out/logs/{model}.PGx_index.out", eo="out/logs/{model}.PGx_index.err"
     shell: "{PY} {PGX}/pgx_index.py \
-        out/{wildcards.SAMPLE}.proteome/"
+        out/{wildcards.model}.proteome/"
 
 ### NEED SEPARATE PEPTIDES QUERY FILE FOR PGx_query AND PGx_bed ###
 
