@@ -21,7 +21,7 @@ ProteomeGenerator depends on multiple free and open source tools. The following 
 
 ## Configuration
 
-ProteomeGenerator is configured by setting a series of variables to the location of each of the required tools above
+ProteomeGenerator is configured by setting a series of variables to the explicit location of each of the required tools above in order to avoid conflicting versions that may be available in the path.
 
 ## Running ProteomeGenerator
 
