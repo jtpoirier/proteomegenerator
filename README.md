@@ -1,11 +1,11 @@
-#ProteomeGenerator
+# ProteomeGenerator
 
-##Introduction
+## Introduction
 
 ProteomeGenerator is an open, modular, and scalable framework for reference guided and de novo proteogenomic database generation written in the Snakemake workflow management system. The workflow consists of a base file that defines the project details and input samples, and pgm, a modular set of rules sourced as an include.
 
 
-##Requirements
+## Requirements
 
 ProteomeGenerator depends on multiple free and open source tools. The following software and all dependencies must be installed:
 
@@ -19,6 +19,6 @@ ProteomeGenerator depends on multiple free and open source tools. The following 
 * [gffread](https://github.com/gpertea/gffread)
 * [BLAST](https://blast.ncbi.nlm.nih.gov/Blast.cgi)
 
-##Configuration
+## Configuration
 
-##Running ProteomeGenerator
+## Running ProteomeGenerator
