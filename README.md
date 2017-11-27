@@ -21,4 +21,13 @@ ProteomeGenerator depends on multiple free and open source tools. The following 
 
 ## Configuration
 
+ProteomeGenerator is configured by setting a series of variables to the location of each of the required tools above
+
 ## Running ProteomeGenerator
+
+ProteomeGenerator can be run locally or in a variety of cluster environments. The below example demonstrates how to run ProteomeGenerator on an LSF cluster head node from within screen in case the connection to the head node is lost.
+
+```bash
+screen -S pg
+snakemake --snakefile Snakefile-K0562 --cluster "bsub -J {params.J} -n {params.n} -R {params.R} -W 4:00 -o {params.o} -eo {params.eo}" --jn {rulename}.{jobid}.sj -j 50 -k --latency-wait 60 --ri
+```
