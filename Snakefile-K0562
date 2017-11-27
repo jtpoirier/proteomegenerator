@@ -1,0 +1,60 @@
+shell.executable("/bin/bash")
+shell.prefix("source ~/.bashrc; source ~/.bash_profile; ")
+
+
+# variables
+WD = "/data/poirier/AK/K0562_testing"
+workdir: WD
+PROJECT = "/home/poirierj/projects/proteomegenerator"
+REF = '/data/poirier/indexes/GRCh38/STAR'
+DICT = '/data/poirier/indexes/GRCh38/BWAIndex/GRCh38.genome.dict'
+STAR = '/data/poirier/bin/STAR/bin/Linux_x86_64_static/STAR' # 2.5.2a
+
+K0562 = 'FCH9EFLADXX-HUMbghEAACRAAPEI-225'.split()
+
+SAMPLES = K0562
+
+MODELS = 'merged reference'.split()
+
+
+rule all:
+    input: 
+        expand("out/all-merge/{model}/proteome.unique.fasta",model=MODELS)
+
+
+rule STAR:
+    input: l1r1="/data/kentsis/RNAseq/K0562/{sample}_L1_1.fq.gz", l2r1="/data/kentsis/RNAseq/K0562/{sample}_L2_1.fq.gz", l1r2="/data/kentsis/RNAseq/K0562/{sample}_L1_2.fq.gz", l2r2="/data/kentsis/RNAseq/K0562/{sample}_L2_2.fq.gz"
+    output: "out/{sample}.Aligned.sortedByCoord.out.bam"
+    benchmark: "out/benchmarks/{sample}.align.json"
+    log: "out/logs/align.txt"
+    params: n="12", R="'span[hosts=1] rusage[mem=20]'", J="align", o="out/logs/align.out", eo="out/logs/align.err"
+    shell: "{STAR} \
+        --genomeDir {REF} \
+        --readFilesIn {input.l1r1},{input.l2r1} {input.l1r2},{input.l2r2} \
+        --outFileNamePrefix out/{wildcards.sample}. \
+        --outSAMattributes NH HI XS \
+        --outSAMattrRGline ID:{wildcards.sample} LB:1 PL:illumina PU:1 SM:{wildcards.sample} \
+        --runThreadN {params.n} \
+        --outSAMtype BAM SortedByCoordinate \
+        --clip3pAdapterSeq AGATCGGAAGAG \
+        --readFilesCommand zcat \
+        --twopassMode Basic \
+        --outSAMstrandField intronMotif \
+        --outFilterIntronMotifs None \
+        --outReadsUnmapped None \
+        --chimSegmentMin 15 \
+        --chimJunctionOverhangMin 15 \
+        --alignMatesGapMax 1000000 \
+        --alignIntronMax 1000000 \
+        --outFilterType Normal \
+        --alignSJDBoverhangMin 1 \
+        --alignSJoverhangMin 8 \
+        --outFilterMismatchNmax 1 \
+        --outSJfilterReads Unique \
+        --outFilterMultimapNmax 10 2> {log}"
+        
+include: "pgm"
+
+
+#snakemake --snakefile Snakefile-K0562 --cluster "bsub -J {params.J} -n {params.n} -R {params.R} -W 4:00 -o {params.o} -eo {params.eo}" --jn {rulename}.{jobid}.sj -j 50 -k --latency-wait 60 --ri -n
+# --rulegraph | dot -Tpdf > dag.pdf
