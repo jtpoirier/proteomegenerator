@@ -1,22 +1,3 @@
-# variables
-PICARD = '/data/poirier/bin/picard-tools-1.134/picard.jar' # 1.134
-BEDTOOLS = '/data/poirier/bin/miniconda3/bin/bedtools' # 2.26.0
-SAMTOOLS = '/data/poirier/bin/samtools-1.3/samtools' # 1.3
-STRINGTIE='/data/poirier/bin/stringtie-1.3.3b.Linux_x86_64/stringtie' # 1.3.3b
-GTF='/data/poirier/indexes/GRCh38/gencode.v20.annotation.gtf'
-FASTA='/data/poirier/indexes/GRCh38/GRCh38.genome.fa'
-TD="/data/poirier/bin/TransDecoder" # 2.1
-GFFREAD="/data/poirier/bin/gffread/gffread-0.9.8.Linux_x86_64" # 0.9.8
-BLAST="/data/poirier/bin/ncbi-blast-2.2.31+/bin" # 2.2.31
-UNIPROT="/data/poirier/indexes/uniprot/UP000005640.fasta"
-TMP = '/scratch/poirierj'
-
-
-snakemake.utils.makedirs('/scratch/poirierj')
-snakemake.utils.makedirs('out/benchmarks')
-snakemake.utils.makedirs('out/all-merge')
-
-
 rule filter:
     input: bam="out/{sample}.Aligned.sortedByCoord.out.bam"
     output: "out/{sample}.Aligned.trimmed.out.bam"
