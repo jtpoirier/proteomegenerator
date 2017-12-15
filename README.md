@@ -12,7 +12,6 @@ ProteomeGenerator depends on multiple free and open source tools. The following 
 * [Snakemake](https://snakemake.readthedocs.io/en/stable/)
 * [STAR](https://github.com/alexdobin/STAR)
 * [Picard](http://broadinstitute.github.io/picard/)
-* [bedtools](http://bedtools.readthedocs.io/en/latest/)
 * [samtools](http://samtools.sourceforge.net)
 * [StringTie](https://ccb.jhu.edu/software/stringtie/)
 * [TransDecoder](https://github.com/TransDecoder/TransDecoder/wiki)
