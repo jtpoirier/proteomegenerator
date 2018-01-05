@@ -90,7 +90,7 @@ rule LongOrfs:
     shell: "cd out/all-merge ; \
         {TD}/TransDecoder.LongOrfs \
         -t {wildcards.model}.transcripts.fasta \
-        -p 0 2> {log}"
+        -m 100 2> {log}"
 
 
 rule makeblastdb:
@@ -129,11 +129,10 @@ rule Predict:
         gff3="out/all-merge/{model}.transcripts.fasta.transdecoder.gff3"
     benchmark: "out/benchmarks/{model}.Predict.json"
     log: "../logs/Predict.txt"
-    params: n="12", R="'span[hosts=1] rusage[mem=18]'", J="Predict", o="out/logs/Predict.out", eo="out/logs/Predict.err"
+    params: n="1", R="'span[hosts=1] rusage[mem=18]'", J="Predict", o="out/logs/Predict.out", eo="out/logs/Predict.err"
     shell: "cd out/all-merge; {TD}/TransDecoder.Predict \
         -t {wildcards.model}.transcripts.fasta \
-        --single_best_orf \
-        --cpu {params.n} \
+        --single_best_only \
         --retain_blastp_hits {wildcards.model}.blastp.outfmt6 2> {log}"
 
 
@@ -172,7 +171,7 @@ rule gff3_file_to_proteins:
     benchmark: "out/benchmarks/{model}.gff3_file_to_proteins.txt"
     log: "out/logs/gff3_file_to_proteins.txt"
     params: n="1", R="'span[hosts=1] rusage[mem=10]'", J="gff3_file_to_proteins", o="out/logs/gff3_file_to_proteins.out", eo="out/logs/gff3_file_to_proteins.err"
-    shell: "cat {input} | grep -P \"\tCDS\t\" | {GFFREAD}/gffread --force-exons - -o- | {PROJECT}/util/gff3_file_to_proteins_jtp.pl /dev/stdin {FASTA} | egrep -o '^[^*]+' > {output} 2> {log}"
+    shell: "cat {input} | grep -P \"\tCDS\t\" | {GFFREAD}/gffread --force-exons - -o- | {PROJECT}/util/gff3_file_to_proteins.pl /dev/stdin {FASTA} | egrep -o '^[^*]+' > {output} 2> {log}"
 
 
 rule reorderFASTA:
