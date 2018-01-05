@@ -93,16 +93,28 @@ rule LongOrfs:
         -p 0 2> {log}"
 
 
+rule makeblastdb:
+    input: UNIPROT
+    output: [UNIPROT + EXT for EXT in ['.pin' '.phr' '.psq']]
+    benchmark: "out/benchmarks/makeblastdb.json"
+    log: "out/logs/makeblastdb.txt"
+    params: n="1", R="'span[hosts=1] rusage[mem=4]'", J="makeblastdb", o="out/logs/makeblastdb.out", eo="out/logs/makeblastdb.err"
+    shell: "{BLAST}/makeblastdb \
+        -in {UNIPROT} \
+        -dbtype prot 2> {log}"
+
+
 rule blastp:
-    input: "out/all-merge/{model}.transcripts.fasta.transdecoder_dir/longest_orfs.pep"
+    input: pep="out/all-merge/{model}.transcripts.fasta.transdecoder_dir/longest_orfs.pep",
+        blastdb=[UNIPROT + EXT for EXT in ['.pin' '.phr' '.psq']]
     output: "out/all-merge/{model}.blastp.outfmt6"
     benchmark: "out/benchmarks/{model}.blastp.json"
     log: "out/logs/blastp.txt"
     params: n="24", R="'span[hosts=1] rusage[mem=4]'", J="blastp", o="out/logs/blastp.out", eo="out/logs/blastp.err"
     shell: "{BLAST}/blastp \
         -num_threads {params.n} \
-        -query {input}  \
-        -db {UNIPROT}  \
+        -query {input.pep}  \
+        -db {input.blastdb}  \
         -max_target_seqs 1 \
         -outfmt 6 \
         -evalue 1e-5 \
