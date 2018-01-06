@@ -5,7 +5,6 @@ shell.prefix("source ~/.bashrc; source ~/.bash_profile; ")
 # variables
 WD = "/data/poirier/AK/K0562_testing"
 workdir: WD
-PROJECT = "/home/poirierj/projects/proteomegenerator"
 FASTA='/data/poirier/indexes/GRCh38/GRCh38.genome.fa'
 DICT = '/data/poirier/indexes/GRCh38/BWAIndex/GRCh38.genome.dict'
 GTF='/data/poirier/indexes/GRCh38/gencode.v20.annotation.gtf'
