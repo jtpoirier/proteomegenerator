@@ -26,6 +26,8 @@ The Bioconductor suite as well as the Biostrings R package are also required.
 * [Bioconductor](https://bioconductor.org/)
 * [Biostrings](https://bioconductor.org/packages/release/bioc/html/Biostrings.html)
 
+Optionally, many of the outputs from ProteomeGenerator may be viewed using the [Integrative Genomics Viewer](http://software.broadinstitute.org/software/igv/).
+
 ### Installing ProteomeGenerator
 
 ProteomeGenerator is installed to your preferred computing environment using git clone:
@@ -67,3 +69,7 @@ snakemake --snakefile Snakefile-K0562 --cluster \
 "bsub -J {params.J} -n {params.n} -R {params.R} -W 4:00 -o {params.o} -eo {params.eo}" \
 --jn {rulename}.{jobid}.sj -j 50 -k --latency-wait 60 --ri
 ```
+
+## Expected Output
+
+ProteomeGenerator will generate an indexed bam filed of mapped and filtered reads of the format {sample}.Aligned.trimmed.out.bam, a sample-specific GTF of the format {sample}-stringtie.gtf, and a proteogenomic database called proteome.unique.fasta. A GFF3 corresponding to each entry in the fasta database is also generated with the predicted spliced peptide sequences mapped onto genome space for easy viewing in the [Integrative Genomics Viewer](http://software.broadinstitute.org/software/igv/).
