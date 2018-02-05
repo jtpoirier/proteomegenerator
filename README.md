@@ -51,7 +51,7 @@ ProteomeGenerator requires a FASTA formated genome reference and accepts a GTF t
 
 ### Dependencies
 
-Variables pointing to the explicit paths to the above listed dependies are located in this section and must be edited by the user to reflect the intended computing environment.
+Variables pointing to the explicit paths of the above listed dependies are located in this section and must be edited by the user to reflect the intended computing environment.
 
 ### Samples
 
@@ -63,5 +63,7 @@ ProteomeGenerator can be run locally or in a variety of cluster environments. Th
 
 ```bash
 screen -S pg
-snakemake --snakefile Snakefile-K0562 --cluster "bsub -J {params.J} -n {params.n} -R {params.R} -W 4:00 -o {params.o} -eo {params.eo}" --jn {rulename}.{jobid}.sj -j 50 -k --latency-wait 60 --ri
+snakemake --snakefile Snakefile-K0562 --cluster \
+"bsub -J {params.J} -n {params.n} -R {params.R} -W 4:00 -o {params.o} -eo {params.eo}" \
+--jn {rulename}.{jobid}.sj -j 50 -k --latency-wait 60 --ri
 ```
