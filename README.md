@@ -31,7 +31,8 @@ The Bioconductor suite as well as the Biostrings R package are also required.
 ProteomeGenerator is installed to your preferred computing environment using git clone:
 
 ```bash
-git clone https://github.com/jtpoirier/proteomegenerator```
+git clone https://github.com/jtpoirier/proteomegenerator
+```
 
 
 This command downloads Snakefile-K0562, the configuraton file used in Cifani et al. as well as the required includes and accessory scripts to run ProteomeGenerator on your data set.
