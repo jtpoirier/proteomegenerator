@@ -12,7 +12,8 @@ TMP = '/scratch/poirierj'
 # References
 FASTA='/data/poirier/indexes/GRCh38/GRCh38.genome.fa'
 DICT = '/data/poirier/indexes/GRCh38/BWAIndex/GRCh38.genome.dict'
-GTF='/data/poirier/indexes/GRCh38/gencode.v20.annotation.gtf'
+# Comment out or delete the "GTF" variable to force de novo mode
+#GTF='/data/poirier/indexes/GRCh38/gencode.v20.annotation.gtf'
 INDEX = '/data/poirier/indexes/GRCh38/STAR'
 UNIPROT="/data/poirier/indexes/uniprot/UP000005640.fasta"
 
@@ -28,9 +29,20 @@ BLAST="/data/poirier/bin/ncbi-blast-2.2.31+/bin" # 2.2.31
 # Samples
 K0562 = 'FCH9EFLADXX-HUMbghEAACRAAPEI-225'.split()
 SAMPLES = K0562
-MODELS = 'merged reference'.split()
+L1R1="/data/kentsis/RNAseq/K0562/{sample}_L1_1.fq.gz"
+L2R1="/data/kentsis/RNAseq/K0562/{sample}_L2_1.fq.gz"
+L1R2="/data/kentsis/RNAseq/K0562/{sample}_L1_2.fq.gz"
+L2R2="/data/kentsis/RNAseq/K0562/{sample}_L2_2.fq.gz"
 
 ### End User Variables
+
+
+if 'GTF' in locals():
+    ruleorder: STAR_GTF > STAR_denovo
+    MODELS = 'merged reference'.split()
+else:
+    ruleorder: STAR_denovo > STAR_GTF
+    MODELS = 'merged'
 
 
 snakemake.utils.makedirs(TMP)
@@ -44,25 +56,9 @@ rule all:
 
 include: "pgm"
 
-rule index:
-    input: fasta=FASTA,
-            gtf=GTF
-    output: INDEX
-    benchmark: "out/benchmarks/index.txt"
-    log: "out/logs/index.txt"
-    params: n="12", R="'span[hosts=1] rusage[mem=15]'", J="index", o="out/logs/index.out", eo="out/logs/index.err"
-    shell: "mkdir {output} ; \
-            {STAR} \
-            --runThreadN {params.n} \
-            --runMode genomeGenerate \
-            --genomeDir {output} \
-            --genomeFastaFiles {input.fasta} \
-            --sjdbGTFfile {input.gtf} \
-            --sjdbOverhang 100 2> {log}"
-
-rule STAR:
-    input: l1r1="/data/kentsis/RNAseq/K0562/{sample}_L1_1.fq.gz", l2r1="/data/kentsis/RNAseq/K0562/{sample}_L2_1.fq.gz", l1r2="/data/kentsis/RNAseq/K0562/{sample}_L1_2.fq.gz", l2r2="/data/kentsis/RNAseq/K0562/{sample}_L2_2.fq.gz", index=INDEX
-    output: "out/{sample}.Aligned.sortedByCoord.out.bam"
+rule STAR_GTF:
+    input: l1r1=L1R1, l2r1=L2R1, l1r2=L1R2, l2r2=L2R2, index=INDEX
+    output: temp("out/{sample}.Aligned.sortedByCoord.out.bam")
     benchmark: "out/benchmarks/{sample}.align.json"
     log: "out/logs/align.txt"
     params: n="12", R="'span[hosts=1] rusage[mem=20]'", J="align", o="out/logs/align.out", eo="out/logs/align.err"
@@ -89,7 +85,41 @@ rule STAR:
         --alignSJoverhangMin 8 \
         --outFilterMismatchNmax 1 \
         --outSJfilterReads Unique \
-        --outFilterMultimapNmax 10 2> {log}"
+        --outFilterMultimapNmax 10 \
+        --sjdbOverhang 100 \
+        --sjdbGTFfile {GTF} \2 > {log}"
+
+rule STAR_denovo:
+    input: l1r1=L1R1, l2r1=L2R1, l1r2=L1R2, l2r2=L2R2, index=INDEX
+    output: temp("out/{sample}.Aligned.sortedByCoord.out.bam")
+    benchmark: "out/benchmarks/{sample}.align.json"
+    log: "out/logs/align.txt"
+    params: n="12", R="'span[hosts=1] rusage[mem=20]'", J="align", o="out/logs/align.out", eo="out/logs/align.err"
+    shell: "{STAR} \
+        --genomeDir {input.index} \
+        --readFilesIn {input.l1r1},{input.l2r1} {input.l1r2},{input.l2r2} \
+        --outFileNamePrefix out/{wildcards.sample}. \
+        --outSAMattributes NH HI XS \
+        --outSAMattrRGline ID:{wildcards.sample} LB:1 PL:illumina PU:1 SM:{wildcards.sample} \
+        --runThreadN {params.n} \
+        --outSAMtype BAM SortedByCoordinate \
+        --clip3pAdapterSeq AGATCGGAAGAG \
+        --readFilesCommand zcat \
+        --twopassMode Basic \
+        --outSAMstrandField intronMotif \
+        --outFilterIntronMotifs None \
+        --outReadsUnmapped None \
+        --chimSegmentMin 15 \
+        --chimJunctionOverhangMin 15 \
+        --alignMatesGapMax 1000000 \
+        --alignIntronMax 1000000 \
+        --outFilterType Normal \
+        --alignSJDBoverhangMin 1 \
+        --alignSJoverhangMin 8 \
+        --outFilterMismatchNmax 1 \
+        --outSJfilterReads Unique \
+        --outFilterMultimapNmax 10 \
+        --sjdbOverhang 100 \2 > {log}"
 
 
 #snakemake --snakefile Snakefile-K0562 --cluster "bsub -J {params.J} -n {params.n} -R {params.R} -W 4:00 -o {params.o} -eo {params.eo}" --jn {rulename}.{jobid}.sj -j 50 -k --latency-wait 60 --ri -n
