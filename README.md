@@ -68,6 +68,10 @@ snakemake --snakefile Snakefile-K0562 --cluster \
 --jn {rulename}.{jobid}.sj -j 50 -k --latency-wait 60 --ri
 ```
 
-## Expected Output
+### Expected Output
 
 ProteomeGenerator will generate an indexed bam filed of mapped and filtered reads of the format {sample}.Aligned.trimmed.out.bam, a sample-specific GTF of the format {sample}-stringtie.gtf, and a proteogenomic database called proteome.unique.fasta. A GFF3 corresponding to each entry in the fasta database is also generated with the predicted spliced peptide sequences mapped onto genome space for easy viewing in the [Integrative Genomics Viewer](http://software.broadinstitute.org/software/igv/). If a reference GTF file is provided, the pipeline will generate a proteogenomic database based on these reference annotations in addition to the sample-specific database.
+
+## Citing ProteomeGenerator
+
+Please cite [https://www.biorxiv.org/content/early/2017/12/19/236844](https://www.biorxiv.org/content/early/2017/12/19/236844)

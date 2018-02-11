@@ -52,7 +52,9 @@ snakemake.utils.makedirs('out/all-merge')
 
 rule all:
     input: 
-        expand("out/all-merge/{model}/proteome.unique.fasta",model=MODELS)
+        expand("out/all-merge/{model}/proteome.unique.fasta",model=MODELS),
+        expand("out/all-merge/{model}/proteome.bed",model=MODELS)
+
 
 include: "pgm"
 
