@@ -74,8 +74,9 @@ rule STAR_index:
     output: INDEX
     benchmark: "out/benchmarks/index.txt"
     log: "out/logs/index.txt"
+    params: n="12", R="'span[hosts=1] rusage[mem=15]'", J="index", o="out/logs/index.out", eo="out/logs/index.err"
     shell: "mkdir {output} ; \
-            {STAR} \
+            {config[STAR]} \
             --runThreadN {params.n} \
             --runMode genomeGenerate \
             --genomeDir {output} \
@@ -88,7 +89,7 @@ rule STAR_GTF:
     benchmark: "out/benchmarks/{run}.align.json"
     log: "out/logs/align.txt"
     params: n="12", R="'span[hosts=1] rusage[mem=20]'", J="align", o="out/logs/align.out", eo="out/logs/align.err"
-    shell: "{STAR} \
+    shell: "{config[STAR]} \
         --genomeDir {input.index} \
         --readFilesIn {input.sample} \
         --outFileNamePrefix out/rnaseq_runs/run{wildcards.run}. \

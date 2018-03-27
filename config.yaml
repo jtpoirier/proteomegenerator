@@ -12,6 +12,8 @@
   indel: '/data/kentsis/GATK/GRCh38/Mills_and_1000G_gold_standard.indels.b38.primary_assembly.vcf'
   snp: '/data/kentsis/GATK/GRCh38/00-common_all.vcf.gz' #dbSNP build 147 common SNPs
   DoC: 20
+  
+  STAR: '/data/poirier/bin/STAR/bin/Linux_x86_64_static/STAR'
   # lines:
   #   JHU-LX22:
   #     - "JHU-LX22-p1"
@@ -54,19 +56,21 @@
       - "L008_001"
     K052:
       - "s_OA_amlcl_003_CL_bc03_Proj_5932_L000"
+  
+  sample: 'RPE-GFP-PGBD5'  
   units: 
     L005_001: 
-      - "/data/kentsis/WGS/RPE-GPP-PGBD5/RPE-GFP-PGBD5-xeno_ATTCAGAA_HGFVTCCXX_L005_001.R1.fastq.gz"
-      - "/data/kentsis/WGS/RPE-GPP-PGBD5/RPE-GFP-PGBD5-xeno_ATTCAGAA_HGFVTCCXX_L005_001.R2.fastq.gz"
+      - "/data/kentsis/WGS/RPE-GFP-PGBD5/RPE-GFP-PGBD5-xeno_ATTCAGAA_HGFVTCCXX_L005_001.R1.fastq.gz"
+      - "/data/kentsis/WGS/RPE-GFP-PGBD5/RPE-GFP-PGBD5-xeno_ATTCAGAA_HGFVTCCXX_L005_001.R2.fastq.gz"
     L006_001: 
-      - "/data/kentsis/WGS/RPE-GPP-PGBD5/RPE-GFP-PGBD5-xeno_ATTCAGAA_HGFVTCCXX_L006_001.R1.fastq.gz"
-      - "/data/kentsis/WGS/RPE-GPP-PGBD5/RPE-GFP-PGBD5-xeno_ATTCAGAA_HGFVTCCXX_L006_001.R2.fastq.gz"
+      - "/data/kentsis/WGS/RPE-GFP-PGBD5/RPE-GFP-PGBD5-xeno_ATTCAGAA_HGFVTCCXX_L006_001.R1.fastq.gz"
+      - "/data/kentsis/WGS/RPE-GFP-PGBD5/RPE-GFP-PGBD5-xeno_ATTCAGAA_HGFVTCCXX_L006_001.R2.fastq.gz"
     L007_001: 
-      - "/data/kentsis/WGS/RPE-GPP-PGBD5/RPE-GFP-PGBD5-xeno_ATTCAGAA_HGFVTCCXX_L007_001.R1.fastq.gz"
-      - "/data/kentsis/WGS/RPE-GPP-PGBD5/RPE-GFP-PGBD5-xeno_ATTCAGAA_HGFVTCCXX_L007_001.R2.fastq.gz"
+      - "/data/kentsis/WGS/RPE-GFP-PGBD5/RPE-GFP-PGBD5-xeno_ATTCAGAA_HGFVTCCXX_L007_001.R1.fastq.gz"
+      - "/data/kentsis/WGS/RPE-GFP-PGBD5/RPE-GFP-PGBD5-xeno_ATTCAGAA_HGFVTCCXX_L007_001.R2.fastq.gz"
     L008_001: 
-      - "/data/kentsis/WGS/RPE-GPP-PGBD5/RPE-GFP-PGBD5-xeno_ATTCAGAA_HGFVTCCXX_L008_001.R1.fastq.gz"
-      - "/data/kentsis/WGS/RPE-GPP-PGBD5/RPE-GFP-PGBD5-xeno_ATTCAGAA_HGFVTCCXX_L008_001.R2.fastq.gz"
+      - "/data/kentsis/WGS/RPE-GFP-PGBD5/RPE-GFP-PGBD5-xeno_ATTCAGAA_HGFVTCCXX_L008_001.R1.fastq.gz"
+      - "/data/kentsis/WGS/RPE-GFP-PGBD5/RPE-GFP-PGBD5-xeno_ATTCAGAA_HGFVTCCXX_L008_001.R2.fastq.gz"
   read_groups:
     #s_OA_amlcl_003_CL_bc03_Proj_5932_L000: 
     L005_001: "@RG\\tID:L005_001\\tSM:RPE-GFP-PGBD5\\tCN:MSK\\tDT:2016-01-03\\tLB:Library\\tPL:ILLUMINA"
@@ -79,4 +83,5 @@
     K052:
       - "/data/kentsis/WGS/K052_HemePACT/s_OA_amlcl_003_CL_bc03_Proj_5932_L000_mrg_cl_aln_srt_MD_IR_BR.bam"
 
-
+  paired:
+    K052: "K052-normal"

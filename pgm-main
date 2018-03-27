@@ -1,17 +1,16 @@
 import glob,os,subprocess
 
-SAMPLES= "s_OA_amlcl_003_CL_with_reftrack".split() # should only ever list 1 sample
+SAMPLES= "K052".split() # should only ever list 1 sample
 
 WD="/data/kentsis/testing_scratchpad/" + SAMPLES[0]
 workdir: WD
 
-SAMPLE_VCF = "/data/kentsis/testing_scratchpad/K052_3/out/s_OA_amlcl_003_CL.realigned_ubam_merged.RGmerged.dedup.fixedtags.recal.finished.vcf"
+SAMPLE_VCF = "/data/kentsis/testing_scratchpad/RPE-GFP-PGBD5/out/RPE-GFP-PGBD5.aligned_ubam-merged_RG-merged_dedup_fixedtags_recal_HTC.vcf"
 VCF_INDIVIDUAL = subprocess.check_output(['bcftools','query','-l',SAMPLE_VCF]).decode('ASCII').strip()
 
 REF_FASTA='/data/kentsis/indexes/GRCh38/GRCh38.genome.fa'
 REF_GTF='/data/kentsis/indexes/GRCh38/gencode.v20.annotation.gtf'
 REF_FASTA_NAME=os.path.split(config['ref'])[1].strip('.fa')
-print(REF_FASTA_NAME)
 REF_DIR=os.path.split(config['ref'])[0]
 
 
@@ -28,21 +27,20 @@ TD_DIR='~/miniconda2/opt/transdecoder'
 
 #SAMPLE = os.path.split(WD)[1]
 #SAMPLES = "Sample_AH_RNAseq_GFP-P5-Tumor_01".split()
-#SPECTRA_SAMPLES = "b1906_293T_proteinID_01A".split()
+
 SPECTRA_SAMPLES=[os.path.abspath(a) for a in glob.glob("/data/kentsis/proteomics/K052/*.mzXML")]
+
 MS_DIR="/data/kentsis/proteomics/K052"
 MS_RELATIVE_DIR=os.path.relpath(MS_DIR,WD)
 MS_SAMPLES=['160116_K052_OffLRP_RP_f','20160205_PGM_K052_SCX_RP_']
 MS_RUNS=[str(x).zfill(2) for x in list(range(1,24+1))]
 
-#SAMPLE_RNASEQ_RUNS = expand("/data/kentsis/RNAseq/K0562/FCH9EFLADXX-HUMbghEAACRAAPEI-225_L{lane}_{run}.fq.gz",lane=[1,2],run=[1,2])
-RNASEQ_DIR="/data/kentsis/RNAseq/K0562"
-RNASEQ_SAMPLE="FCH9EFLADXX-HUMbghEAACRAAPEI-225"
+RNASEQ_DIR="/data/kentsis/RNAseq/Sample_AH_RNAseq_GFP-P5-Tumor_01"
+RNASEQ_SAMPLE="Sample_AH_RNAseq_GFP-P5-Tumor_01"
+#RNASEQ_SAMPLE="FCH9EFLADXX-HUMbghEAACRAAPEI-225"
 RNASEQ_RUNS = [1,2]
 RNASEQ_LANES = [1,2]
 
-#MODELS = 'merged reference'.split()
-MODELS = 'K052'.split()
 ADBS = expand('adb{n}',n=range(1,8))
 DBS = ADBS + 'merged reference uniprot Ecoli loki'.split()
 
@@ -55,13 +53,16 @@ snakemake.utils.makedirs('out/logs')
 snakemake.utils.makedirs('out/rnaseq_runs')
 
 rule all:
-    input: expand("out/{model}.proteome/proteome.pickle",model=['sample','reference'])
-	   #expand("out/{SAMPLE}.proteome/proteome.pickle",SAMPLE=SAMPLES), \
+    input: expand(MS_RELATIVE_DIR+'/{ms_sample}{run}.{SAMPLE}.db.tsv',ms_sample=MS_SAMPLES,run=MS_RUNS,SAMPLE=SAMPLES)
+#expand("out/{model}.proteome/proteome.pickle",model=['sample','reference']), \
+	   #expand("out/{model}.proteome/proteome.unique.fasta",model=['sample','reference'])
+	#expand("out/{SAMPLE}.proteome/proteome.pickle",SAMPLE=SAMPLES), \
            #expand(MS_RELATIVE_DIR+'/{ms_sample}{run}.{SAMPLE}.db.pepXML',ms_sample=MS_SAMPLES,run=MS_RUNS,SAMPLE=SAMPLES)
         #expand("out/all-merge/{db}.db.fasta.pepdigest",db=DBS),
 
 rule STAR:
-    input: expand(RNASEQ_DIR+"/"+RNASEQ_SAMPLE+"_L{lane}_{{run}}.fq.gz",lane=RNASEQ_LANES)
+    #input: expand(RNASEQ_DIR+"/"+RNASEQ_SAMPLE+"_cat{lane}_{{run}}.fq.gz",lane=RNASEQ_LANES)
+    input: RNASEQ_DIR+"/"+RNASEQ_SAMPLE+"_cat_{run}_val_{run}.fq.gz"
     output: "out/rnaseq_runs/run{run}.Aligned.sortedByCoord.out.bam", "out/rnaseq_runs/run{run}.Chimeric.out.junction"
     benchmark: "out/benchmarks/{run}.STARalign.txt"
     params: n="32", R="'span[hosts=1] rusage[mem=4]'", \
@@ -321,14 +322,6 @@ rule reorderFASTA:
 	    o="out/logs/{model}.reorderFASTA.out", eo="out/logs/{model}.reorderFASTA.err"
     shell: "{RSCRIPT} {SCRIPTS}/reorderFASTA.R {input} {output}"
 
-# rule getfasta:
-#     input: "out/all-merge/{SAMPLE}/proteome.bed"
-#     output: "out/all-merge/{SAMPLE}/proteome.fasta"
-#     benchmark: "out/benchmarks/{SAMPLE}.getfasta.txt"
-#     params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.getfasta", name="getfasta"
-#     shell: "{BEDTOOLS} getfasta -name -s -fi {REF_FASTA} -bed {input} -fo /dev/stdout | {EMBOSS}/transeq -sequence /dev/stdin -outseq {output}"
-
-
 # rule PGx_prepare:
 #     input: "out/all-merge/{SAMPLE}/transcripts.genome.gff3"
 #     output: fasta="out/all-merge/{SAMPLE}/proteome.fasta",
@@ -336,7 +329,6 @@ rule reorderFASTA:
 #     benchmark: "out/benchmarks/{SAMPLE}.PGx_prepare.txt"
 #     params: pe="1", mem="h_vmem=10G,virtual_free=8G", err="~/error/error.PGx_prepare", name="PGx_prepare"
 #     shell: "{RSCRIPT} {SCRIPTS}/reorderFASTA.R {WD}/{input} {WD}/{output.fasta} {WD}/{output.bed}"
-
 
 rule PGx_index:
     input: fasta="out/{model}.proteome/proteome.fasta",
@@ -360,7 +352,6 @@ rule PGx_index:
 #    shell: "{PY} {PGX}/pgx_query.py \
 #        out/all-merge/ \
 #        {input.index} > {output}"
-
 
 #rule PGx_bed:
 #    input: hits="out/all-merge/{SAMPLE}.hits.txt",
@@ -386,16 +377,20 @@ rule PGx_index:
 #            -auto"
 
 DB_PATTERN = "\(= \).*\(.fasta\)"
-EXT_PATTERN = "\(= \).*\(pepXML\)"
+#EXT_PATTERN = "\(= \).*\(pepXML\)"
+EXT_PATTERN = "\(= \).*\(tsv\)"
 
 snakemake.utils.makedirs('out/logs/fragger')
 
 rule MSFragger:
     #input: spectra=expand('{spectra_sample}',spectra_sample=SPECTRA_SAMPLES),\
     input: spectra=MS_RELATIVE_DIR+'/{ms_sample}{run}.mzXML', \
-        proteome_db='out/{SAMPLE}.proteome/proteome.unique.fasta', \
+        proteome_db=MS_RELATIVE_DIR+'/UPX_lc_DB_withdecoy.fasta', \
 	   fragger_params='/home/kwokn/MSFragger_20170103/fragger.params'
-    output: MS_RELATIVE_DIR+'/{ms_sample}{run}.{SAMPLE}.db.pepXML'
+    #input: spectra=MS_RELATIVE_DIR+'/{ms_sample}{run}.mzXML', \
+    #    proteome_db='out/{SAMPLE}.proteome/proteome.unique.fasta', \
+#	   fragger_params='/home/kwokn/MSFragger_20170103/fragger.params'
+    output: MS_RELATIVE_DIR+'/{ms_sample}{run}.{SAMPLE}.db.tsv'
     benchmark: 'out/benchmarks/{SAMPLE}.MSFragger.txt'
     params: n="16", R="'span[hosts=1] rusage[mem=4]'", J="msfrag_{ms_sample}{run}_{SAMPLE}", \
 	o="out/logs/fragger/{ms_sample}{run}.out", eo="out/logs/{ms_sample}{run}.err"
