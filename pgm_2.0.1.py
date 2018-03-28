@@ -156,7 +156,7 @@ rule STAR_denovo:
 rule filter:
     input: bam="out/rnasample_runs/run{run}.Aligned.sortedByCoord.out.bam"
     output: "out/rnasample_runs/run{run}.Aligned.trimmed.out.bam"
-    log: "out/logs/{run}.filter.txt"
+    log: "out/logs/rna_sample/run{run}.filter.txt"
     benchmark: "out/benchmarks/run{run}.filter.txt"
     params: n="1", R="'span[hosts=1] rusage[mem=10]'", J="filter", o="out/logs/filter.out", eo="out/logs/filter.err"
     shell: "{config[SAMTOOLS]} view -b -h -F 4 -F 8 -F 256 -F 512 -F 2048 -q 30 {input.bam} > {output} 2> {log}"
@@ -164,6 +164,7 @@ rule filter:
 rule BuildBamIndex:
     input: "out/rnasample_runs/run{run}.Aligned.trimmed.out.bam"
     output: "out/rnasample_runs/run{run}.Aligned.trimmed.out.bai"
+    log: "out/logs/rna_sample/run{run}.bamIndex.txt"
     benchmark: "out/benchmarks/run{run}.BuildBamIndex"
     params: n="1", R="'span[hosts=1] rusage[mem=10]'", \
             o="out/logs/out.buildbamindex", eo="out/logs/error.buildbamindex", \
@@ -175,7 +176,7 @@ rule BuildBamIndex:
 rule StringTie_GTF:
     input: bam="out/rnasample_runs/run{run}.Aligned.trimmed.out.bam", bai="out/rnasample_runs/run{run}.Aligned.trimmed.out.bai"
     output: "out/rnasample_runs/run{run}.stringtie.gtf"
-    log: "out/logs/{sample}.filterAndTrimBed.txt"
+    log: "out/logs/rnasample_runs/run{run}.filterAndTrimBed.txt"
     benchmark: "out/benchmarks/run{run}.StringTie_GTF"
     params: n="6", R="'span[hosts=1] rusage[mem=20]'", \
             o="out/logs/out.stringtie", eo="out/logs/error.stringtie", \
@@ -192,13 +193,12 @@ rule StringTie_GTF:
 rule StringTie_denovo:
     input: bam="out/rnasample_runs/run{run}.Aligned.trimmed.out.bam", bai="out/rnasample_runs/run{run}.Aligned.trimmed.out.bai"
     output: "out/rnasample_runs/run{run}.stringtie.gtf"
-    log: "out/logs/{sample}.filterAndTrimBed.txt"
+    log: "out/logs/rnasample_runs/run{run}.filterAndTrimBed.txt"
     benchmark: "out/benchmarks/run{run}.StringTie_denovo"
     params: n="6", R="'span[hosts=1] rusage[mem=20]'", \
             o="out/logs/out.stringtie", eo="out/logs/error.stringtie", \
         J="StringTie"
     shell: "{config[STRINGTIE]} \
-            -G {REF_GTF} \
             {input.bam} \
             -p {params.n} \
             -o {output} \
@@ -211,11 +211,12 @@ snakemake.utils.makedirs('out/all-merge')
 rule merge:
     input: expand("out/rnasample_runs/run{run}.stringtie.gtf",run=RNASAMPLE_RUNS)
     output: "out/all-merge/stringtie.merged.gtf"
+    log: "out/logs/stringtie.merge.txt"    
     benchmark: "out/benchmarks/merge.txt"
     params: n="12", R="'span[ptile=72] rusage[mem=4]'", \
             o="out/logs/out.merge", eo="out/logs/error.merge", \
             J="merge"
-    shell: "stringtie \
+    shell: "{config[STRINGTIE]} \
             --merge \
 	    -o {output} \
             -p {params.n} \
