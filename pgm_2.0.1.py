@@ -35,11 +35,11 @@ MS_RELATIVE_DIR=os.path.relpath(MS_DIR,WD)
 MS_SAMPLES=['160116_K052_OffLRP_RP_f','20160205_PGM_K052_SCX_RP_']
 MS_RUNS=[str(x).zfill(2) for x in list(range(1,24+1))]
 
-#SAMPLE_RNASEQ_RUNS = expand("/data/kentsis/RNAseq/K0562/FCH9EFLADXX-HUMbghEAACRAAPEI-225_L{lane}_{run}.fq.gz",lane=[1,2],run=[1,2])
-RNASEQ_DIR="/data/kentsis/RNAseq/K0562"
-RNASEQ_SAMPLE="FCH9EFLADXX-HUMbghEAACRAAPEI-225"
-RNASEQ_RUNS = [1,2]
-RNASEQ_LANES = [1,2]
+#SAMPLE_RNASAMPLE_RUNS = expand("/data/kentsis/RNAseq/K0562/FCH9EFLADXX-HUMbghEAACRAAPEI-225_L{lane}_{run}.fq.gz",lane=[1,2],run=[1,2])
+RNASAMPLE_DIR="/data/kentsis/RNAseq/K0562"
+RNASAMPLE_SAMPLE="FCH9EFLADXX-HUMbghEAACRAAPEI-225"
+RNASAMPLE_RUNS = [1,2]
+RNASAMPLE_LANES = [1,2]
 
 #MODELS = 'merged reference'.split()
 MODELS = 'K052'.split()
@@ -51,17 +51,21 @@ INDEX=REF_GENOME_STAR
 
 if 'REF_GTF' in locals():
     ruleorder: STAR_GTF > STAR_denovo
-    #MODELS = 'merged reference'.split()
-    MODELS = MODELS + ['reference']
+    ruleorder: StringTie_GTF > StringTie_denovo
+    ruleorder: UCSC_GTF > UCSC_denovo
+    MODELS = 'sample reference'.split()
+    #MODELS = MODELS + ['reference']
 else:
     ruleorder: STAR_denovo > STAR_GTF
-    MODELS = 'merged'
+    ruleorder: StringTie_denovo > StringTie_GTF
+    ruleorder: UCSC_denovo > UCSC_GTF
+    MODELS = 'sample'
 
 snakemake.utils.makedirs(WD)
 snakemake.utils.makedirs('out/benchmarks')
 snakemake.utils.makedirs('out/all-merge')
 snakemake.utils.makedirs('out/logs')
-snakemake.utils.makedirs('out/rnaseq_runs')
+snakemake.utils.makedirs('out/rnasample_runs')
 
 rule all:
     input: expand("out/{model}.proteome/proteome.pickle",model=['sample','reference'])
@@ -83,16 +87,16 @@ rule STAR_index:
             --genomeFastaFiles {input.fasta} 2> {log}"
 
 rule STAR_GTF:
-    #input: expand(RNASEQ_DIR+"/"+RNASEQ_SAMPLE+"_L{lane}_{{run}}.fq.gz",lane=RNASEQ_LANES)
-    input: sample=expand(RNASEQ_DIR+"/"+RNASEQ_SAMPLE+"_L{lane}_{{run}}.fq.gz",lane=RNASEQ_LANES), index=INDEX
-    output: temp("out/{run}.Aligned.sortedByCoord.out.bam")
+    #input: expand(RNASAMPLE_DIR+"/"+RNASAMPLE_SAMPLE+"_L{lane}_{{run}}.fq.gz",lane=RNASAMPLE_LANES)
+    input: sample=expand(RNASAMPLE_DIR+"/"+RNASAMPLE_SAMPLE+"_L{lane}_{{run}}.fq.gz",lane=RNASAMPLE_LANES), index=INDEX
+    output: temp("out/rnasample_runs/run{run}.Aligned.sortedByCoord.out.bam")
     benchmark: "out/benchmarks/{run}.align.json"
-    log: "out/logs/align.txt"
+    log: "out/logs/STAR_GTF.txt"
     params: n="12", R="'span[hosts=1] rusage[mem=20]'", J="align", o="out/logs/align.out", eo="out/logs/align.err"
     shell: "{config[STAR]} \
         --genomeDir {input.index} \
         --readFilesIn {input.sample} \
-        --outFileNamePrefix out/rnaseq_runs/run{wildcards.run}. \
+        --outFileNamePrefix out/rnasample_runs/run{wildcards.run}. \
         --outSAMattributes NH HI XS \
         --outSAMattrRGline ID:{wildcards.run} LB:1 PL:illumina PU:1 SM:{wildcards.run} \
         --runThreadN {params.n} \
@@ -117,16 +121,16 @@ rule STAR_GTF:
         --sjdbGTFfile {REF_GTF} \2 > {log}"
 
 rule STAR_denovo:
-    #input: expand(RNASEQ_DIR+"/"+RNASEQ_SAMPLE+"_L{lane}_{{run}}.fq.gz",lane=RNASEQ_LANES)
-    input: sample=expand(RNASEQ_DIR+"/"+RNASEQ_SAMPLE+"_L{lane}_{{run}}.fq.gz",lane=RNASEQ_LANES), index=INDEX
-    output: temp("out/{run}.Aligned.sortedByCoord.out.bam")
+    #input: expand(RNASAMPLE_DIR+"/"+RNASAMPLE_SAMPLE+"_L{lane}_{{run}}.fq.gz",lane=RNASAMPLE_LANES)
+    input: sample=expand(RNASAMPLE_DIR+"/"+RNASAMPLE_SAMPLE+"_L{lane}_{{run}}.fq.gz",lane=RNASAMPLE_LANES), index=INDEX
+    output: temp("out/rnasample_runs/run{run}.Aligned.sortedByCoord.out.bam")
     benchmark: "out/benchmarks/{run}.align.json"
-    log: "out/logs/align.txt"
+    log: "out/logs/STAR_denovo.txt"
     params: n="12", R="'span[hosts=1] rusage[mem=20]'", J="align", o="out/logs/align.out", eo="out/logs/align.err"
-    shell: "{STAR} \
+    shell: "{config[STAR]} \
         --genomeDir {input.index} \
         --readFilesIn {input.sample} \
-        --outFileNamePrefix out/rnaseq_runs/run{wildcards.run}. \
+        --outFileNamePrefix out/rnasample_runs/run{wildcards.run}. \
         --outSAMattributes NH HI XS \
         --outSAMattrRGline ID:{wildcards.run} LB:1 PL:illumina PU:1 SM:{wildcards.run} \
         --runThreadN {params.n} \
@@ -148,33 +152,64 @@ rule STAR_denovo:
         --outSJfilterReads Unique \
         --outFilterMultimapNmax 10 \
         --sjdbOverhang 100 \2 > {log}"
+
+rule filter:
+    input: bam="out/rnasample_runs/run{run}.Aligned.sortedByCoord.out.bam"
+    output: "out/rnasample_runs/run{run}.Aligned.trimmed.out.bam"
+    log: "out/logs/{run}.filter.txt"
+    benchmark: "out/benchmarks/run{run}.filter.txt"
+    params: n="1", R="'span[hosts=1] rusage[mem=10]'", J="filter", o="out/logs/filter.out", eo="out/logs/filter.err"
+    shell: "{config[SAMTOOLS]} view -b -h -F 4 -F 8 -F 256 -F 512 -F 2048 -q 30 {input.bam} > {output} 2> {log}"
+
 rule BuildBamIndex:
-    input: "out/rnaseq_runs/run{run}.Aligned.sortedByCoord.out.bam"
-    output: "out/rnaseq_runs/run{run}.Aligned.sortedByCoord.out.bai"
+    input: "out/rnasample_runs/run{run}.Aligned.trimmed.out.bam"
+    output: "out/rnasample_runs/run{run}.Aligned.trimmed.out.bai"
     benchmark: "out/benchmarks/run{run}.BuildBamIndex"
     params: n="1", R="'span[hosts=1] rusage[mem=10]'", \
             o="out/logs/out.buildbamindex", eo="out/logs/error.buildbamindex", \
             J="BuildBamIndex"
-    shell: "picard BuildBamIndex -Xmx6g TMP_DIR={TMP} I={input} O={output}"
+    shell: "java -Djava.io.tmpdir={TMP} -Xmx6g -jar {config[PICARD]} \
+            BuildBamIndex \
+            INPUT={input} 2> {log}"
 
-rule StringTie:
-    input: bam="out/rnaseq_runs/run{run}.Aligned.sortedByCoord.out.bam", bai="out/rnaseq_runs/run{run}.Aligned.sortedByCoord.out.bai", \
-	   ref_gtf={REF_GTF}
-    output: "out/rnaseq_runs/run{run}.stringtie.gtf"
-    benchmark: "out/benchmarks/run{run}.StringTie."
-    params: n="16", R="'span[hosts=1] rusage[mem=8]'", \
+rule StringTie_GTF:
+    input: bam="out/rnasample_runs/run{run}.Aligned.trimmed.out.bam", bai="out/rnasample_runs/run{run}.Aligned.trimmed.out.bai"
+    output: "out/rnasample_runs/run{run}.stringtie.gtf"
+    log: "out/logs/{sample}.filterAndTrimBed.txt"
+    benchmark: "out/benchmarks/run{run}.StringTie_GTF"
+    params: n="6", R="'span[hosts=1] rusage[mem=20]'", \
             o="out/logs/out.stringtie", eo="out/logs/error.stringtie", \
 	    J="StringTie"
-    shell: "stringtie \
-            -G {input.ref_gtf} \
+    shell: "{config[STRINGTIE]} \
+            -G {REF_GTF} \
             {input.bam} \
             -p {params.n} \
-            -o {output}"
+            -o {output} \
+            -c 2.5 \
+            -m 300 \
+            -f .01 2> {log}"
+
+rule StringTie_denovo:
+    input: bam="out/rnasample_runs/run{run}.Aligned.trimmed.out.bam", bai="out/rnasample_runs/run{run}.Aligned.trimmed.out.bai"
+    output: "out/rnasample_runs/run{run}.stringtie.gtf"
+    log: "out/logs/{sample}.filterAndTrimBed.txt"
+    benchmark: "out/benchmarks/run{run}.StringTie_denovo"
+    params: n="6", R="'span[hosts=1] rusage[mem=20]'", \
+            o="out/logs/out.stringtie", eo="out/logs/error.stringtie", \
+        J="StringTie"
+    shell: "{config[STRINGTIE]} \
+            -G {REF_GTF} \
+            {input.bam} \
+            -p {params.n} \
+            -o {output} \
+            -c 2.5 \
+            -m 300 \
+            -f .01 2> {log}"
 
 snakemake.utils.makedirs('out/all-merge')
 
 rule merge:
-    input: expand("out/rnaseq_runs/run{run}.stringtie.gtf",run=RNASEQ_RUNS)
+    input: expand("out/rnasample_runs/run{run}.stringtie.gtf",run=RNASAMPLE_RUNS)
     output: "out/all-merge/stringtie.merged.gtf"
     benchmark: "out/benchmarks/merge.txt"
     params: n="12", R="'span[ptile=72] rusage[mem=4]'", \
@@ -184,23 +219,40 @@ rule merge:
             --merge \
 	    -o {output} \
             -p {params.n} \
-            -c 0 \
+            -c 2.5 \
+            -m 300 \
             -T 1 \
-            -f .1 \
+            -f .01 \
             -i \
-	    {input}"        
+	    {input} 2> {log}"        
 
 
 ## both outputs for this rule are identical. done this way for the sake of semantics downstream ##
-rule UCSC:
+# rule UCSC_GTF:
+#     input: "out/all-merge/stringtie.merged.gtf"
+#     output: sample="out/all-merge/sample-UCSC.gtf", reference="out/all-merge/reference.gtf"
+#     benchmark: "out/benchmarks/UCSC.txt"
+#     params: n="1", R="'span[hosts=1] rusage[mem=10]'", \
+#             o="out/logs/UCSC.out", eo="out/logs/UCSC.err", \
+#             J="UCSC"
+#     shell: "cat {input} | grep chr > {output.reference}; \
+#             cat {input} | grep chr > {output.sample}"
+
+rule UCSC_GTF:
     input: "out/all-merge/stringtie.merged.gtf"
     output: sample="out/all-merge/sample-UCSC.gtf", reference="out/all-merge/reference.gtf"
     benchmark: "out/benchmarks/UCSC.txt"
-    params: n="1", R="'span[hosts=1] rusage[mem=10]'", \
-            o="out/logs/UCSC.out", eo="out/logs/UCSC.err", \
-            J="UCSC"
-    shell: "cat {input} | grep chr > {output.reference}; \
-            cat {input} | grep chr > {output.sample}"
+    params: n="1", R="'span[hosts=1] rusage[mem=10]'", J="UCSC", o="out/logs/UCSC.out", eo="out/logs/UCSC.err"
+    shell: "cat {REF_GTF} | grep chr > {output.reference}; \
+            cat {input} | grep chr > {output.sample} 2> {log}"
+
+rule UCSC_denovo:
+        input: "out/all-merge/stringtie.merged.gtf"
+        output: sample="out/all-merge/sample-UCSC.gtf"
+        benchmark: "out/benchmarks/UCSC.txt"
+        log: "out/logs/UCSC.txt"
+        params: n="1", R="'span[hosts=1] rusage[mem=10]'", J="UCSC", o="out/logs/UCSC.out", eo="out/logs/UCSC.err"
+        shell: "cat {input} | grep chr > {output.sample} 2> {log}"
 
 snakemake.utils.makedirs('out/all-merge/custom_ref')
 

@@ -13,7 +13,9 @@
   snp: '/data/kentsis/GATK/GRCh38/00-common_all.vcf.gz' #dbSNP build 147 common SNPs
   DoC: 20
   
-  STAR: '/data/poirier/bin/STAR/bin/Linux_x86_64_static/STAR'
+  STAR: '/data/poirier/bin/STAR/bin/Linux_x86_64_static/STAR' # 2.5.2a
+  SAMTOOLS: '/data/poirier/bin/samtools-1.3/samtools' # 1.3
+  PICARD: '/data/poirier/bin/picard-tools-1.134/picard.jar' # 1.134
   # lines:
   #   JHU-LX22:
   #     - "JHU-LX22-p1"
