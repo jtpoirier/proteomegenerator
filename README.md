@@ -8,13 +8,7 @@ ProteomeGenerator is an open, modular, and scalable framework for reference guid
 
 ### Dependencies
 
-ProteomeGenerator requires [Miniconda](https://conda.io/miniconda.html) to install the [Snakemake](https://snakemake.readthedocs.io/en/stable/) workflow management system and, optionally, can be automatically containerized with [Singularity](https://singularity.lbl.gov/) in order to run in almost any Linux production environment.
-
-* [Miniconda](https://conda.io/miniconda.html)
-* [Snakemake](https://snakemake.readthedocs.io/en/stable/)
-* [Singularity](https://singularity.lbl.gov/)
-
-ProteomeGenerator depends on multiple free and open source tools. The following dependencies will be automatically downloaded and persistently installed within a Miniconda environment the first time you run the ProteomeGenerator workflow and loaded from cache thereafter.
+ProteomeGenerator requires [Miniconda](https://conda.io/miniconda.html) to install the [Snakemake](https://snakemake.readthedocs.io/en/stable/) workflow management system and, optionally, can be automatically containerized with [Singularity](https://singularity.lbl.gov/) in order to run in almost any Linux production environment. ProteomeGenerator depends on multiple free and open source tools. The following dependencies will be automatically downloaded and persistently installed within a Miniconda environment the first time you run the ProteomeGenerator workflow and loaded from cache thereafter.
 
 * [STAR](https://github.com/alexdobin/STAR)
 * [Picard](http://broadinstitute.github.io/picard/)
