@@ -1,6 +1,7 @@
 shell.executable("/bin/bash")
-shell.prefix("source ~/.bashrc; source ~/.bash_profile; ")
+#shell.prefix("source ~/.bashrc; source ~/.bash_profile; ")
 
+singularity: "docker://continuumio/miniconda3:4.5.4"
 
 ### Begin User Variables
 
@@ -11,20 +12,10 @@ TMP = '/scratch/poirierj'
 
 # References
 FASTA='/data/poirier/indexes/GRCh38/GRCh38.genome.fa'
-DICT = '/data/poirier/indexes/GRCh38/BWAIndex/GRCh38.genome.dict'
 # Comment out or delete the "GTF" variable to force de novo mode
-#GTF='/data/poirier/indexes/GRCh38/gencode.v20.annotation.gtf'
+GTF='/data/poirier/indexes/GRCh38/gencode.v20.annotation.gtf'
 INDEX = '/data/poirier/indexes/GRCh38/STAR'
 UNIPROT="/data/poirier/indexes/uniprot/UP000005640.fasta"
-
-# Dependencies
-STAR = '/data/poirier/bin/STAR/bin/Linux_x86_64_static/STAR' # 2.5.2a
-PICARD = '/data/poirier/bin/picard-tools-1.134/picard.jar' # 1.134
-SAMTOOLS = '/data/poirier/bin/samtools-1.3/samtools' # 1.3
-STRINGTIE='/data/poirier/bin/stringtie-1.3.3b.Linux_x86_64/stringtie' # 1.3.3b
-TD="/data/poirier/bin/TransDecoder" # 2.1
-GFFREAD="/data/poirier/bin/gffread/gffread-0.9.8.Linux_x86_64" # 0.9.8
-BLAST="/data/poirier/bin/ncbi-blast-2.2.31+/bin" # 2.2.31
 
 # Samples
 K0562 = 'FCH9EFLADXX-HUMbghEAACRAAPEI-225'.split()
@@ -47,7 +38,6 @@ else:
 
 snakemake.utils.makedirs(TMP)
 snakemake.utils.makedirs('out/benchmarks')
-snakemake.utils.makedirs('out/all-merge')
 
 
 rule all:
@@ -62,9 +52,10 @@ rule STAR_GTF:
     input: l1r1=L1R1, l2r1=L2R1, l1r2=L1R2, l2r2=L2R2, index=INDEX
     output: temp("out/{sample}.Aligned.sortedByCoord.out.bam")
     benchmark: "out/benchmarks/{sample}.align.json"
-    log: "out/logs/align.txt"
+    log: "out/logs/{sample}.align.txt"
+    conda: "envs/myenv.yaml"
     params: n="12", R="'span[hosts=1] rusage[mem=20]'", J="align", o="out/logs/align.out", eo="out/logs/align.err"
-    shell: "{STAR} \
+    shell: "STAR \
         --genomeDir {input.index} \
         --readFilesIn {input.l1r1},{input.l2r1} {input.l1r2},{input.l2r2} \
         --outFileNamePrefix out/{wildcards.sample}. \
@@ -95,9 +86,10 @@ rule STAR_denovo:
     input: l1r1=L1R1, l2r1=L2R1, l1r2=L1R2, l2r2=L2R2, index=INDEX
     output: temp("out/{sample}.Aligned.sortedByCoord.out.bam")
     benchmark: "out/benchmarks/{sample}.align.json"
-    log: "out/logs/align.txt"
+    log: "out/logs/{sample}.align.txt"
+    conda: "envs/myenv.yaml"
     params: n="12", R="'span[hosts=1] rusage[mem=20]'", J="align", o="out/logs/align.out", eo="out/logs/align.err"
-    shell: "{STAR} \
+    shell: "STAR \
         --genomeDir {input.index} \
         --readFilesIn {input.l1r1},{input.l2r1} {input.l1r2},{input.l2r2} \
         --outFileNamePrefix out/{wildcards.sample}. \
@@ -124,5 +116,5 @@ rule STAR_denovo:
         --sjdbOverhang 100 \2 > {log}"
 
 
-#snakemake --snakefile Snakefile-K0562 --cluster "bsub -J {params.J} -n {params.n} -R {params.R} -W 4:00 -o {params.o} -eo {params.eo}" --jn {rulename}.{jobid}.sj -j 50 -k --latency-wait 60 --ri -n
+#snakemake --snakefile Snakefile-K0562 --cluster "bsub -J {params.J} -n {params.n} -R {params.R} -W 4:00 -o {params.o} -eo {params.eo}" --jn {rulename}.{jobid}.sj -j 50 -k --latency-wait 60 --use-conda --use-singularity --singularity-args "--bind /data:/data,/lila:/lila" --ri -n
 # --rulegraph | dot -Tpdf > dag.pdf
