@@ -1,0 +1,3 @@
+NameError in line 25 of /lila/home/chenz4/proteomegenerator/Snakefile-Test:
+name 'RAWFILES' is not defined
+  File "/lila/home/chenz4/proteomegenerator/Snakefile-Test", line 25, in <module>

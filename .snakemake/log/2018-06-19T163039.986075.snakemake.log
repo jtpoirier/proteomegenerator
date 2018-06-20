@@ -1,0 +1,5 @@
+localrules directive specifies rules that are not present in the Snakefile:
+	UCSC_UCSC_denovo
+
+Building DAG of jobs...
+Pulling singularity image docker://continuumio/miniconda3:4.5.4.

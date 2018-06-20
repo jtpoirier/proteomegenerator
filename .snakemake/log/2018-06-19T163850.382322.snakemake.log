@@ -1,0 +1,12 @@
+localrules directive specifies rules that are not present in the Snakefile:
+	UCSC_UCSC_denovo
+
+Building DAG of jobs...
+Pulling singularity image docker://continuumio/miniconda3:4.5.4.
+Creating conda environment /lila/home/chenz4/proteomegenerator/envs/myenv.yaml...
+Downloading remote packages.
+CreateCondaEnvironmentException:
+Could not create conda environment from /lila/home/chenz4/proteomegenerator/envs/myenv.yaml:
+[91mERROR  : Failed invoking the NEWUSER namespace runtime: Invalid argument
+[0m[31mABORT  : Retval = 255
+[0m

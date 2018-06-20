@@ -1,0 +1,4 @@
+NameError in line 3 of /lila/home/chenz4/proteomegenerator/pgm2:
+name 'PRO' is not defined
+  File "/lila/home/chenz4/proteomegenerator/Snakefile-Test", line 24, in <module>
+  File "/lila/home/chenz4/proteomegenerator/pgm2", line 3, in <module>

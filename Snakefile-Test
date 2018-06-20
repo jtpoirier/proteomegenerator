@@ -1,0 +1,31 @@
+shell.executable("/bin/bash")
+#shell.prefix("source ~/.bashrc; source ~/.bash_profile; ")
+
+singularity: "docker://continuumio/miniconda3:4.5.4"
+
+### Begin User Variables
+
+# Directories
+WD = "/lila/data/kentsis/testfiles/K0562_mqtesting"
+workdir: WD
+TMP = '/scratch/poirierj'
+
+
+# Scripts
+RAWFILES, = glob_wildcards("/lila/data/kentsis/Raw_files/K056/{rawfile}.raw")
+
+### End User Variables
+
+
+rule all:
+    input: "mqpar.xml"
+
+
+include: "pgm2"
+
+
+
+
+
+#snakemake --snakefile Snakefile-K0562 --cluster "bsub -J {params.J} -n {params.n} -R {params.R} -W 4:00 -o {params.o} -eo {params.eo}" --jn {rulename}.{jobid}.sj -j 50 -k --latency-wait 60 --use-conda --use-singularity --singularity-args "--bind /data:/data,/lila:/lila" --ri -n
+# --rulegraph | dot -Tpdf > dag.pdf

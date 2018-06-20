@@ -1,0 +1,2 @@
+SyntaxError in line 31 of /lila/home/chenz4/proteomegenerator/Snakefile-Test:
+Expecting rule keyword, comment or docstrings inside a rule definition. (Snakefile-Test, line 31)

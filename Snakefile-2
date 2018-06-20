@@ -41,12 +41,9 @@ snakemake.utils.makedirs('out/benchmarks')
 
 
 rule all:
-    input: 
-        expand("out/all-merge/{model}/proteome.unique.fasta",model=MODELS),
-        expand("out/all-merge/{model}/proteome.bed",model=MODELS)
+    input: "out/all-merge/merged/mqpar.xml"
 
-
-include: "pgm"
+include: "pgm2"
 
 rule STAR_GTF:
     input: l1r1=L1R1, l2r1=L2R1, l1r2=L1R2, l2r2=L2R2, index=INDEX

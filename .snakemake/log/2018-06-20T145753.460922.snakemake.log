@@ -1,0 +1,14 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cluster nodes: 50
+Job counts:
+	count	jobs
+	1	all
+	1
+
+localrule all:
+    jobid: 0
+
+Finished job 0.
+1 of 1 steps (100%) done
+Complete log: /lila/home/chenz4/proteomegenerator/.snakemake/log/2018-06-20T145753.460922.snakemake.log

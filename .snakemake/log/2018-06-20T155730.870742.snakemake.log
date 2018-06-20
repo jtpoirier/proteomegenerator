@@ -1,0 +1,3 @@
+SyntaxError in line 32 of /lila/home/chenz4/proteomegenerator/pgm2:
+EOL while scanning string literal
+  File "/lila/home/chenz4/proteomegenerator/Snakefile-Test", line 24, in <module>

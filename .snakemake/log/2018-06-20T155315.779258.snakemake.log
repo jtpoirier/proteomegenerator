@@ -1,0 +1,3 @@
+SyntaxError in line 4 of /lila/home/chenz4/proteomegenerator/pgm2:
+Expecting rule keyword, comment or docstrings inside a rule definition. (pgm2, line 4)
+  File "/lila/home/chenz4/proteomegenerator/Snakefile-Test", line 24, in <module>

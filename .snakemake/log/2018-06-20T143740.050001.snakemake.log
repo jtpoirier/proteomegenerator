@@ -1,0 +1,3 @@
+SyntaxError in line 3 of /lila/home/chenz4/proteomegenerator/pgm2:
+positional argument follows keyword argument
+  File "/lila/home/chenz4/proteomegenerator/Snakefile-Test", line 55, in <module>

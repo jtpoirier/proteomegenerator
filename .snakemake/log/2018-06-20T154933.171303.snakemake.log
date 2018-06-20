@@ -1,0 +1,3 @@
+SyntaxError in line 3 of /lila/home/chenz4/proteomegenerator/pgm2:
+EOF in multi-line statement (pgm2, line 3)
+  File "/lila/home/chenz4/proteomegenerator/Snakefile-Test", line 24, in <module>
