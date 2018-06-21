@@ -18,3 +18,6 @@ rule maxQuant:
     benchmark: merged.maxQuant.txt
 
 Submitted job 1 with external jobid 'Job <4047921> is submitted to default queue <cpuqueue>.'.
+Terminating processes on user request, this might take some time.
+Will exit after finishing currently running jobs.
+Complete log: /lila/home/chenz4/proteomegenerator/.snakemake/log/2018-06-21T153435.371854.snakemake.log

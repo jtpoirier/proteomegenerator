@@ -1,0 +1,27 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cluster nodes: 50
+Job counts:
+	count	jobs
+	1	all
+	1	mqpar_conversion
+	2
+
+rule mqpar_conversion:
+    input: out/all-merge/merged/proteome.fasta, /lila/home/chenz4/proteomegenerator/mqpar_dummy.xml, /lila/data/kentsis/Raw_files/K056
+    output: mqpar.xml
+    log: merged.mqpar_conversion.txt
+    jobid: 1
+    benchmark: merged.mqpar_conversion.txt
+
+Submitted job 1 with external jobid 'Job <4048313> is submitted to default queue <cpuqueue>.'.
+Finished job 1.
+1 of 2 steps (50%) done
+
+localrule all:
+    input: mqpar.xml
+    jobid: 0
+
+Finished job 0.
+2 of 2 steps (100%) done
+Complete log: /lila/home/chenz4/proteomegenerator/.snakemake/log/2018-06-21T164804.364653.snakemake.log

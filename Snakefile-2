@@ -10,6 +10,10 @@ WD = "/lila/data/kentsis/testfiles/K0562_testing"
 workdir: WD
 TMP = '/scratch/poirierj'
 
+DUMMY = "/lila/home/chenz4/proteomegenerator/mqpar_dummy.xml"
+RAW = "/lila/data/kentsis/Raw_files/K056"
+
+
 # References
 FASTA='/data/poirier/indexes/GRCh38/GRCh38.genome.fa'
 # Comment out or delete the "GTF" variable to force de novo mode

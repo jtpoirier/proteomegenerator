@@ -1,0 +1,4 @@
+Building DAG of jobs...
+MissingInputException in line 2 of /lila/home/chenz4/proteomegenerator/pgmtest:
+Missing input files for rule maxQuant:
+/lila/home/chenz4/proteomegenerator/scripts/MaxQuant/bin/MaxQuantCmd.exe
