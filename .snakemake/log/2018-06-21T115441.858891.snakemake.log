@@ -1,0 +1,19 @@
+Building DAG of jobs...
+Pulling singularity image docker://continuumio/miniconda3:4.5.4.
+Using shell: /bin/bash
+Provided cluster nodes: 50
+Job counts:
+	count	jobs
+	1	all
+	1	maxQuant
+	2
+
+rule maxQuant:
+    input: mqpar.xml, /lila/home/chenz4/proteomegenerator/scripts/MaxQuant/bin/MaxQuantGui.exe, /data/kentsis/Mono/bin
+    output: /combined/txt/summary.txt
+    log: merged.maxQuant.txt
+    jobid: 1
+    benchmark: merged.maxQuant.txt
+
+WorkflowError in line 3 of /lila/home/chenz4/proteomegenerator/pgmtest:
+'Params' object has no attribute 'eo'

@@ -6,7 +6,7 @@ singularity: "docker://continuumio/miniconda3:4.5.4"
 ### Begin User Variables
 
 # Directories
-WD = "/lila/data/kentsis/testfiles/K0562_mqtesting"
+WD = "/lila/data/kentsis/testfiles/K0562_testing"
 workdir: WD
 TMP = '/scratch/poirierj'
 
@@ -18,10 +18,10 @@ TMP = '/scratch/poirierj'
 
 
 rule all:
-    input: "/combined/txt/summary.txt"
+    input: "mqpar.xml"
 
 
-include: "pgmtest"
+include: "pgmtestpar"
 
 
 

@@ -10,7 +10,7 @@ with open(snakemake.input[1]) as oldMQPar, open(snakemake.output[0],"w") as newM
         if '<FastaFileInfo>' in line:
             newMQPar.write("<fastaFilePath>" + snakemake.input[0] + "</fastaFilePath>\n")
         if '<pluginFolder></pluginFolder>' in line:
-            newMQPar.write("<numThreads>"+snakemake.params.n+"</numThreads>\n")
+            newMQPar.write("<numThreads>"+snakemake.params.t+"</numThreads>\n")
         if '<filePaths>' in line:
             for k in range(len(raw_files)):
                 newMQPar.write("<string>" + raw_files[k] + "</string>\n")

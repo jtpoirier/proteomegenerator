@@ -1,0 +1,7 @@
+rule mqpar_conversion:
+    input: "out/all-merge/merged/proteome.fasta", "/lila/home/chenz4/proteomegenerator/scripts/mqpar_dummy.xml", "/lila/data/kentsis/Raw_files/K056"
+    output: "mqpar.xml"
+    benchmark: "merged.mqpar_conversion.txt"
+    log: "merged.mqpar_conversion.txt"
+    params: t="68",n="1", R="'span[hosts=1] rusage[mem=10]'", J="mqpar_conversion", o="mqpar_conversion.out", eo="mqpar_conversion.err"
+    script: "scripts/mqparconverter.py"

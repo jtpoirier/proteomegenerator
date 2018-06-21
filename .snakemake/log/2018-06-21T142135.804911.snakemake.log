@@ -1,0 +1,4 @@
+Building DAG of jobs...
+MissingInputException in line 20 of /lila/home/chenz4/proteomegenerator/Snakefile-TestPar:
+Missing input files for rule all:
+mqpar.txt
