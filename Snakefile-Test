@@ -12,7 +12,7 @@ TMP = '/scratch/poirierj'
 
 
 # Scripts
-RAWFILES, = glob_wildcards("/lila/data/kentsis/Raw_files/K056/{rawfile}.raw")
+#RAWFILES, = glob_wildcards("/lila/data/kentsis/Raw_files/K056/{rawfile}.raw")
 
 ### End User Variables
 
