@@ -12,16 +12,16 @@ TMP = '/scratch/poirierj'
 
 
 # Scripts
-#RAWFILES, = glob_wildcards("/lila/data/kentsis/Raw_files/K056/{rawfile}.raw")
+MONO = "/data/kentsis/Mono/bin"
 
 ### End User Variables
 
 
 rule all:
-    input: "mqpar.xml"
+    input: "/combined/{out}"
 
 
-include: "pgm2"
+include: "pgmtest"
 
 
 
