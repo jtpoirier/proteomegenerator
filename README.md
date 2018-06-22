@@ -51,7 +51,11 @@ The "Samples" section should be edited to reflect the type, number, and naming s
 
 ### MaxQuant
 
-The "MaxQuant" section include variables for locations to inputs used in MaxQuant. The "MQ" variable points to MaxQuantCmd.exe, which is provided in "/MaxQuant/bin". The version of MaxQuant used is 1.6.2.3. You must use this version because the MaxQuant parameters file generated alters between versions. License agreement for redistribution in located in "/MaxQuant". DUMMY points to a dummy MaxQuant parameters file, which is provided in "/MaxQuant". This file is used to generate the actual parameters file used in MaxQuant. The "RAW" variable should be edited to point to the user-specified directory that contains all ".raw" files used for MaxQuant analysis.
+The "MaxQuant" section include variables for locations to inputs used in MaxQuant. The "MQ" variable points to MaxQuantCmd.exe, which is provided in "/MaxQuant/bin". This version of MaxQuant used is 1.6.2.3. You must use this version because the MaxQuant parameters file generated alters between versions. License agreement for redistribution in located in "/MaxQuant".
+
+The "DUMMY" variable points to a dummy MaxQuant parameters file, which is provided in "/MaxQuant". This file is used to generate the actual parameters file used in MaxQuant.
+
+The "RAW" variable should be edited to point to the user-specified directory that contains all ".raw" files used for MaxQuant analysis.
 
 ## Running ProteomeGenerator
 
