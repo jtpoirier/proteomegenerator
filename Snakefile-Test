@@ -10,6 +10,9 @@ WD = "/lila/data/kentsis/testfiles/K0562_mqtesting"
 workdir: WD
 TMP = '/scratch/poirierj'
 
+MQ = "/lila/home/chenz4/proteomegenerator/MaxQuant/bin/MaxQuantCmd.exe"
+RAW = "/lila/data/kentsis/testfiles/K0562_mqtesting"
+
 
 # Scripts
 
@@ -18,7 +21,7 @@ TMP = '/scratch/poirierj'
 
 
 rule all:
-    input: "/combined/txt/summary.txt"
+    input: "combined/txt/summary.txt"
 
 
 include: "pgmtest"

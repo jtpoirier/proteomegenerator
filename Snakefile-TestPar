@@ -6,12 +6,14 @@ singularity: "docker://continuumio/miniconda3:4.5.4"
 ### Begin User Variables
 
 # Directories
-WD = "/lila/data/kentsis/testfiles/K0562_testing"
+WD = "/lila/data/kentsis/testfiles/test"
 workdir: WD
 TMP = '/scratch/poirierj'
 
 DUMMY = "/lila/home/chenz4/proteomegenerator/mqpar_dummy.xml"
-RAW = "/lila/data/kentsis/Raw_files/K056"
+RAW = "/lila/data/kentsis/testfiles/K0562_mqtesting"
+MQ = "/lila/home/chenz4/proteomegenerator/MaxQuant/bin/MaxQuantCmd.exe"
+
 
 # Scripts
 
@@ -20,8 +22,7 @@ RAW = "/lila/data/kentsis/Raw_files/K056"
 
 
 rule all:
-    input: "mqpar.xml"
-
+    input: RAW + "/combined/txt/summary.txt"
 
 include: "pgmtestpar"
 

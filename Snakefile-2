@@ -10,10 +10,6 @@ WD = "/lila/data/kentsis/testfiles/K0562_testing"
 workdir: WD
 TMP = '/scratch/poirierj'
 
-DUMMY = "/lila/home/chenz4/proteomegenerator/mqpar_dummy.xml"
-RAW = "/lila/data/kentsis/Raw_files/K056"
-
-
 # References
 FASTA='/data/poirier/indexes/GRCh38/GRCh38.genome.fa'
 # Comment out or delete the "GTF" variable to force de novo mode
@@ -28,6 +24,14 @@ L1R1="/data/kentsis/RNAseq/K0562/{sample}_L1_1.fq.gz"
 L2R1="/data/kentsis/RNAseq/K0562/{sample}_L2_1.fq.gz"
 L1R2="/data/kentsis/RNAseq/K0562/{sample}_L1_2.fq.gz"
 L2R2="/data/kentsis/RNAseq/K0562/{sample}_L2_2.fq.gz"
+
+
+# MaxQuant
+MQ = "/lila/home/chenz4/proteomegenerator/MaxQuant/bin/MaxQuantCmd.exe"
+DUMMY = "/lila/home/chenz4/proteomegenerator/mqpar_dummy.xml"
+RAW = "/lila/data/kentsis/Raw_files/K056"
+
+
 
 ### End User Variables
 
@@ -45,7 +49,7 @@ snakemake.utils.makedirs('out/benchmarks')
 
 
 rule all:
-    input: "out/all-merge/merged/mqpar.xml"
+    input: RAW + "/combined/txt/summary.txt"
 
 include: "pgm2"
 

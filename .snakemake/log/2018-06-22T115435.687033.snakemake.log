@@ -1,0 +1,4 @@
+Building DAG of jobs...
+MissingInputException in line 22 of /lila/home/chenz4/proteomegenerator/Snakefile-TestPar:
+Missing input files for rule all:
+/lila/data/kentsis/testfiles/K0562_mqtesting/mqpar.xml

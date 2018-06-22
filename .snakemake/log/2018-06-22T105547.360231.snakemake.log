@@ -1,0 +1,11 @@
+Building DAG of jobs...
+Pulling singularity image docker://mono/5.12.0.226-slim/.
+WorkflowError:
+Failed to pull singularity image from docker://mono/5.12.0.226-slim/:
+[33mWARNING: pull for Docker Hub is not guaranteed to produce the
+(B[m[33mWARNING: same image on repeated pull. Use Singularity Registry
+(B[m[33mWARNING: (shub://) to pull exactly equivalent images.
+(B[mERROR Could not parse image "mono/5.12.0.226-slim/"! Exiting.
+Cleaning up...
+[31mERROR: pulling container failed!
+(B[m

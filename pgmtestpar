@@ -1,6 +1,6 @@
 rule mqpar_conversion:
-    input: "out/all-merge/merged/proteome.fasta", dummy = DUMMY, raw = RAW
-    output: "mqpar.xml"
+    input: "/lila/data/kentsis/testfiles/cluster/180301_SwissProt_isoforms_cRAP.fasta", dummy = DUMMY, raw = RAW
+    output: RAW + "/mqpar.xml"
     benchmark: "merged.mqpar_conversion.txt"
     log: "merged.mqpar_conversion.txt"
     params: t="68",n="1", R="'span[hosts=1] rusage[mem=10]'", J="mqpar_conversion", o="mqpar_conversion.out", eo="mqpar_conversion.err"
@@ -33,3 +33,12 @@ rule mqpar_conversion:
                 if '<paramGroupIndices>' in line:
                     for k in range(len(raw_files)):
                         newMQPar.write("<int>0</int>\n")
+
+rule maxQuant:
+    input: par = RAW + "/mqpar.xml", mq = MQ
+    output: RAW + "/combined/txt/summary.txt"
+    benchmark: "merged.maxQuant.txt"
+    log: "merged.maxQuant.txt"
+    singularity: "docker://mono"
+    params: n="4", J="MQ", R="'span[ptile=68] rusage[mem=10]'", o="mq.out", eo="mq.err"
+    shell: "mono {input.mq} {input.par}"
