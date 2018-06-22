@@ -1,0 +1,4 @@
+RuleException in line 248 of /lila/home/chenz4/proteomegenerator/pgm2:
+Conda environments are only allowed with shell, script, or wrapper directives (not with run).
+  File "/lila/home/chenz4/proteomegenerator/Snakefile-2", line 50, in <module>
+  File "/lila/home/chenz4/proteomegenerator/pgm2", line 248, in <module>
