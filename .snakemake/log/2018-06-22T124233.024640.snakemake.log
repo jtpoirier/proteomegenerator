@@ -15,3 +15,13 @@ rule maxQuant:
     benchmark: merged.maxQuant.txt
 
 Submitted job 1 with external jobid 'Job <4060854> is submitted to default queue <cpuqueue>.'.
+Finished job 1.
+1 of 2 steps (50%) done
+
+localrule all:
+    input: /lila/data/kentsis/testfiles/K0562_mqtesting/combined/txt/summary.txt
+    jobid: 0
+
+Finished job 0.
+2 of 2 steps (100%) done
+Complete log: /lila/home/chenz4/proteomegenerator/.snakemake/log/2018-06-22T124233.024640.snakemake.log

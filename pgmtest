@@ -1,9 +1,0 @@
-rule maxQuant:
-    input: par = "mqpar.xml", mq = MQ, raw = RAW
-    output: "combined/txt/summary.txt"
-    benchmark: "merged.maxQuant.txt"
-    log: "merged.maxQuant.txt"
-    singularity: "docker://mono"
-    workdir: input.raw
-    params: n="20", J="MQ", R="'span[ptile=68] rusage[mem=10]'", o="mq.out", eo="mq.err"
-    shell: "mono {input.mq} {input.par}"
