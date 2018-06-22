@@ -2,7 +2,6 @@ localrules directive specifies rules that are not present in the Snakefile:
 	UCSC_UCSC_denovo
 
 Building DAG of jobs...
-Pulling singularity image docker://mono.
 Using shell: /bin/bash
 Provided cluster nodes: 50
 Job counts:
@@ -34,7 +33,4 @@ rule STAR_denovo:
     benchmark: out/benchmarks/FCH9EFLADXX-HUMbghEAACRAAPEI-225.align.json
     wildcards: sample=FCH9EFLADXX-HUMbghEAACRAAPEI-225
 
-Submitted job 17 with external jobid 'Job <4061462> is submitted to default queue <cpuqueue>.'.
-Terminating processes on user request, this might take some time.
-Will exit after finishing currently running jobs.
-Complete log: /lila/home/chenz4/proteomegenerator/.snakemake/log/2018-06-22T130325.068497.snakemake.log
+Submitted job 17 with external jobid 'Job <4063209> is submitted to default queue <cpuqueue>.'.

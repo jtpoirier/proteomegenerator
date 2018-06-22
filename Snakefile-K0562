@@ -25,6 +25,12 @@ L2R1="/data/kentsis/RNAseq/K0562/{sample}_L2_1.fq.gz"
 L1R2="/data/kentsis/RNAseq/K0562/{sample}_L1_2.fq.gz"
 L2R2="/data/kentsis/RNAseq/K0562/{sample}_L2_2.fq.gz"
 
+
+# MaxQuant
+MQ = "/lila/home/chenz4/proteomegenerator/MaxQuant/bin/MaxQuantCmd.exe"
+DUMMY = "/lila/home/chenz4/proteomegenerator/MaxQuant/mqpar_dummy.xml"
+RAW = "/lila/data/kentsis/Raw_files/K056"
+
 ### End User Variables
 
 
@@ -41,10 +47,7 @@ snakemake.utils.makedirs('out/benchmarks')
 
 
 rule all:
-    input: 
-        expand("out/all-merge/{model}/proteome.unique.fasta",model=MODELS),
-        expand("out/all-merge/{model}/proteome.bed",model=MODELS)
-
+    input: RAW + "/combined/txt/summary.txt"
 
 include: "pgm"
 
