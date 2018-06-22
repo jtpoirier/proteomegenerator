@@ -92,7 +92,7 @@ rule merge:
 
 
 if 'GTF' in globals():
-    localrules: UCSC_GTF
+    localrules: UCSC_GTF, mqpar_conversion
     rule UCSC_GTF:
         input: "out/all-merge/merged.gtf"
         output: merged="out/all-merge/merged-UCSC.gtf", reference="out/all-merge/reference-UCSC.gtf"
@@ -103,7 +103,7 @@ if 'GTF' in globals():
             cat {input} | grep chr > {output.merged} 2> {log}"
 
 else:
-    localrules: UCSC_UCSC_denovo
+    localrules: UCSC_UCSC_denovo, mqpar_conversion
     rule UCSC_denovo:
         input: "out/all-merge/merged.gtf"
         output: merged="out/all-merge/merged-UCSC.gtf"

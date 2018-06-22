@@ -49,20 +49,31 @@ ProteomeGenerator requires a FASTA formated genome reference and accepts an opti
 
 The "Samples" section should be edited to reflect the type, number, and naming structure of the input FASTQ files for a given experiment. In addition, the user must edit the input for the rule STAR to reflect the specific naming convention used.
 
+### MaxQuant
+
+The "MaxQuant" section include variables for locations to inputs used in MaxQuant. MQ points to MaxQuantCmd.exe, which is provided in /MaxQuant/bin. The version of MaxQuant used is 1.6.2.3. You must use this version because the mqpar.xml generated alters between versions. License agreement for redistribution in located in /MaxQuant. DUMMY points to a dummy MaxQuant parameters file, which is provided in /MaxQuant. This file is used to generate the actual parameters file used in MaxQuant. RAW should be edited to point to the user-specified directory that contains all .raw files used for MaxQuant analysis.
+
 ## Running ProteomeGenerator
 
 ProteomeGenerator can be run locally or in a variety of high performance computing cluster environments. The below example demonstrates how to run ProteomeGenerator with Singularity on an [LSF](https://www.ibm.com/support/knowledgecenter/en/SSETD4/product_welcome_platform_lsf.html) cluster head node from within screen in case the connection to the head node is lost.
 
+
+
 ```bash
 screen -S pg
 snakemake --snakefile Snakefile-K0562 --cluster \
-"bsub -J {params.J} -n {params.n} -R {params.R} -W 4:00 -o {params.o} -eo {params.eo}" \
+"bsub -J {params.J} -n {params.n} -R {params.R} -W 24:00 -o {params.o} -eo {params.eo}" \
 --jn {rulename}.{jobid}.sj -j 50 -k --latency-wait 60 --use-conda --use-singularity --singularity-args "--bind /data:/data" --ri
 ```
+
+"-W" wall time argument might need to be adjusted to account for larger datasets used in MaxQuant.
+"--bind" argument will need to be adjusted so that Singularity can access scripts outside the container. You must bind the directory for ProteomeGenerator and RAW directory for MaxQuant so that ProteomeGenerator can read and write data on your system.
 
 ### Expected Output
 
 ProteomeGenerator will generate an indexed bam file of mapped and filtered reads of the format {sample}.Aligned.trimmed.out.bam, a sample-specific GTF of the format {sample}-stringtie.gtf, and a proteogenomic database called proteome.unique.fasta. A GFF3 corresponding to each entry in the fasta database is also generated with the predicted spliced peptide sequences mapped onto genome space for easy viewing in the [Integrative Genomics Viewer](http://software.broadinstitute.org/software/igv/). If a reference GTF file is provided, the pipeline will generate a proteogenomic database based on these reference annotations in addition to the sample-specific database.
+
+Furthermore, it will generate all tables outputted from MaxQuant in the same directory as the user-specified RAW directory.
 
 ## Citing ProteomeGenerator
 
