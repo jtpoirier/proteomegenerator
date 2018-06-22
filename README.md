@@ -35,7 +35,7 @@ This command downloads Snakefile-K0562, the configuraton file used in Cifani et 
 
 ## Configuration
 
-To run ProteomeGenerator on your own data, create a new Snakefile using Snakefile-K0562 as a template. Next, edit the "User Variables" section to reflect your computing environment and samples. This section is broken into three parts: "Directories", "References", and "Samples".
+To run ProteomeGenerator on your own data, create a new Snakefile using Snakefile-K0562 as a template. Next, edit the "User Variables" section to reflect your computing environment and samples. This section is broken into three parts: "Directories", "References", "Samples", and "MaxQuant".
 
 ### Directories
 
@@ -51,7 +51,7 @@ The "Samples" section should be edited to reflect the type, number, and naming s
 
 ### MaxQuant
 
-The "MaxQuant" section include variables for locations to inputs used in MaxQuant. MQ points to MaxQuantCmd.exe, which is provided in /MaxQuant/bin. The version of MaxQuant used is 1.6.2.3. You must use this version because the mqpar.xml generated alters between versions. License agreement for redistribution in located in /MaxQuant. DUMMY points to a dummy MaxQuant parameters file, which is provided in /MaxQuant. This file is used to generate the actual parameters file used in MaxQuant. RAW should be edited to point to the user-specified directory that contains all .raw files used for MaxQuant analysis.
+The "MaxQuant" section include variables for locations to inputs used in MaxQuant. The "MQ" variable points to MaxQuantCmd.exe, which is provided in "/MaxQuant/bin". The version of MaxQuant used is 1.6.2.3. You must use this version because the MaxQuant parameters file generated alters between versions. License agreement for redistribution in located in "/MaxQuant". DUMMY points to a dummy MaxQuant parameters file, which is provided in "/MaxQuant". This file is used to generate the actual parameters file used in MaxQuant. The "RAW" variable should be edited to point to the user-specified directory that contains all ".raw" files used for MaxQuant analysis.
 
 ## Running ProteomeGenerator
 
@@ -67,6 +67,7 @@ snakemake --snakefile Snakefile-K0562 --cluster \
 ```
 
 "-W" wall time argument might need to be adjusted to account for larger datasets used in MaxQuant.
+
 "--bind" argument will need to be adjusted so that Singularity can access scripts outside the container. You must bind the directory for ProteomeGenerator and RAW directory for MaxQuant so that ProteomeGenerator can read and write data on your system.
 
 ### Expected Output
