@@ -16,7 +16,7 @@ PAR = SMDir + "/MaxQuant/mqpar_template.xml"
 ### Begin User Variables
 
 # Directories
-WD = "/lila/data/kentsis/testfiles/K0562_mqtesting/"
+WD = "/lila/data/kentsis/testfiles/test/"
 workdir: WD
 TMP = '/scratch/chenz4'
 
