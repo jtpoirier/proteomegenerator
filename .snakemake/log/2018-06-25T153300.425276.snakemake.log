@@ -1,0 +1,31 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cluster nodes: 50
+Job counts:
+	count	jobs
+	1	all
+	1	maxQuant
+	1	mqpar_user
+	3
+
+localrule mqpar_user:
+    input: proteome.unique.fasta, /lila/home/chenz4/proteomegenerator/MaxQuant/mqpar.xml, /lila/data/kentsis/testfiles/K0562_mqtesting, /scratch/poirierj
+    output: /lila/data/kentsis/testfiles/K0562_mqtesting/mqpar.xml
+    log: out/logs/merged.mqpar_conversion.txt
+    jobid: 2
+    benchmark: out/benchmarks/merged.mqpar_conversion.txt
+
+Finished job 2.
+1 of 3 steps (33%) done
+
+rule maxQuant:
+    input: /lila/data/kentsis/testfiles/K0562_mqtesting/mqpar.xml, /lila/home/chenz4/proteomegenerator/MaxQuant/bin/MaxQuantCmd.exe
+    output: /lila/data/kentsis/testfiles/K0562_mqtesting/combined/txt/summary.txt
+    log: out/logs/merged.maxQuant.txt
+    jobid: 1
+    benchmark: out/benchmarks/maxQuant.txt
+
+Submitted job 1 with external jobid 'Job <4091566> is submitted to default queue <cpuqueue>.'.
+Terminating processes on user request, this might take some time.
+Will exit after finishing currently running jobs.
+Complete log: /lila/home/chenz4/proteomegenerator/.snakemake/log/2018-06-25T153300.425276.snakemake.log

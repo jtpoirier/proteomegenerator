@@ -1,0 +1,39 @@
+localrules directive specifies rules that are not present in the Snakefile:
+	UCSC_UCSC_denovo
+
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cluster nodes: 50
+Job counts:
+	count	jobs
+	1	all
+	1	maxQuant
+	1	mqpar_conversion
+	3
+
+localrule mqpar_conversion:
+    input: out/all-merge/merged/proteome.unique.fasta, /lila/home/chenz4/proteomegenerator/MaxQuant/mqpar_template.xml, /lila/data/kentsis/Raw_files/K056, /scratch/chenz4
+    output: /lila/data/kentsis/Raw_files/K056/mqpar.xml
+    log: out/logs/merged.mqpar_conversion.txt
+    jobid: 2
+    benchmark: out/benchmarks/merged.mqpar_conversion.txt
+
+Finished job 2.
+1 of 3 steps (33%) done
+
+rule maxQuant:
+    input: /lila/data/kentsis/Raw_files/K056/mqpar.xml, /lila/home/chenz4/proteomegenerator/MaxQuant/bin/MaxQuantCmd.exe
+    output: /lila/data/kentsis/Raw_files/K056/combined/txt/summary.txt
+    log: out/logs/merged.maxQuant.txt
+    jobid: 1
+    benchmark: out/benchmarks/maxQuant.txt
+
+Submitted job 1 with external jobid 'Job <4110451> is submitted to default queue <cpuqueue>.'.
+    Error in rule maxQuant:
+        jobid: 1
+        output: /lila/data/kentsis/Raw_files/K056/combined/txt/summary.txt
+        log: out/logs/merged.maxQuant.txt
+
+Job failed, going on with independent jobs.
+Exiting because a job execution failed. Look above for error message
+Complete log: /lila/home/chenz4/proteomegenerator/.snakemake/log/2018-06-26T100702.278182.snakemake.log

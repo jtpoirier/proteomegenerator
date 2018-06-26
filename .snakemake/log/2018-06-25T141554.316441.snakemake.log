@@ -1,0 +1,3 @@
+SyntaxError in line 56 of /lila/home/chenz4/proteomegenerator/pgmtestpar:
+No rule keywords allowed after run/shell/script/wrapper/cwl in rule mqpar_user. (pgmtestpar, line 56)
+  File "/lila/home/chenz4/proteomegenerator/Snakefile-TestPar", line 34, in <module>

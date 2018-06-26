@@ -1,0 +1,3 @@
+NameError in line 6 of /lila/home/chenz4/proteomegenerator/Snakefile-TestPar:
+name 'getcwd' is not defined
+  File "/lila/home/chenz4/proteomegenerator/Snakefile-TestPar", line 6, in <module>

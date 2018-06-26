@@ -3,12 +3,20 @@ shell.executable("/bin/bash")
 
 singularity: "docker://continuumio/miniconda3:4.5.4"
 
+import os
+SMDir = os.getcwd()
+
+# PAR initializes to dummy parameter file unless one is provided
+MQ = SMDir + "/MaxQuant/bin/MaxQuantCmd.exe"
+PAR = SMDir + "/MaxQuant/mqpar_template.xml"
+
+
 ### Begin User Variables
 
 # Directories
-WD = "/lila/data/kentsis/testfiles/K0562_testing"
+WD = "/lila/data/kentsis/testfiles/K0562_testing/"
 workdir: WD
-TMP = '/scratch/poirierj'
+TMP = '/scratch/chenz4'
 
 # References
 FASTA='/data/poirier/indexes/GRCh38/GRCh38.genome.fa'
@@ -27,11 +35,16 @@ L2R2="/data/kentsis/RNAseq/K0562/{sample}_L2_2.fq.gz"
 
 
 # MaxQuant
-MQ = "/lila/home/chenz4/proteomegenerator/MaxQuant/bin/MaxQuantCmd.exe"
-DUMMY = "/lila/home/chenz4/proteomegenerator/MaxQuant/mqpar_dummy.xml"
 RAW = "/lila/data/kentsis/Raw_files/K056"
 
 ### End User Variables
+
+if os.path.exists(SMDir + "/MaxQuant/mqpar.xml") :
+    PAR = SMDir + "/MaxQuant/mqpar.xml"
+    ruleorder: mqpar_user > mqpar_conversion
+
+else:
+    ruleorder: mqpar_conversion > mqpar_user
 
 
 if 'GTF' in locals():

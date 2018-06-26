@@ -1,0 +1,25 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cluster nodes: 50
+Job counts:
+	count	jobs
+	1	all
+	1	mqpar_conversion
+	2
+
+rule mqpar_conversion:
+    input: proteome.unique.fasta, /lila/home/chenz4/proteomegenerator/MaxQuant/mqpar_dummy.xml, /lila/data/kentsis/Raw_files/K056
+    output: /lila/data/kentsis/Raw_files/K056/mqpar.xml
+    log: out/logs/merged.mqpar_conversion.txt
+    jobid: 1
+    benchmark: out/benchmarks/merged.mqpar_conversion.txt
+
+Submitted job 1 with external jobid 'Job <4089850> is submitted to default queue <cpuqueue>.'.
+    Error in rule mqpar_conversion:
+        jobid: 1
+        output: /lila/data/kentsis/Raw_files/K056/mqpar.xml
+        log: out/logs/merged.mqpar_conversion.txt
+
+Job failed, going on with independent jobs.
+Exiting because a job execution failed. Look above for error message
+Complete log: /lila/home/chenz4/proteomegenerator/.snakemake/log/2018-06-25T095449.060925.snakemake.log

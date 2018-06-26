@@ -1,0 +1,4 @@
+Building DAG of jobs...
+MissingInputException in line 4 of /lila/home/chenz4/proteomegenerator/pgmtestpar:
+Missing input files for rule mqpar_conversion:
+out/all-merge/merged/proteome.unique.fasta
