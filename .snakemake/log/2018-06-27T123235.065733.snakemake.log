@@ -1,0 +1,7 @@
+localrules directive specifies rules that are not present in the Snakefile:
+	mqpar_user
+
+Building DAG of jobs...
+MissingInputException in line 4 of /lila/home/chenz4/proteomegenerator/pgmtestpar:
+Missing input files for rule mqpar_conversion:
+180301_SwissProt_isoforms_cRAP.fasta

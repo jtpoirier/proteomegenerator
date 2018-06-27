@@ -23,7 +23,7 @@ rule mqpar_conversion:
                 if '<maxQuantVersion>' in line:
                     newMQPar.write("<tempFolder>" + "</tempFolder>\n")
                 if '<emailFromAddress>' in line:
-                    newMQPar.write("<fixedCombinedFolder>" + os.getcwd() + "/output/" + "</fixedCombinedFolder>\n")
+                    newMQPar.write("<fixedCombinedFolder>" + os.getcwd() + "/out/" + "</fixedCombinedFolder>\n")
                 if '<pluginFolder></pluginFolder>' in line:
                     newMQPar.write("<numThreads>"+params.t+"</numThreads>\n")
                 if '<filePaths>' in line:
@@ -75,6 +75,6 @@ rule maxQuant:
     benchmark: "out/benchmarks/maxQuant.txt"
     log: "out/logs/merged.maxQuant.txt"
     singularity: "docker://mono:5.12.0.226"
-    params: n="5", J="MQ", R="'span[ptile=68] rusage[mem=10]'", o="out/logs/mq.out", eo="out/logs/mq.err"
+    params: n="10", J="MQ", R="'span[ptile=68] rusage[mem=10]'", o="out/logs/mq.out", eo="out/logs/mq.err"
     shell: "mono {input.mq} {input.par}"
 
