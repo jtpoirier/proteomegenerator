@@ -1,0 +1,7 @@
+localrules directive specifies rules that are not present in the Snakefile:
+	UCSC_UCSC_denovo
+
+Building DAG of jobs...
+MissingInputException in line 62 of /lila/home/chenz4/proteomegenerator/Snakefile-K0562:
+Missing input files for rule all:
+out/combined/txt/summary.txt

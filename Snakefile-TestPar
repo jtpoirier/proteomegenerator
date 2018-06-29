@@ -41,12 +41,12 @@ else:
 
 
 rule all:
-    input: RAW + "/combined/txt/summary.txt"
+    input: "out/combined/txt/summary.txt"
 
 include: "pgmtestpar"
 
-
-
+snakemake.utils.makedirs(TMP)
+snakemake.utils.makedirs('out/benchmarks')
 
 
 #snakemake --snakefile Snakefile-K0562 --cluster "bsub -J {params.J} -n {params.n} -R {params.R} -W 4:00 -o {params.o} -eo {params.eo}" --jn {rulename}.{jobid}.sj -j 50 -k --latency-wait 60 --use-conda --use-singularity --singularity-args "--bind /data:/data,/lila:/lila" --ri -n

@@ -14,7 +14,7 @@ PAR = SMDir + "/MaxQuant/mqpar_template.xml"
 ### Begin User Variables
 
 # Directories
-WD = "/lila/data/kentsis/testfiles/K0562_testing/"
+WD = "/lila/data/kentsis/testfiles/K0562_warm/"
 workdir: WD
 TMP = '/scratch/chenz4'
 
@@ -35,7 +35,7 @@ L2R2="/data/kentsis/RNAseq/K0562/{sample}_L2_2.fq.gz"
 
 
 # MaxQuant
-RAW = "/lila/data/kentsis/Raw_files/K056"
+RAW = "/oscar/warm/kentsis/proteogenomics/K052_raw_MS_files"
 
 ### End User Variables
 
@@ -60,7 +60,7 @@ snakemake.utils.makedirs('out/benchmarks')
 
 
 rule all:
-    input: RAW + "/combined/txt/summary.txt"
+    input: "out/combined/txt/summary.txt"
 
 include: "pgm"
 
