@@ -1,0 +1,107 @@
+---
+  ref_dir: '/data/kentsis/indexes/GRCh38+ALT+decoy+HLA/BWAIndex'
+  #ref: '/data/kentsis/indexes/GRCh38+ALT+decoy+HLA/BWAIndex/hs38DH.fa'
+  #dict: '/data/kentsis/indexes/GRCh38+ALT+decoy+HLA/BWAIndex/hs38DH.dict'i
+  #ref: '/data/kentsis/indexes/hg19_mm10/index/bwa/0.7.8/hg19_mm10.fasta'
+  #dict: '/data/kentsis/indexes/hg19_mm10/hg19_mm10.dict'
+  ref: '/data/kentsis/indexes/xenograft-GRCh38/BWAIndex/xenograft.fa'
+  dict: '/data/kentsis/indexes/xenograft-GRCh38/BWAIndex/xenograft.dict'
+### This has a little more slop...
+  #targets: '/ifs/e63data/poirierj/bed/S04380110-V5/S04380110_Padded.GRCh38_noalt.bed'
+  #targets: '/data/kentsis/testing_scratchpad/rpe_control_4-19/out/sequence_groups.tsv'
+  targets: '/data/kentsis/testing_scratchpad/test_CSG/out/sequence_groups.tsv'
+  num_targets: 18 # if using an intervals file, use num_targets=1
+  #targets: '/ifs/e63data/poirierj/bed/nexterarapidcapture_exome_targetedregions_v1.2_GRCh38.bed'
+  wgs_calling_regions: '/data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list'
+  #fingerprint: "/ifs/e63data/poirierj/GATK/GRCh38/00-common_all.vcf.gz"
+  #indel: '/data/kentsis/indexes/hg19/Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.gz'
+  #snp: '/data/kentsis/indexes/hg19/dbsnp_138.hg19.vcf.gz'  
+  indel: '/data/kentsis/GATK/GRCh38/Mills_and_1000G_gold_standard.indels.b38.primary_assembly.vcf'
+  snp: '/data/kentsis/GATK/GRCh38/00-common_all.vcf.gz' #dbSNP build 147 common SNPs
+  DoC: 20
+  # lines:
+  #   JHU-LX22:
+  #     - "JHU-LX22-p1"
+  #     - "JHU-LX22-p3"
+  #   JHU-LX33:
+  #     - "JHU-LX33-p1"
+  #     - "JHU-LX33-p3"
+  #   JHU-LX44:
+  #     - "JHU-LX44-p1"
+  #     - "JHU-LX44-p3"
+  #   JHU-LX48:
+  #     - "JHU-LX48-p1"
+  #     - "JHU-LX48-p3"
+  #   JHU-LX88:
+  #     - "JHU-LX88-p1"
+  #     - "JHU-LX88-p3"
+  #   JHU-LX92:
+  #     - "JHU-LX92-p1"
+  #     - "JHU-LX92-p3"
+  #   JHU-LX101:
+  #     - "JHU-LX101-p1"
+  #     - "JHU-LX101-p3"
+  #   JHU-LX102:
+  #     - "JHU-LX102-p1"
+  #     - "JHU-LX102-p3"
+  #   JHU-LX108:
+  #     - "JHU-LX108-p1"
+  #     - "JHU-LX108-p3"
+  #   JHU-LX110:
+  #     - "JHU-LX110-p1"
+  #     - "JHU-LX110-p3"
+  #   SCRX-Lu149:
+  #     - "SCRX-Lu149-p1"
+  #     - "SCRX-Lu149-p3"
+  project_directory: "/data/kentsis/testing_scratchpad/rpe_tumor_6-25"
+  samples: 
+    RPE-GFP-PGBD5:
+      read_groups:
+        L005_001:
+          files:
+            - "/data/kentsis/WGS/RPE-GFP-PGBD5/fastq/RPE-GFP-PGBD5-xeno_ATTCAGAA_HGFVTCCXX_L005_001.R1.fastq.gz"
+            - "/data/kentsis/WGS/RPE-GFP-PGBD5/fastq/RPE-GFP-PGBD5-xeno_ATTCAGAA_HGFVTCCXX_L005_001.R2.fastq.gz"
+          header: "@RG\\tID:L005_001\\tSM:RPE-GFP-PGBD5\\tCN:MSK\\tDT:2016-01-03\\tLB:Library\\tPL:ILLUMINA" 
+        L006_001:
+          files:
+            - "/data/kentsis/WGS/RPE-GFP-PGBD5/fastq/RPE-GFP-PGBD5-xeno_ATTCAGAA_HGFVTCCXX_L006_001.R1.fastq.gz"
+            - "/data/kentsis/WGS/RPE-GFP-PGBD5/fastq/RPE-GFP-PGBD5-xeno_ATTCAGAA_HGFVTCCXX_L006_001.R2.fastq.gz"
+          header: "@RG\\tID:L006_001\\tSM:RPE-GFP-PGBD5\\tCN:MSK\\tDT:2016-01-03\\tLB:Library\\tPL:ILLUMINA"
+        L007_001:
+          files:
+            - "/data/kentsis/WGS/RPE-GFP-PGBD5/fastq/RPE-GFP-PGBD5-xeno_ATTCAGAA_HGFVTCCXX_L007_001.R1.fastq.gz"
+            - "/data/kentsis/WGS/RPE-GFP-PGBD5/fastq/RPE-GFP-PGBD5-xeno_ATTCAGAA_HGFVTCCXX_L007_001.R2.fastq.gz"
+          header: "@RG\\tID:L007_001\\tSM:RPE-GFP-PGBD5\\tCN:MSK\\tDT:2016-01-03\\tLB:Library\\tPL:ILLUMINA"
+        L008_001:
+          files:
+            - "/data/kentsis/WGS/RPE-GFP-PGBD5/fastq/RPE-GFP-PGBD5-xeno_ATTCAGAA_HGFVTCCXX_L008_001.R1.fastq.gz"
+            - "/data/kentsis/WGS/RPE-GFP-PGBD5/fastq/RPE-GFP-PGBD5-xeno_ATTCAGAA_HGFVTCCXX_L008_001.R2.fastq.gz"
+          header: "@RG\\tID:L008_001\\tSM:RPE-GFP-PGBD5\\tCN:MSK\\tDT:2016-01-03\\tLB:Library\\tPL:ILLUMINA"
+  sample: 'RPE-GFP-PGBD5'  
+  units: 
+    L005_001: 
+      - "/data/kentsis/WGS/RPE-GFP-PGBD5/RPE-GFP-PGBD5-xeno_ATTCAGAA_HGFVTCCXX_L005_001.R1.fastq.gz"
+      - "/data/kentsis/WGS/RPE-GFP-PGBD5/RPE-GFP-PGBD5-xeno_ATTCAGAA_HGFVTCCXX_L005_001.R2.fastq.gz"
+    L006_001: 
+      - "/data/kentsis/WGS/RPE-GFP-PGBD5/RPE-GFP-PGBD5-xeno_ATTCAGAA_HGFVTCCXX_L006_001.R1.fastq.gz"
+      - "/data/kentsis/WGS/RPE-GFP-PGBD5/RPE-GFP-PGBD5-xeno_ATTCAGAA_HGFVTCCXX_L006_001.R2.fastq.gz"
+    L007_001: 
+      - "/data/kentsis/WGS/RPE-GFP-PGBD5/RPE-GFP-PGBD5-xeno_ATTCAGAA_HGFVTCCXX_L007_001.R1.fastq.gz"
+      - "/data/kentsis/WGS/RPE-GFP-PGBD5/RPE-GFP-PGBD5-xeno_ATTCAGAA_HGFVTCCXX_L007_001.R2.fastq.gz"
+    L008_001: 
+      - "/data/kentsis/WGS/RPE-GFP-PGBD5/RPE-GFP-PGBD5-xeno_ATTCAGAA_HGFVTCCXX_L008_001.R1.fastq.gz"
+      - "/data/kentsis/WGS/RPE-GFP-PGBD5/RPE-GFP-PGBD5-xeno_ATTCAGAA_HGFVTCCXX_L008_001.R2.fastq.gz"
+  read_groups:
+    #s_OA_amlcl_003_CL_bc03_Proj_5932_L000: 
+    L005_001: "@RG\\tID:L005_001\\tSM:RPE-GFP-PGBD5\\tCN:MSK\\tDT:2016-01-03\\tLB:Library\\tPL:ILLUMINA"
+    L006_001: "@RG\\tID:L006_001\\tSM:RPE-GFP-PGBD5\\tCN:MSK\\tDT:2016-01-03\\tLB:Library\\tPL:ILLUMINA"
+    L007_001: "@RG\\tID:L007_001\\tSM:RPE-GFP-PGBD5\\tCN:MSK\\tDT:2016-01-03\\tLB:Library\\tPL:ILLUMINA"
+    L008_001: "@RG\\tID:L008_001\\tSM:RPE-GFP-PGBD5\\tCN:MSK\\tDT:2016-01-03\\tLB:Library\\tPL:ILLUMINA"
+  
+
+  bam_sample:
+    K052:
+      - "/data/kentsis/WGS/K052_HemePACT/s_OA_amlcl_003_CL_bc03_Proj_5932_L000_mrg_cl_aln_srt_MD_IR_BR.bam"
+
+  paired:
+    K052: "K052-normal"

@@ -243,6 +243,7 @@ rule UCSC_GTF:
     input: "out/all-merge/stringtie.merged.gtf"
     output: sample="out/all-merge/sample-UCSC.gtf", reference="out/all-merge/reference.gtf"
     benchmark: "out/benchmarks/UCSC.txt"
+    log: "out/logs/UCSC.txt"
     params: n="1", R="'span[hosts=1] rusage[mem=10]'", J="UCSC", o="out/logs/UCSC.out", eo="out/logs/UCSC.err"
     shell: "cat {REF_GTF} | grep chr > {output.reference}; \
             cat {input} | grep chr > {output.sample} 2> {log}"
