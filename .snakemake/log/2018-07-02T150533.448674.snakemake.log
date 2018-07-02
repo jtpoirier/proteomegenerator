@@ -1,0 +1,5 @@
+Building DAG of jobs...
+MissingInputException in line 61 of /lila/home/chenz4/proteomegenerator/wgs_fastq:
+Missing input files for rule GenerateRGWiseUbamsFromFq:
+/data/kentsis/WGS/RPE-GFP_control/SRR3478407_1.fastq
+/data/kentsis/WGS/RPE-GFP_control/SRR3478407_2.fastq

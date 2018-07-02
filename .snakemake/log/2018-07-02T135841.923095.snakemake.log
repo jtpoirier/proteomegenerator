@@ -1,0 +1,696 @@
+Building DAG of jobs...
+Using shell: /usr/bin/bash
+Provided cluster nodes: 50
+Job counts:
+	count	jobs
+	18	ApplyBQSRToMappedReads
+	18	BaseRecalibrator
+	1	GatherBqsrReports
+	1	MergeRealignedBamRGsAndMarkDuplicates
+	1	MergeUnmappedAndRealignedBAMs
+	1	PicardSortUbamForMerging
+	1	RealignUnmappedBAM
+	1	RecreateFastqFromUBAM
+	1	RevertUnmappedBAM
+	50	ScatterIntervals
+	1	SortAndFixRealignedBamTags
+	1	all
+	95
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0027-scattered.intervals
+    jobid: 68
+    wildcards: interval=0027
+
+Submitted job 68 with external jobid 'Job <4139048> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0023-scattered.intervals
+    jobid: 54
+    wildcards: interval=0023
+
+Submitted job 54 with external jobid 'Job <4139049> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0000-scattered.intervals
+    jobid: 44
+    wildcards: interval=0000
+
+Submitted job 44 with external jobid 'Job <4139050> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0039-scattered.intervals
+    jobid: 22
+    wildcards: interval=0039
+
+Submitted job 22 with external jobid 'Job <4139051> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0034-scattered.intervals
+    jobid: 35
+    wildcards: interval=0034
+
+Submitted job 35 with external jobid 'Job <4139052> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0032-scattered.intervals
+    jobid: 66
+    wildcards: interval=0032
+
+Submitted job 66 with external jobid 'Job <4139053> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0044-scattered.intervals
+    jobid: 30
+    wildcards: interval=0044
+
+Submitted job 30 with external jobid 'Job <4139054> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0005-scattered.intervals
+    jobid: 37
+    wildcards: interval=0005
+
+Submitted job 37 with external jobid 'Job <4139055> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0025-scattered.intervals
+    jobid: 40
+    wildcards: interval=0025
+
+Submitted job 40 with external jobid 'Job <4139056> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0024-scattered.intervals
+    jobid: 56
+    wildcards: interval=0024
+
+Submitted job 56 with external jobid 'Job <4139057> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0030-scattered.intervals
+    jobid: 49
+    wildcards: interval=0030
+
+Submitted job 49 with external jobid 'Job <4139058> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0013-scattered.intervals
+    jobid: 53
+    wildcards: interval=0013
+
+Submitted job 53 with external jobid 'Job <4139059> is submitted to default queue <cpuqueue>.'.
+
+rule PicardSortUbamForMerging:
+    input: /data/kentsis/WGS/K052_HemePACT/readgroups/s_OA_amlcl_003_CL_bc03_Proj_5932_L000.bam
+    output: out/readgroups/s_OA_amlcl_003_CL_bc03_Proj_5932_L000.unmapped_namesorted.bam
+    jobid: 91
+    wildcards: readgroup=s_OA_amlcl_003_CL_bc03_Proj_5932_L000
+
+Submitted job 91 with external jobid 'Job <4139060> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0014-scattered.intervals
+    jobid: 23
+    wildcards: interval=0014
+
+Submitted job 23 with external jobid 'Job <4139061> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0047-scattered.intervals
+    jobid: 67
+    wildcards: interval=0047
+
+Submitted job 67 with external jobid 'Job <4139062> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0048-scattered.intervals
+    jobid: 60
+    wildcards: interval=0048
+
+Submitted job 60 with external jobid 'Job <4139063> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0015-scattered.intervals
+    jobid: 46
+    wildcards: interval=0015
+
+Submitted job 46 with external jobid 'Job <4139064> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0038-scattered.intervals
+    jobid: 26
+    wildcards: interval=0038
+
+Submitted job 26 with external jobid 'Job <4139065> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0001-scattered.intervals
+    jobid: 9
+    wildcards: interval=0001
+
+Submitted job 9 with external jobid 'Job <4139066> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0026-scattered.intervals
+    jobid: 48
+    wildcards: interval=0026
+
+Submitted job 48 with external jobid 'Job <4139067> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0007-scattered.intervals
+    jobid: 6
+    wildcards: interval=0007
+
+Submitted job 6 with external jobid 'Job <4139068> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0006-scattered.intervals
+    jobid: 20
+    wildcards: interval=0006
+
+Submitted job 20 with external jobid 'Job <4139069> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0009-scattered.intervals
+    jobid: 16
+    wildcards: interval=0009
+
+Submitted job 16 with external jobid 'Job <4139070> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0036-scattered.intervals
+    jobid: 47
+    wildcards: interval=0036
+
+Submitted job 47 with external jobid 'Job <4139071> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0019-scattered.intervals
+    jobid: 57
+    wildcards: interval=0019
+
+Submitted job 57 with external jobid 'Job <4139072> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0042-scattered.intervals
+    jobid: 59
+    wildcards: interval=0042
+
+Submitted job 59 with external jobid 'Job <4139073> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0045-scattered.intervals
+    jobid: 31
+    wildcards: interval=0045
+
+Submitted job 31 with external jobid 'Job <4139074> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0010-scattered.intervals
+    jobid: 10
+    wildcards: interval=0010
+
+Submitted job 10 with external jobid 'Job <4139075> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0020-scattered.intervals
+    jobid: 7
+    wildcards: interval=0020
+
+Submitted job 7 with external jobid 'Job <4139076> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0031-scattered.intervals
+    jobid: 14
+    wildcards: interval=0031
+
+Submitted job 14 with external jobid 'Job <4139077> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0021-scattered.intervals
+    jobid: 61
+    wildcards: interval=0021
+
+Submitted job 61 with external jobid 'Job <4139078> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0022-scattered.intervals
+    jobid: 17
+    wildcards: interval=0022
+
+Submitted job 17 with external jobid 'Job <4139079> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0018-scattered.intervals
+    jobid: 38
+    wildcards: interval=0018
+
+Submitted job 38 with external jobid 'Job <4139080> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0029-scattered.intervals
+    jobid: 11
+    wildcards: interval=0029
+
+Submitted job 11 with external jobid 'Job <4139081> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0041-scattered.intervals
+    jobid: 15
+    wildcards: interval=0041
+
+Submitted job 15 with external jobid 'Job <4139082> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0049-scattered.intervals
+    jobid: 3
+    wildcards: interval=0049
+
+Submitted job 3 with external jobid 'Job <4139083> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0037-scattered.intervals
+    jobid: 19
+    wildcards: interval=0037
+
+Submitted job 19 with external jobid 'Job <4139084> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0003-scattered.intervals
+    jobid: 21
+    wildcards: interval=0003
+
+Submitted job 21 with external jobid 'Job <4139085> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0008-scattered.intervals
+    jobid: 45
+    wildcards: interval=0008
+
+Submitted job 45 with external jobid 'Job <4139086> is submitted to default queue <cpuqueue>.'.
+
+rule RevertUnmappedBAM:
+    input: /data/kentsis/WGS/K052_HemePACT/readgroups/s_OA_amlcl_003_CL_bc03_Proj_5932_L000.bam
+    output: out/readgroups/s_OA_amlcl_003_CL_bc03_Proj_5932_L000.reverted.bam
+    jobid: 94
+    wildcards: readgroup=s_OA_amlcl_003_CL_bc03_Proj_5932_L000
+
+Submitted job 94 with external jobid 'Job <4139087> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0002-scattered.intervals
+    jobid: 5
+    wildcards: interval=0002
+
+Submitted job 5 with external jobid 'Job <4139088> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0028-scattered.intervals
+    jobid: 29
+    wildcards: interval=0028
+
+Submitted job 29 with external jobid 'Job <4139089> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0043-scattered.intervals
+    jobid: 4
+    wildcards: interval=0043
+
+Submitted job 4 with external jobid 'Job <4139090> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0017-scattered.intervals
+    jobid: 65
+    wildcards: interval=0017
+
+Submitted job 65 with external jobid 'Job <4139091> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0033-scattered.intervals
+    jobid: 8
+    wildcards: interval=0033
+
+Submitted job 8 with external jobid 'Job <4139092> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0040-scattered.intervals
+    jobid: 18
+    wildcards: interval=0040
+
+Submitted job 18 with external jobid 'Job <4139093> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0012-scattered.intervals
+    jobid: 63
+    wildcards: interval=0012
+
+Submitted job 63 with external jobid 'Job <4139094> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0004-scattered.intervals
+    jobid: 2
+    wildcards: interval=0004
+
+Submitted job 2 with external jobid 'Job <4139095> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0011-scattered.intervals
+    jobid: 62
+    wildcards: interval=0011
+
+Submitted job 62 with external jobid 'Job <4139096> is submitted to default queue <cpuqueue>.'.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0046-scattered.intervals
+    jobid: 42
+    wildcards: interval=0046
+
+Submitted job 42 with external jobid 'Job <4139097> is submitted to default queue <cpuqueue>.'.
+    Error in rule ScatterIntervals:
+        jobid: 68
+        output: out/intervals/0027-scattered.intervals
+
+Job failed, going on with independent jobs.
+
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0035-scattered.intervals
+    jobid: 25
+    wildcards: interval=0035
+
+    Error in rule ScatterIntervals:
+        jobid: 54
+        output: out/intervals/0023-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 44
+        output: out/intervals/0000-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 22
+        output: out/intervals/0039-scattered.intervals
+
+Job failed, going on with independent jobs.
+Submitted job 25 with external jobid 'Job <4139098> is submitted to default queue <cpuqueue>.'.
+    Error in rule ScatterIntervals:
+
+        jobid: 35
+rule ScatterIntervals:
+    input: /data/kentsis/indexes/GRCh38/wgs_calling_regions.hg38.interval_list
+    output: out/intervals/0016-scattered.intervals
+    jobid: 64
+    wildcards: interval=0016
+        output: out/intervals/0034-scattered.intervals
+
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 66
+        output: out/intervals/0032-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 30
+        output: out/intervals/0044-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 37
+        output: out/intervals/0005-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 40
+        output: out/intervals/0025-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 56
+        output: out/intervals/0024-scattered.intervals
+
+Job failed, going on with independent jobs.
+Submitted job 64 with external jobid 'Job <4139099> is submitted to default queue <cpuqueue>.'.
+    Error in rule ScatterIntervals:
+        jobid: 49
+        output: out/intervals/0030-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 53
+        output: out/intervals/0013-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule PicardSortUbamForMerging:
+        jobid: 91
+        output: out/readgroups/s_OA_amlcl_003_CL_bc03_Proj_5932_L000.unmapped_namesorted.bam
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 23
+        output: out/intervals/0014-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 67
+        output: out/intervals/0047-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 60
+        output: out/intervals/0048-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 46
+        output: out/intervals/0015-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 26
+        output: out/intervals/0038-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 9
+        output: out/intervals/0001-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 48
+        output: out/intervals/0026-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 6
+        output: out/intervals/0007-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 20
+        output: out/intervals/0006-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 16
+        output: out/intervals/0009-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 47
+        output: out/intervals/0036-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 57
+        output: out/intervals/0019-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 59
+        output: out/intervals/0042-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 31
+        output: out/intervals/0045-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 10
+        output: out/intervals/0010-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 7
+        output: out/intervals/0020-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 14
+        output: out/intervals/0031-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 61
+        output: out/intervals/0021-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 17
+        output: out/intervals/0022-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 38
+        output: out/intervals/0018-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 11
+        output: out/intervals/0029-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 15
+        output: out/intervals/0041-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 3
+        output: out/intervals/0049-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 19
+        output: out/intervals/0037-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 21
+        output: out/intervals/0003-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 45
+        output: out/intervals/0008-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule RevertUnmappedBAM:
+        jobid: 94
+        output: out/readgroups/s_OA_amlcl_003_CL_bc03_Proj_5932_L000.reverted.bam
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 5
+        output: out/intervals/0002-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 29
+        output: out/intervals/0028-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 4
+        output: out/intervals/0043-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 65
+        output: out/intervals/0017-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 8
+        output: out/intervals/0033-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 18
+        output: out/intervals/0040-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 63
+        output: out/intervals/0012-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 2
+        output: out/intervals/0004-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 62
+        output: out/intervals/0011-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 42
+        output: out/intervals/0046-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 25
+        output: out/intervals/0035-scattered.intervals
+
+Job failed, going on with independent jobs.
+    Error in rule ScatterIntervals:
+        jobid: 64
+        output: out/intervals/0016-scattered.intervals
+
+Job failed, going on with independent jobs.
+Exiting because a job execution failed. Look above for error message
+Complete log: /lila/home/chenz4/proteomegenerator/.snakemake/log/2018-07-02T135841.923095.snakemake.log

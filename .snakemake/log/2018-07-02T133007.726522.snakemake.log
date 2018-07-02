@@ -1,0 +1,4 @@
+Building DAG of jobs...
+MissingInputException in line 208 of /lila/home/chenz4/proteomegenerator/Snakefile-wgs:
+Missing input files for rule BaseRecalibrator:
+out/K052.realigned_ubam_merged.RGmerged.dedup.fixedtags.readyforBQSR.bam
