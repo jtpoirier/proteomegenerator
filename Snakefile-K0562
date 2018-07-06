@@ -1,9 +1,8 @@
 shell.executable("/bin/bash")
-#shell.prefix("source ~/.bashrc; source ~/.bash_profile; ")
 
 singularity: "docker://continuumio/miniconda3:4.5.4"
 
-import os
+import os, multiprocessing
 SMDir = os.getcwd()
 
 # PAR initializes to dummy parameter file unless one is provided
@@ -14,9 +13,9 @@ PAR = SMDir + "/MaxQuant/mqpar_template.xml"
 ### Begin User Variables
 
 # Directories
-WD = "/lila/data/kentsis/testfiles/K0562_warm/"
+WD = "/lila/data/kentsis/testfiles/K0562_warmp/"
 workdir: WD
-TMP = '/scratch/chenz4'
+TMP = '/scratch/chenz4p'
 
 # References
 FASTA='/data/poirier/indexes/GRCh38/GRCh38.genome.fa'
@@ -35,7 +34,9 @@ L2R2="/data/kentsis/RNAseq/K0562/{sample}_L2_2.fq.gz"
 
 
 # MaxQuant
-RAW = "/lila/data/kentsis/testfiles/K056PGPar"
+RAW = "/lila/data/kentsis/testfiles/K056PGParp"
+MAXCPU = str(multiprocessing.cpu_count())
+
 
 ### End User Variables
 
@@ -60,7 +61,7 @@ snakemake.utils.makedirs('out/benchmarks')
 
 
 rule all:
-    input: "out/combined/txt/summary.txt"
+    input: expand("out/all-merge/{model}/combined/txt/summary.txt", model=MODELS)
 
 include: "pgm"
 
