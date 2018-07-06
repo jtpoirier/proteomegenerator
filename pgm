@@ -308,5 +308,5 @@ rule maxQuant:
     benchmark: "out/benchmarks/{model}.maxQuant.txt"
     log: "out/logs/{model}.maxQuant.txt"
     singularity: "docker://mono:5.12.0.226"
-    params: n="20", J="MQ", R="'span[ptile=68] rusage[mem=10]'", o="out/logs/mq.out", eo="out/logs/mq.err"
+    params: n=MAXCPU, J="MQ", R="'span[ptile=" + MAXCPU +  "] rusage[mem=10]'", o="out/logs/mq.out", eo="out/logs/mq.err"
     shell: "mono {input.mq} {input.par}"
