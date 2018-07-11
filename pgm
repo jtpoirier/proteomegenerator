@@ -252,12 +252,14 @@ rule mqpar_conversion:
 
         with open(PAR) as oldMQPar, open(output[0],"w") as newMQPar:
             for line in oldMQPar:
-                if '<fastaFilePath>' not in line and '<tempFolder>' not in line and '<fixedCombinedFolder>' not in line and '<numThreads>' not in line and '<string>temp</string>' not in line:
+                if '<fastaFilePath>' not in line and '<tempFolder>' not in line and '<fixedCombinedFolder>' not in line and '<numThreads>' not in line and '<string>temp</string>' not in line and '<fixedSearchFolder></fixedSearchFolder>' not in line:
                     newMQPar.write(line)
                 if '<FastaFileInfo>' in line:
                     newMQPar.write("<fastaFilePath>" + os.getcwd() + "/"+ input[0] + "</fastaFilePath>\n")
                 if '<maxQuantVersion>' in line:
-                    newMQPar.write("<tempFolder>" +  TMP + "</tempFolder>\n")
+                    newMQPar.write("<tempFolder>" +  TMP + "/" + wildcards.model + "</tempFolder>\n")
+                if '</fastaFilesFirstSearch>' in line:
+                    newMQPar.write("<fixedSearchFolder>" +  os.path.dirname(os.path.abspath(input[0])) + "/search" + "</fixedSearchFolder>\n")
                 if '<emailFromAddress>' in line:
                     newMQPar.write("<fixedCombinedFolder>"  + os.path.dirname(os.path.abspath(input[0])) + "</fixedCombinedFolder>\n")
                 if '<pluginFolder></pluginFolder>' in line:
