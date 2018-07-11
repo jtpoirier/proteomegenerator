@@ -71,18 +71,18 @@ screen -S pg
 snakemake --snakefile Snakefile-K0562 --cluster \
 "bsub -J {params.J} -n {params.n} -R {params.R} -W 24:00 -o {params.o} -eo {params.eo}" \
 --jn {rulename}.{jobid}.sj -j 50 -k --latency-wait 60 --use-conda --use-singularity --singularity-args \
-"--bind /data:/data" --ri
+"--bind /data:/data,/scratch:/scratch" --ri
 ```
 
-"-W" wall time argument may need to be adjusted to account for larger datasets used in MaxQuant.
+"-W" wall time argument need to be adjusted to account for larger datasets used in MaxQuant.
 
-"--bind" argument will need to be adjusted so that Singularity can access scripts outside the container. You must bind the directory for ProteomeGenerator, "TMP", and "RAW" for MaxQuant so that ProteomeGenerator can read and write data on your system.
+"--bind" argument need to be adjusted so that Singularity can access files outside the container. You must bind the directory for ProteomeGenerator, "TMP", and "RAW" so ProteomeGenerator can read and write data on your system.
 
 ### Expected Output
 
 ProteomeGenerator will generate an indexed bam file of mapped and filtered reads of the format {sample}.Aligned.trimmed.out.bam, a sample-specific GTF of the format {sample}-stringtie.gtf, and a proteogenomic database called proteome.unique.fasta. A GFF3 corresponding to each entry in the fasta database is also generated with the predicted spliced peptide sequences mapped onto genome space for easy viewing in the [Integrative Genomics Viewer](http://software.broadinstitute.org/software/igv/). If a reference GTF file is provided, the pipeline will generate a proteogenomic database based on these reference annotations in addition to the sample-specific database.
 
-Furthermore, it will generate all tables outputted from MaxQuant in the user-specified working directory, under "out/combined/txt/".
+Furthermore, it will generate all tables produced by MaxQuant in the user-specified working directory, under "out/all-merge/merged/combined/txt/".
 
 ## Citing ProteomeGenerator
 
