@@ -20,6 +20,8 @@ ProteomeGenerator requires [Miniconda](https://conda.io/miniconda.html) to insta
 * [R](https://www.r-project.org/)
 * [Bioconductor](https://bioconductor.org/)
 * [Biostrings](https://bioconductor.org/packages/release/bioc/html/Biostrings.html)
+* [mono](https://www.mono-project.com/)
+* [MaxQuant](http://www.coxdocs.org/doku.php?id=maxquant:start)
 
 Optionally, many of the outputs from ProteomeGenerator may be viewed using the [Integrative Genomics Viewer](http://software.broadinstitute.org/software/igv/).
 
@@ -35,11 +37,12 @@ This command downloads Snakefile-K0562, the configuraton file used in Cifani et 
 
 ## Configuration
 
-To run ProteomeGenerator on your own data, create a new Snakefile using Snakefile-K0562 as a template. Next, edit the "User Variables" section to reflect your computing environment and samples. This section is broken into three parts: "Directories", "References", and "Samples".
+To run ProteomeGenerator on your own data, create a new Snakefile using Snakefile-K0562 as a template. Next, edit the "User Variables" section to reflect your computing environment and samples. This section is broken into three parts: "Directories", "References", "Samples", and "MaxQuant".
 
 ### Directories
 
-The "WD" variable sets the path that will serve as the relative path for all analyses. In a cluster environment, this path should be accessible to all nodes on the network. The "TMP" variable should point to a local scratch storage directory that should be mounted locally to each node on a cluster, as opposed to a high performance network storage location. This folder is not required to be accessible to all nodes.
+* The "WD" variable sets the path that will serve as the relative path for all analyses. In a cluster environment, this path should be accessible to all nodes on the network.
+* The "TMP" variable points to a local scratch storage directory that's mounted locally to each node on a cluster, as opposed to a high performance network storage location. This folder is not required to be accessible to all nodes. MaxQuant performs its temporary calculations in this directory. 
 
 ### References
 
@@ -49,6 +52,17 @@ ProteomeGenerator requires a FASTA formated genome reference and accepts an opti
 
 The "Samples" section should be edited to reflect the type, number, and naming structure of the input FASTQ files for a given experiment. In addition, the user must edit the input for the rule STAR to reflect the specific naming convention used.
 
+### MaxQuant
+
+MaxQuant requires mass spectrometry data as RAW files, search database as FASTA file, and a parameter file. The search database FASTA file is produced by ProteomeGenerator.
+
+* The "RAW" variable specifies the directory containing all user-provided .raw mass spectrometry data files. ProteomeGenerator will run MaxQuant on all .raw files in this directory. To perform calculations on independent raw files, they should be organized in individual directories. 
+* The "THREADS" variable specifies the number of computational threads used by MaxQuant. Currently, it's set to the max # of CPUs. MaxQuant runs the fastest when calculations are performed on the same host. As such, "rule maxQuant" sets "-n THREADS" and "span[ptile=THREADS]". Alternatively, these parameters may be user-specified. When changing "THREADS" variable, ensure the number is enclosed by "str()".
+* The "MQ" variable specifies the MaxQuant executable file, which is provided in "/MaxQuant/bin/MaxQuantCmd.exe" as part of this container distribution. The currently provided version of MaxQuant is 1.6.2.3, including its license agreement for redistribution located in "/MaxQuant". To switch to alternate versions of MaxQuant, please update both the executable and the parameter file. 
+* The "PAR" variable specifies the template MaxQuant parameter file, which is provided in "/MaxQuant" and is used to generate specific search parameters, including file names, locations, as well as mass spectrum processing and analysis parameters.
+
+To alter the mass spectrum processing and analysis parameters, you must create a new MaxQuant parameter file by executing "/MaxQuant/bin/MaxQuantGui.exe" using Windows operating system. Click File > Load parameters... and load "/MaxQuant/mqpar_template.xml" and adjust the parameters. DO NOT add or remove RAW and FASTA files as they are specified by ProteomeGenerator. Finally, click File > Save parameters... and save it as "mqpar.xml" in the same directory as the template MaxQuant parameter file. ProteomeGenerator will automatically detect this file and use it as input for MaxQuant instead of its self-generated parameters.
+
 ## Running ProteomeGenerator
 
 ProteomeGenerator can be run locally or in a variety of high performance computing cluster environments. The below example demonstrates how to run ProteomeGenerator with Singularity on an [LSF](https://www.ibm.com/support/knowledgecenter/en/SSETD4/product_welcome_platform_lsf.html) cluster head node from within screen in case the connection to the head node is lost.
@@ -56,13 +70,20 @@ ProteomeGenerator can be run locally or in a variety of high performance computi
 ```bash
 screen -S pg
 snakemake --snakefile Snakefile-K0562 --cluster \
-"bsub -J {params.J} -n {params.n} -R {params.R} -W 4:00 -o {params.o} -eo {params.eo}" \
---jn {rulename}.{jobid}.sj -j 50 -k --latency-wait 60 --use-conda --use-singularity --singularity-args "--bind /data:/data" --ri
+"bsub -J {params.J} -n {params.n} -R {params.R} -W 24:00 -o {params.o} -eo {params.eo}" \
+--jn {rulename}.{jobid}.sj -j 50 -k --latency-wait 60 --use-conda --use-singularity --singularity-args \
+"--bind /data:/data,/scratch:/scratch" --ri
 ```
+
+"-W" wall time argument need to be adjusted to account for larger datasets used in MaxQuant.
+
+"--bind" argument need to be adjusted so that Singularity can access files outside the container. You must bind the directory for ProteomeGenerator, "TMP", and "RAW" so ProteomeGenerator can read and write data on your system.
 
 ### Expected Output
 
 ProteomeGenerator will generate an indexed bam file of mapped and filtered reads of the format {sample}.Aligned.trimmed.out.bam, a sample-specific GTF of the format {sample}-stringtie.gtf, and a proteogenomic database called proteome.unique.fasta. A GFF3 corresponding to each entry in the fasta database is also generated with the predicted spliced peptide sequences mapped onto genome space for easy viewing in the [Integrative Genomics Viewer](http://software.broadinstitute.org/software/igv/). If a reference GTF file is provided, the pipeline will generate a proteogenomic database based on these reference annotations in addition to the sample-specific database.
+
+Furthermore, it will generate all tables produced by MaxQuant in the user-specified working directory, under "out/all-merge/merged/combined/txt/".
 
 ## Citing ProteomeGenerator
 

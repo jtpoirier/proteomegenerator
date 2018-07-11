@@ -1,14 +1,20 @@
 shell.executable("/bin/bash")
-#shell.prefix("source ~/.bashrc; source ~/.bash_profile; ")
 
 singularity: "docker://continuumio/miniconda3:4.5.4"
+
+import os, multiprocessing
+SMDir = os.getcwd()
+
+# PAR initializes to template parameter file unless one is provided
+MQ = SMDir + "/MaxQuant/bin/MaxQuantCmd.exe"
+PAR = SMDir + "/MaxQuant/mqpar_template.xml"
 
 ### Begin User Variables
 
 # Directories
-WD = "/data/poirier/AK/K0562_testing"
+WD = "/lila/data/kentsis/testfiles/K0562_warm/"
 workdir: WD
-TMP = '/scratch/poirierj'
+TMP = '/scratch/chenz4'
 
 # References
 FASTA='/data/poirier/indexes/GRCh38/GRCh38.genome.fa'
@@ -25,8 +31,14 @@ L2R1="/data/kentsis/RNAseq/K0562/{sample}_L2_1.fq.gz"
 L1R2="/data/kentsis/RNAseq/K0562/{sample}_L1_2.fq.gz"
 L2R2="/data/kentsis/RNAseq/K0562/{sample}_L2_2.fq.gz"
 
+# MaxQuant
+RAW = "/lila/data/kentsis/testfiles/K056PGTest"
+THREADS = str(multiprocessing.cpu_count())
+
 ### End User Variables
 
+if os.path.exists(SMDir + "/MaxQuant/mqpar.xml") :
+    PAR = SMDir + "/MaxQuant/mqpar.xml"
 
 if 'GTF' in locals():
     ruleorder: STAR_GTF > STAR_denovo
@@ -35,16 +47,11 @@ else:
     ruleorder: STAR_denovo > STAR_GTF
     MODELS = 'merged'
 
-
 snakemake.utils.makedirs(TMP)
 snakemake.utils.makedirs('out/benchmarks')
 
-
 rule all:
-    input: 
-        expand("out/all-merge/{model}/proteome.unique.fasta",model=MODELS),
-        expand("out/all-merge/{model}/proteome.bed",model=MODELS)
-
+    input: expand("out/all-merge/{model}/combined/txt/summary.txt", model=MODELS)
 
 include: "pgm"
 
