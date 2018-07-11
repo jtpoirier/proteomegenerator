@@ -5,7 +5,7 @@ singularity: "docker://continuumio/miniconda3:4.5.4"
 import os, multiprocessing
 SMDir = os.getcwd()
 
-# PAR initializes to dummy parameter file unless one is provided
+# PAR initializes to template parameter file unless one is provided
 MQ = SMDir + "/MaxQuant/bin/MaxQuantCmd.exe"
 PAR = SMDir + "/MaxQuant/mqpar_template.xml"
 
