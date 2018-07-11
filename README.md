@@ -70,7 +70,8 @@ ProteomeGenerator can be run locally or in a variety of high performance computi
 screen -S pg
 snakemake --snakefile Snakefile-K0562 --cluster \
 "bsub -J {params.J} -n {params.n} -R {params.R} -W 24:00 -o {params.o} -eo {params.eo}" \
---jn {rulename}.{jobid}.sj -j 50 -k --latency-wait 60 --use-conda --use-singularity --singularity-args "--bind /data:/data" --ri
+--jn {rulename}.{jobid}.sj -j 50 -k --latency-wait 60 --use-conda --use-singularity --singularity-args \
+"--bind /data:/data" --ri
 ```
 
 "-W" wall time argument may need to be adjusted to account for larger datasets used in MaxQuant.
