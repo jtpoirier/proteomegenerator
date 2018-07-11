@@ -1,6 +1,0 @@
-localrules directive specifies rules that are not present in the Snakefile:
-	UCSC_UCSC_denovo
-
-Building DAG of jobs...
-MissingRuleException:
-No rule to produce {rulename}.{jobid}.sj (if you use input functions make sure that they don't raise unexpected exceptions).

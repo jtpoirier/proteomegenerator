@@ -9,13 +9,12 @@ SMDir = os.getcwd()
 MQ = SMDir + "/MaxQuant/bin/MaxQuantCmd.exe"
 PAR = SMDir + "/MaxQuant/mqpar_template.xml"
 
-
 ### Begin User Variables
 
 # Directories
-WD = "/lila/data/kentsis/testfiles/K0562_warmp/"
+WD = "/lila/data/kentsis/testfiles/K0562_warm/"
 workdir: WD
-TMP = '/scratch/chenz4p'
+TMP = '/scratch/chenz4'
 
 # References
 FASTA='/data/poirier/indexes/GRCh38/GRCh38.genome.fa'
@@ -32,21 +31,14 @@ L2R1="/data/kentsis/RNAseq/K0562/{sample}_L2_1.fq.gz"
 L1R2="/data/kentsis/RNAseq/K0562/{sample}_L1_2.fq.gz"
 L2R2="/data/kentsis/RNAseq/K0562/{sample}_L2_2.fq.gz"
 
-
 # MaxQuant
-RAW = "/lila/data/kentsis/testfiles/K056PGParp"
-MAXCPU = str(multiprocessing.cpu_count())
-
+RAW = "/lila/data/kentsis/testfiles/K056PGTest"
+THREADS = str(multiprocessing.cpu_count())
 
 ### End User Variables
 
 if os.path.exists(SMDir + "/MaxQuant/mqpar.xml") :
     PAR = SMDir + "/MaxQuant/mqpar.xml"
-    ruleorder: mqpar_user > mqpar_conversion
-
-else:
-    ruleorder: mqpar_conversion > mqpar_user
-
 
 if 'GTF' in locals():
     ruleorder: STAR_GTF > STAR_denovo
@@ -55,10 +47,8 @@ else:
     ruleorder: STAR_denovo > STAR_GTF
     MODELS = 'merged'
 
-
 snakemake.utils.makedirs(TMP)
 snakemake.utils.makedirs('out/benchmarks')
-
 
 rule all:
     input: expand("out/all-merge/{model}/combined/txt/summary.txt", model=MODELS)

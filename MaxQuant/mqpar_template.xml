@@ -2,6 +2,7 @@
 <MaxQuantParams xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
    <fastaFiles>
       <FastaFileInfo>
+         <fastaFilePath></fastaFilePath>
          <identifierParseRule>>.*\|(.*)\|</identifierParseRule>
          <descriptionParseRule>>(.*)</descriptionParseRule>
          <taxonomyParseRule></taxonomyParseRule>
@@ -124,6 +125,7 @@
    <maxQuantVersion>1.6.2.3</maxQuantVersion>
    <tempFolder></tempFolder>
    <pluginFolder></pluginFolder>
+   <numThreads>1</numThreads>
    <emailAddress></emailAddress>
    <smtpHost></smtpHost>
    <emailFromAddress></emailFromAddress>
@@ -138,14 +140,19 @@
    <showIsotopeMassDifferences>False</showIsotopeMassDifferences>
    <useDotNetCore>False</useDotNetCore>
    <filePaths>
+      <string>temp</string>
    </filePaths>
    <experiments>
+      <string></string>
    </experiments>
    <fractions>
+      <short>32767</short>
    </fractions>
    <ptms>
+      <boolean>False</boolean>
    </ptms>
    <paramGroupIndices>
+      <int>0</int>
    </paramGroupIndices>
    <parameterGroups>
       <parameterGroup>

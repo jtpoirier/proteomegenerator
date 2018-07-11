@@ -1,4 +1,0 @@
-SyntaxError:
-Not all output, log and benchmark files of rule maxQuant contain the same wildcards. This is crucial though, in order to avoid that two or more jobs write to the same file.
-  File "/lila/home/chenz4/proteomegenerator/Snakefile-Test", line 24, in <module>
-  File "/lila/home/chenz4/proteomegenerator/pgmtest", line 10, in <module>

@@ -1,3 +1,0 @@
-KeyError in line 27 of /lila/home/chenz4/proteomegenerator/Snakefile-wgs:
-'samples'
-  File "/lila/home/chenz4/proteomegenerator/Snakefile-wgs", line 27, in <module>

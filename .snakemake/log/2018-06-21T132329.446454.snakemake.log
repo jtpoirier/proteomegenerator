@@ -1,3 +1,0 @@
-SyntaxError in line 10 of /lila/home/chenz4/proteomegenerator/pgmtest:
-Multiple run or shell keywords in rule maxQuant. (pgmtest, line 10)
-  File "/lila/home/chenz4/proteomegenerator/Snakefile-Test", line 24, in <module>

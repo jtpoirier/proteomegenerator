@@ -92,7 +92,7 @@ rule merge:
 
 
 if 'GTF' in globals():
-    localrules: UCSC_GTF, mqpar_conversion, mqpar_user
+    localrules: UCSC_GTF, mqpar_conversion
     rule UCSC_GTF:
         input: "out/all-merge/merged.gtf"
         output: merged="out/all-merge/merged-UCSC.gtf", reference="out/all-merge/reference-UCSC.gtf"
@@ -103,7 +103,7 @@ if 'GTF' in globals():
             cat {input} | grep chr > {output.merged} 2> {log}"
 
 else:
-    localrules: UCSC_denovo, mqpar_conversion, mqpar_user
+    localrules: UCSC_denovo, mqpar_conversion
     rule UCSC_denovo:
         input: "out/all-merge/merged.gtf"
         output: merged="out/all-merge/merged-UCSC.gtf"
@@ -238,7 +238,7 @@ rule reorderFASTA:
     script: "scripts/reorderFASTA.R"
 
 rule mqpar_conversion:
-    input: "out/all-merge/{model}/proteome.unique.fasta", par = PAR, raw = RAW, temp = TMP
+    input: "out/all-merge/{model}/proteome.unique.fasta"
     output: "out/{model}_mqpar.xml"
     benchmark: "out/benchmarks/{model}.mqpar_conversion.txt"
     log: "out/logs/{model}.mqpar_conversion.txt"
@@ -246,67 +246,43 @@ rule mqpar_conversion:
     run:
         import os
         raw_files = []
-        for file in os.listdir(input.raw):
+        for file in os.listdir(RAW):
             if file.endswith(".raw"):
-                raw_files.append(os.path.join(input.raw, file))
+                raw_files.append(os.path.join(RAW, file))
 
-        with open(input.par) as oldMQPar, open(output[0],"w") as newMQPar:
+        with open(PAR) as oldMQPar, open(output[0],"w") as newMQPar:
             for line in oldMQPar:
-                if '<fastaFilePath>' not in line and '<tempFolder>' not in line and '<fixedCombinedFolder>' not in line:
+                if '<fastaFilePath>' not in line and '<tempFolder>' not in line and '<fixedCombinedFolder>' not in line and '<numThreads>' not in line and '<string>temp</string>' not in line:
                     newMQPar.write(line)
                 if '<FastaFileInfo>' in line:
                     newMQPar.write("<fastaFilePath>" + os.getcwd() + "/"+ input[0] + "</fastaFilePath>\n")
                 if '<maxQuantVersion>' in line:
-                    newMQPar.write("<tempFolder>" +  input.temp + "</tempFolder>\n")
+                    newMQPar.write("<tempFolder>" +  TMP + "</tempFolder>\n")
                 if '<emailFromAddress>' in line:
                     newMQPar.write("<fixedCombinedFolder>"  + os.path.dirname(os.path.abspath(input[0])) + "</fixedCombinedFolder>\n")
                 if '<pluginFolder></pluginFolder>' in line:
-                    newMQPar.write("<numThreads>"+ MAXCPU +"</numThreads>\n")
+                    newMQPar.write("<numThreads>"+ THREADS +"</numThreads>\n")
                 if '<filePaths>' in line:
                     for k in range(len(raw_files)):
                         newMQPar.write("<string>" + raw_files[k] + "</string>\n")
                 if '<experiments>' in line:
-                    for k in range(len(raw_files)):
+                    for k in range(len(raw_files)-1):
                         newMQPar.write("<string></string>\n")
                 if '<fractions>' in line:
-                    for k in range(len(raw_files)):
+                    for k in range(len(raw_files)-1):
                         newMQPar.write("<short>32767</short>\n")
                 if '<ptms>' in line:
-                    for k in range(len(raw_files)):
+                    for k in range(len(raw_files)-1):
                         newMQPar.write("<boolean>False</boolean>\n")
                 if '<paramGroupIndices>' in line:
-                    for k in range(len(raw_files)):
+                    for k in range(len(raw_files)-1):
                         newMQPar.write("<int>0</int>\n")
 
-rule mqpar_user:
-    input: "out/all-merge/{model}/proteome.unique.fasta", par = PAR , raw = RAW, temp = TMP, threads = MAXCPU
-    output: "out/{model}_mqpar.xml"
-    benchmark: "out/benchmarks/{model}.mqpar_conversion.txt"
-    log: "out/logs/{model}.mqpar_conversion.txt"
-    params: n="1", R="'span[hosts=1] rusage[mem=10]'", J="mqpar_conversion", o="out/logs/mqpar_conversion.out", eo="out/logs/mqpar_conversion.err"
-    run:
-        import os
-        raw_files = []
-        for file in os.listdir(input.raw):
-            if file.endswith(".raw"):
-                raw_files.append(os.path.join(input.raw, file))
-
-        with open(input.par) as oldMQPar, open(output[0],"w") as newMQPar:
-            for line in oldMQPar:
-                if '<fastaFilePath>' not in line and '<tempFolder>' not in line and '<fixedCombinedFolder>' not in line:
-                    newMQPar.write(line)
-                if '<FastaFileInfo>' in line:
-                    newMQPar.write("<fastaFilePath>" + os.getcwd() + "/"+ input[0] + "</fastaFilePath>\n")
-                if '<maxQuantVersion>' in line:
-                    newMQPar.write("<tempFolder>" + input.temp + "</tempFolder>\n")
-                if '<emailFromAddress>' in line:
-                    newMQPar.write("<fixedCombinedFolder>" + os.path.abspath(input[0]) + "</fixedCombinedFolder>\n")
-
 rule maxQuant:
-    input: par = "out/{model}_mqpar.xml", mq = MQ
+    input: par = "out/{model}_mqpar.xml"
     output: "out/all-merge/{model}/combined/txt/summary.txt"
     benchmark: "out/benchmarks/{model}.maxQuant.txt"
     log: "out/logs/{model}.maxQuant.txt"
     singularity: "docker://mono:5.12.0.226"
-    params: n=MAXCPU, J="MQ", R="'span[ptile=" + MAXCPU +  "] rusage[mem=10]'", o="out/logs/mq.out", eo="out/logs/mq.err"
-    shell: "mono {input.mq} {input.par}"
+    params: n=THREADS, J="MQ", R="'span[ptile=" + THREADS +  "] rusage[mem=10]'", o="out/logs/mq.out", eo="out/logs/mq.err"
+    shell: "mono {MQ} {input.par}"

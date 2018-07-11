@@ -1,4 +1,0 @@
-IndentationError in line 58 of <tokenize>:
-unindent does not match any outer indentation level (<tokenize>, line 58)
-  File "/lila/home/chenz4/proteomegenerator/Snakefile-TestPar", line 45, in <module>
-  File "/home/chenz4/miniconda3/lib/python3.6/tokenize.py", line 578, in _tokenize

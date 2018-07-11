@@ -1,3 +1,0 @@
-SyntaxError in line 3 of /lila/home/chenz4/proteomegenerator/pgmtestpar:
-Unexpected keyword workdir in rule definition (pgmtestpar, line 3)
-  File "/lila/home/chenz4/proteomegenerator/Snakefile-TestPar", line 26, in <module>

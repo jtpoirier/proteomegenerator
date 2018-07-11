@@ -1,4 +1,0 @@
-localrules directive specifies rules that are not present in the Snakefile:
-	UCSC_UCSC_denovo
-
-Building DAG of jobs...

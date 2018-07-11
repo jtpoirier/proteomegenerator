@@ -1,4 +1,0 @@
-NameError in line 42 of /lila/home/chenz4/proteomegenerator/pgmtestpar:
-name 'MYPAR' is not defined
-  File "/lila/home/chenz4/proteomegenerator/Snakefile-TestPar", line 46, in <module>
-  File "/lila/home/chenz4/proteomegenerator/pgmtestpar", line 42, in <module>

@@ -1,3 +1,0 @@
-Building DAG of jobs...
-Pulling singularity image docker://mono.
-Cancelling snakemake on user request.

@@ -1,3 +1,0 @@
-WildcardError in line 25 of /lila/home/chenz4/proteomegenerator/Snakefile-Test:
-No values given for wildcard 'rawfile'.
-  File "/lila/home/chenz4/proteomegenerator/Snakefile-Test", line 25, in <module>
