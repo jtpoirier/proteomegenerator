@@ -11,16 +11,17 @@ singularity: "docker://continuumio/miniconda3:4.5.4"
 WD="/lila/data/kentsis/testfiles/CR_test/"
 workdir: WD
 
-SAMPLE_VCF = "/lila/data/kentsis/testfiles/CR_test/ALL.chrY.phase3_integrated_v1a.20130502.genotypes.vcf"
+SAMPLE_VCF = "/lila/data/kentsis/testfiles/CR_test/ALL.chrY.phase3_integrated_v1b.20130502.genotypes.vcf"
 #Lists VCF samples names one by one
 VCF_INDIVIDUAL = "NA19670"
 
-REF_FASTA="/home/chenz4/customRef/hs37d5.fa"
+REF_FASTA="/lila/data/kentsis/testfiles/CR_test/hs37d5.fa"
+REF_GTF="/lila/data/kentsis/testfiles/CR_test/Homo_sapiens.GRCh37.75.gtf"
 
 snakemake.utils.makedirs('out/custom_ref')
 
 rule all:
-    input: "out/custom_ref/sample_ref.fa"
+    input: "out/custom_ref/sample_ref.fa", "out/custom_ref/sample_ref.gtf"
 
 ### NOTE: g2gtools only works on index files with non-ALT contigs,
 ###       hence the index file maneuvering in the next few rules.
@@ -69,14 +70,13 @@ rule LiftIndelsOverRef:
 	    J="lift_indels_over_ref"
     shell: "g2gtools transform -i {input.patched_fa} -c {input.vci_gz} -o {output}"
 
-# rule CreateSampleGTF:
-#     input: vci_gz="out/custom_ref/sample.vci.gz", ref_gtf={REF_GTF}
-#     output: "out/custom_ref/sample_ref.gtf"
-#     benchmark: "out/benchmarks/sampleGTF.txt"
-#     log: "out/logs/sampleGTF.txt"
-#     conda: "env.yaml"
-#     params: n="4", R="'span[hosts=1] rusage[mem=8]'", \
-# 	    o="out/logs/sampleGTF.out", eo="out/logs/sampleGTF.err", \
-# 	    J="sampleGTF"
-#     shell: "g2gtools convert -i {input.ref_gtf} -c {input.vci_gz} -o {output}"
-#
+rule CreateSampleGTF:
+    input: vci_gz="out/custom_ref/sample.vci.gz", ref_gtf={REF_GTF}
+    output: "out/custom_ref/sample_ref.gtf"
+    benchmark: "out/benchmarks/sampleGTF.txt"
+    log: "out/logs/sampleGTF.txt"
+    conda: "env.yaml"
+    params: n="4", R="'span[hosts=1] rusage[mem=8]'", \
+	    o="out/logs/sampleGTF.out", eo="out/logs/sampleGTF.err", \
+	    J="sampleGTF"
+    shell: "g2gtools convert -i {input.ref_gtf} -c {input.vci_gz} -o {output}"

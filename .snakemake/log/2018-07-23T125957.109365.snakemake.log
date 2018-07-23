@@ -1,0 +1,4 @@
+Building DAG of jobs...
+MissingInputException in line 73 of /lila/home/chenz4/proteomegenerator2.0/customRef.sm:
+Missing input files for rule CreateSampleGTF:
+/lila/data/kentsis/testfiles/CR_test/Homo_sapiens.GRCh37.75.gtf.gz
