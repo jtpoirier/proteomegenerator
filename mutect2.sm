@@ -8,9 +8,9 @@
 
 shell.executable("/bin/bash")
 import glob,os,subprocess
-WD="/home/chenz4/test_m2/"
+WD="/lila/data/kentsis/testfiles/m2_test/"
 workdir: WD
-TMP = "/home/chenz4/temp/"
+TMP = "/scratch/chenz4m2"
 
 snakemake.utils.makedirs('out')
 
@@ -18,22 +18,22 @@ snakemake.utils.makedirs('out')
 singularity: "docker://continuumio/miniconda3:4.5.4"
 
 # Provided by Broad Institute, but can be created with 'picard CreateSequenceDictionary' and 'samtools faidx'
-REF_FASTA = "/home/chenz4/customRef/reference/resources_broad_hg38_v0_Homo_sapiens_assembly38.fasta"
-REF_DICT = "/home/chenz4/customRef/reference/resources_broad_hg38_v0_Homo_sapiens_assembly38.dict"
-REF_INDEX = "/home/chenz4/customRef/reference/resources_broad_hg38_v0_Homo_sapiens_assembly38.fasta.fai"
+REF_FASTA = "/lila/data/kentsis/testfiles/m2_test/m2/resources_broad_hg38_v0_Homo_sapiens_assembly38.fasta"
+REF_DICT = "/lila/data/kentsis/testfiles/m2_test/m2/resources_broad_hg38_v0_Homo_sapiens_assembly38.dict"
+REF_INDEX = "/lila/data/kentsis/testfiles/m2_test/m2/resources_broad_hg38_v0_Homo_sapiens_assembly38.fasta.fai"
 
-TUMOR = "/home/chenz4/customRef/m2/tumor.bam"
-NORMAL = "/home/chenz4/customRef/m2/normal.bam"
+TUMOR = "/lila/data/kentsis/testfiles/m2_test/m2/tumor.bam"
+NORMAL = "/lila/data/kentsis/testfiles/m2_test/m2/normal.bam"
 
 #DBSNP = "/home/chenz4/customRef/reference/Homo_sapiens_assembly38.dbsnp138.vcf"
 #COSMIC = "/home/chenz4/customRef/reference/resources_broad_hg38_v0_Homo_sapiens_assembly38.known_indels.vcf.gz"
-PON = "/home/chenz4/customRef/m2/chr17_m2pon.vcf.gz"
+PON = "/lila/data/kentsis/testfiles/m2_test/m2/chr17_m2pon.vcf.gz"
 # Database of known germline variants. Population vcf of germline sequencing containing allele fractions.
-GERM_RES = "/home/chenz4/customRef/m2/chr17_af-only-gnomad_grch38.vcf.gz"
-INT_LIST =  "/home/chenz4/customRef/m2/chr17plus.interval_list"
+GERM_RES = "/lila/data/kentsis/testfiles/m2_test/m2/chr17_af-only-gnomad_grch38.vcf.gz"
+INT_LIST =  "/lila/data/kentsis/testfiles/m2_test/m2/chr17plus.interval_list"
 
 # Common germline variant sites VCF with allele freq to calculate contamination
-GNOMAD = "/home/chenz4/customRef/m2/chr17_small_exac_common_3_grch38.vcf.gz"
+GNOMAD = "/lila/data/kentsis/testfiles/m2_test/m2/chr17_small_exac_common_3_grch38.vcf.gz"
 # End Config files
 
 RG_TUMOR = "HCC1143_tumor"
@@ -47,7 +47,6 @@ rule Mutect2:
     input: tumor=TUMOR,normal=NORMAL,
     output: vcf="out/sample_m2.vcf.gz", idx="out/sample_m2.vcf.gz.tbi"
     benchmark: "out/benchmarks/MuTect2.txt"
-    conda: "m2.yaml"
     singularity: "docker://broadinstitute/gatk:4.0.6.0"
     params: n="20", R="'span[hosts=1] rusage[mem=20]'", o="out/logs/mutect.out", eo="out/logs/mutect.err", J="mutect2"
     shell: "gatk --java-options -Xmx8g Mutect2 \
@@ -69,7 +68,6 @@ rule PileupSummaries:
     input: gnomad = GNOMAD
     output: table = "out/sample_m2_summary.table"
     benchmark: "out/benchmarks/M2_PS.txt"
-    conda: "m2.yaml"
     singularity: "docker://broadinstitute/gatk:4.0.6.0"
     params: n="10", R="'span[hosts=1] rusage[mem=20]'", o="out/logs/m2_ps.out", eo="out/logs/m2_ps.err", J="M2_PS"
     shell: "gatk --java-options -Xmx8g GetPileupSummaries \
@@ -81,7 +79,6 @@ rule CalculateContamination:
     input: table = "out/sample_m2_summary.table"
     output: table = "out/sample_m2_contamination.table"
     benchmark: "out/benchmarks/M2_CT.txt"
-    conda: "m2.yaml"
     singularity: "docker://broadinstitute/gatk:4.0.6.0"
     params: n="10", R="'span[hosts=1] rusage[mem=20]'", o="out/logs/m2_ct.out", eo="out/logs/m2_ct.err", J="M2_CT"
     shell: "gatk --java-options -Xmx8g CalculateContamination \
@@ -93,7 +90,6 @@ rule FilterMutectCalls:
     input: vcf="out/sample_m2.vcf.gz", idx="out/sample_m2.vcf.gz.tbi", table = "out/sample_m2_contamination.table"
     output: vcf="out/sample_m2_filtered.vcf.gz", idx="out/sample_m2_filtered.vcf.gz.tbi"
     benchmark: "out/benchmarks/M2_PS.txt"
-    conda: "m2.yaml"
     singularity: "docker://broadinstitute/gatk:4.0.6.0"
     params: n="10", R="'span[hosts=1] rusage[mem=20]'", o="out/logs/m2_ps.out", eo="out/logs/m2_ps.err", J="M2_PS"
     shell: "gatk --java-options -Xmx8g FilterMutectCalls \
