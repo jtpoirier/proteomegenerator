@@ -1,0 +1,26 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cluster nodes: 50
+Job counts:
+	count	jobs
+	1	CreateSampleGTF
+	1	all
+	2
+
+rule CreateSampleGTF:
+    input: out/custom_ref/sample.vci.gz, /lila/data/poirier/indexes/GRCh38/gencode.v20.annotation.gtf
+    output: out/custom_ref/sample_ref.gtf
+    log: out/logs/sampleGTF.txt
+    jobid: 2
+    benchmark: out/benchmarks/sampleGTF.txt
+
+Submitted job 2 with external jobid 'Job <4240137> is submitted to default queue <cpuqueue>.'.
+    Error in rule CreateSampleGTF:
+        jobid: 2
+        output: out/custom_ref/sample_ref.gtf
+        log: out/logs/sampleGTF.txt
+        conda-env: /lila/data/kentsis/testfiles/CR_test/.snakemake/conda/658b0a75
+
+Job failed, going on with independent jobs.
+Exiting because a job execution failed. Look above for error message
+Complete log: /lila/home/chenz4/proteomegenerator2.0/.snakemake/log/2018-07-23T124020.824522.snakemake.log

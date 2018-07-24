@@ -1,0 +1,82 @@
+# Input Mutect2 generated vcf file with index
+
+# Output custom reference genome
+
+shell.executable("/bin/bash")
+import glob,os,subprocess
+
+# Need to test singularity
+singularity: "docker://continuumio/miniconda3:4.5.4"
+
+WD="/lila/data/kentsis/testfiles/CR_test/"
+workdir: WD
+
+SAMPLE_VCF = "/lila/data/kentsis/testfiles/CR_test/ALL.chrY.phase3_integrated_v1b.20130502.genotypes.vcf"
+#Lists VCF samples names one by one
+VCF_INDIVIDUAL = "NA19670"
+
+REF_FASTA="/lila/data/kentsis/testfiles/CR_test/hs37d5.fa"
+REF_GTF="/lila/data/kentsis/testfiles/CR_test/Homo_sapiens.GRCh37.75.gtf"
+
+snakemake.utils.makedirs('out/custom_ref')
+
+rule all:
+    input: "out/custom_ref/sample_ref.fa", "out/custom_ref/sample_ref.gtf"
+
+### NOTE: g2gtools only works on index files with non-ALT contigs,
+###       hence the index file maneuvering in the next few rules.
+
+rule IndexSeparatedVcfs:
+    input: SAMPLE_VCF
+    output: gz = "out/custom_ref/sample.vcf.gz", idx="out/custom_ref/sample.vcf.gz.tbi"
+    benchmark: "out/benchmarks/index_separated_vcfs.txt"
+    log: "out/logs/indexSeparatedVCF.txt"
+    conda: "env.yaml"
+    params: n="1", R="'span[hosts=1] rusage[mem=16]'", \
+	    o="out/logs/index_vcf.out", eo="out/logs/index_vcf.err", \
+	    J="index_vcf"
+    shell: "bcftools view {input} -Oz -o {output.gz}; tabix -p vcf {output.gz}"
+
+rule vcf2vci:
+    input: vcf_gz = "out/custom_ref/sample.vcf.gz", idx = "out/custom_ref/sample.vcf.gz.tbi"
+#    input: vcf_gz = "/home/chenz4/customRef/ALL.chr1.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz", idx = "/home/chenz4/customRef/ALL.chrY.phase3_integrated_v1a.20130502.genotypes.vcf.gz.tbi"
+    output: "out/custom_ref/sample.vci.gz"
+    benchmark: "out/benchmarks/vcf2vci.txt"
+    log: "out/logs/vcf2vci.txt"
+    conda: "env.yaml"
+    params: n="4", R="'span[hosts=1] rusage[mem=8]'", \
+	    o="out/logs/vcf2vci.out", eo="out/logs/vcf2vci.err", \
+	    J="vcf2vci", out_name = "out/custom_ref/sample.vci"
+    shell: "g2gtools vcf2vci -i {input.vcf_gz} -s {VCF_INDIVIDUAL} -o {params.out_name} --diploid"
+
+rule PatchRefGenome:
+    input: vci_gz="out/custom_ref/sample.vci.gz", ref_fa={REF_FASTA}
+    output: "out/custom_ref/snps_patched.fa"
+    log: "out/logs/patchRef.txt"
+    conda: "env.yaml"
+    params: n="4", R="'span[hosts=1] rusage[mem=8]'", \
+	    o="out/logs/patch_ref.out", eo="out/logs/patch_ref.err", \
+	    J="patch_ref"
+    shell: "g2gtools patch -i {input.ref_fa} -c {input.vci_gz} -o {output}"
+
+rule LiftIndelsOverRef:
+    input: vci_gz="out/custom_ref/sample.vci.gz", patched_fa="out/custom_ref/snps_patched.fa"
+    output: "out/custom_ref/sample_ref.fa"
+    benchmark: "out/benchmarks/lift_indels.txt"
+    log: "out/logs/liftIndelRef.txt"
+    conda: "env.yaml"
+    params: n="4", R="'span[hosts=1] rusage[mem=8]'", \
+	    o="out/logs/lift_indels.out", eo="out/logs/lift_indels.err", \
+	    J="lift_indels_over_ref"
+    shell: "g2gtools transform -i {input.patched_fa} -c {input.vci_gz} -o {output}"
+
+rule CreateSampleGTF:
+    input: vci_gz="out/custom_ref/sample.vci.gz", ref_gtf={REF_GTF}
+    output: "out/custom_ref/sample_ref.gtf"
+    benchmark: "out/benchmarks/sampleGTF.txt"
+    log: "out/logs/sampleGTF.txt"
+    conda: "env.yaml"
+    params: n="4", R="'span[hosts=1] rusage[mem=8]'", \
+	    o="out/logs/sampleGTF.out", eo="out/logs/sampleGTF.err", \
+	    J="sampleGTF"
+    shell: "g2gtools convert -i {input.ref_gtf} -c {input.vci_gz} -o {output}"
