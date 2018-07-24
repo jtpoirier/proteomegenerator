@@ -1,0 +1,148 @@
+# Mutect2 needs ref_fasta, ref_fai, ref_dict
+# Optional - use intervals -> first implement without intervals
+
+# Secondary inputs: pon, gnomad, variants_for_contamination
+
+# Inputs to this script: ref_fasta
+# Outputs .vcf and index file
+
+shell.executable("/bin/bash")
+import glob,os,subprocess
+WD="/lila/data/kentsis/testfiles/CR_test/"
+workdir: WD
+TMP = "/scratch/chenz4"
+
+snakemake.utils.makedirs('out')
+
+# Begin Config files
+singularity: "docker://continuumio/miniconda3:4.5.4"
+
+# Provided by Broad Institute, but can be created with 'picard CreateSequenceDictionary' and 'samtools faidx'
+REF_FASTA = "/lila/data/kentsis/testfiles/m2_test/m2/resources_broad_hg38_v0_Homo_sapiens_assembly38.fasta"
+REF_DICT = "/lila/data/kentsis/testfiles/m2_test/m2/resources_broad_hg38_v0_Homo_sapiens_assembly38.dict"
+REF_INDEX = "/lila/data/kentsis/testfiles/m2_test/m2/resources_broad_hg38_v0_Homo_sapiens_assembly38.fasta.fai"
+
+TUMOR = "/lila/data/kentsis/testfiles/m2_test/m2/tumor.bam"
+NORMAL = "/lila/data/kentsis/testfiles/m2_test/m2/normal.bam"
+
+#DBSNP = "/home/chenz4/customRef/reference/Homo_sapiens_assembly38.dbsnp138.vcf"
+#COSMIC = "/home/chenz4/customRef/reference/resources_broad_hg38_v0_Homo_sapiens_assembly38.known_indels.vcf.gz"
+PON = "/lila/data/kentsis/testfiles/m2_test/m2/chr17_m2pon.vcf.gz"
+# Database of known germline variants. Population vcf of germline sequencing containing allele fractions.
+GERM_RES = "/lila/data/kentsis/testfiles/m2_test/m2/chr17_af-only-gnomad_grch38.vcf.gz"
+INT_LIST =  "/lila/data/kentsis/testfiles/m2_test/m2/chr17plus.interval_list"
+
+# Common germline variant sites VCF with allele freq to calculate contamination
+GNOMAD = "/lila/data/kentsis/testfiles/m2_test/m2/chr17_small_exac_common_3_grch38.vcf.gz"
+# End Config files
+
+RG_TUMOR = "HCC1143_tumor"
+RG_NORMAL = "HCC1143_normal"
+
+#Lists VCF samples names one by one
+VCF_INDIVIDUAL = "HCC1143"
+
+REF_GTF="/lila/data/poirier/indexes/GRCh38/gencode.v20.annotation.gtf"
+
+
+rule all:
+    input: "out/custom_ref/sample_ref.fa", "out/custom_ref/sample_ref.gtf"
+
+#Last line can be removed - added for igv viewing purposes
+rule Mutect2:
+    input: tumor=TUMOR,normal=NORMAL,
+    output: vcf="out/sample_m2.vcf.gz", idx="out/sample_m2.vcf.gz.tbi"
+    benchmark: "out/benchmarks/MuTect2.txt"
+    singularity: "docker://broadinstitute/gatk:4.0.6.0"
+    params: n="20", R="'span[hosts=1] rusage[mem=20]'", o="out/logs/mutect.out", eo="out/logs/mutect.err", J="mutect2"
+    shell: "gatk --java-options -Xmx8g Mutect2 \
+            -R {REF_FASTA} \
+            -I {input.tumor} \
+            -I {input.normal}\
+            -tumor {RG_TUMOR} \
+            -normal {RG_NORMAL} \
+            -pon {PON} \
+            --germline-resource {GERM_RES} \
+            --af-of-alleles-not-in-resource 0.0000025 \
+            --disable-read-filter MateOnSameContigOrNoMappedMateReadFilter \
+            -L {INT_LIST} \
+            -O {output.vcf} \
+            -bamout out/2_tumor_normal_m2.bam"
+
+# Estimating cross-sample contamination
+rule PileupSummaries:
+    input: gnomad = GNOMAD
+    output: table = "out/sample_m2_summary.table"
+    benchmark: "out/benchmarks/M2_PS.txt"
+    singularity: "docker://broadinstitute/gatk:4.0.6.0"
+    params: n="10", R="'span[hosts=1] rusage[mem=20]'", o="out/logs/m2_ps.out", eo="out/logs/m2_ps.err", J="M2_PS"
+    shell: "gatk --java-options -Xmx8g GetPileupSummaries \
+            -I {TUMOR} \
+            -V {input.gnomad} \
+            -O {output.table}"
+
+rule CalculateContamination:
+    input: table = "out/sample_m2_summary.table"
+    output: table = "out/sample_m2_contamination.table"
+    benchmark: "out/benchmarks/M2_CT.txt"
+    singularity: "docker://broadinstitute/gatk:4.0.6.0"
+    params: n="10", R="'span[hosts=1] rusage[mem=20]'", o="out/logs/m2_ct.out", eo="out/logs/m2_ct.err", J="M2_CT"
+    shell: "gatk --java-options -Xmx8g CalculateContamination \
+            -I {input.table} \
+            -O {output.table}"
+
+# Filter contaminants
+rule FilterMutectCalls:
+    input: vcf="out/sample_m2.vcf.gz", idx="out/sample_m2.vcf.gz.tbi", table = "out/sample_m2_contamination.table"
+    output: vcf="out/sample_m2_filtered.vcf.gz", idx="out/sample_m2_filtered.vcf.gz.tbi"
+    benchmark: "out/benchmarks/M2_PS.txt"
+    singularity: "docker://broadinstitute/gatk:4.0.6.0"
+    params: n="10", R="'span[hosts=1] rusage[mem=20]'", o="out/logs/m2_ps.out", eo="out/logs/m2_ps.err", J="M2_PS"
+    shell: "gatk --java-options -Xmx8g FilterMutectCalls \
+            -V {input.vcf} \
+            --contamination-table {input.table} \
+            -O {output.vcf}"
+
+# Custom reference .fasta and .gtf creation
+rule vcf2vci:
+    input: vcf="out/sample_m2_filtered.vcf.gz", idx="out/sample_m2_filtered.vcf.gz.tbi"
+    output: "out/custom_ref/sample.vci.gz"
+    benchmark: "out/benchmarks/vcf2vci.txt"
+    log: "out/logs/vcf2vci.txt"
+    conda: "env.yaml"
+    params: n="4", R="'span[hosts=1] rusage[mem=8]'", \
+	    o="out/logs/vcf2vci.out", eo="out/logs/vcf2vci.err", \
+	    J="vcf2vci", out_name = "out/custom_ref/sample.vci"
+    shell: "g2gtools vcf2vci -i {input.vcf} -s {VCF_INDIVIDUAL} -o {params.out_name} --diploid"
+
+rule PatchRefGenome:
+    input: vci_gz="out/custom_ref/sample.vci.gz", ref_fa={REF_FASTA}
+    output: "out/custom_ref/snps_patched.fa"
+    log: "out/logs/patchRef.txt"
+    conda: "env.yaml"
+    params: n="4", R="'span[hosts=1] rusage[mem=8]'", \
+	    o="out/logs/patch_ref.out", eo="out/logs/patch_ref.err", \
+	    J="patch_ref"
+    shell: "g2gtools patch -i {input.ref_fa} -c {input.vci_gz} -o {output}"
+
+rule LiftIndelsOverRef:
+    input: vci_gz="out/custom_ref/sample.vci.gz", patched_fa="out/custom_ref/snps_patched.fa"
+    output: "out/custom_ref/sample_ref.fa"
+    benchmark: "out/benchmarks/lift_indels.txt"
+    log: "out/logs/liftIndelRef.txt"
+    conda: "env.yaml"
+    params: n="4", R="'span[hosts=1] rusage[mem=8]'", \
+	    o="out/logs/lift_indels.out", eo="out/logs/lift_indels.err", \
+	    J="lift_indels_over_ref"
+    shell: "g2gtools transform -i {input.patched_fa} -c {input.vci_gz} -o {output}"
+
+rule CreateSampleGTF:
+    input: vci_gz="out/custom_ref/sample.vci.gz", ref_gtf={REF_GTF}
+    output: "out/custom_ref/sample_ref.gtf"
+    benchmark: "out/benchmarks/sampleGTF.txt"
+    log: "out/logs/sampleGTF.txt"
+    conda: "env.yaml"
+    params: n="4", R="'span[hosts=1] rusage[mem=8]'", \
+	    o="out/logs/sampleGTF.out", eo="out/logs/sampleGTF.err", \
+	    J="sampleGTF"
+    shell: "g2gtools convert -i {input.ref_gtf} -c {input.vci_gz} -o {output}"
