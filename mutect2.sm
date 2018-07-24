@@ -47,7 +47,7 @@ rule Mutect2:
     input: tumor=TUMOR,normal=NORMAL,
     output: vcf="out/sample_m2.vcf.gz", idx="out/sample_m2.vcf.gz.tbi"
     benchmark: "out/benchmarks/MuTect2.txt"
-    singularity: "docker://broadinstitute/gatk:4.0.6.0"
+    conda: "env.yaml"
     params: n="20", R="'span[hosts=1] rusage[mem=20]'", o="out/logs/mutect.out", eo="out/logs/mutect.err", J="mutect2"
     shell: "gatk --java-options -Xmx8g Mutect2 \
             -R {REF_FASTA} \
@@ -68,7 +68,7 @@ rule PileupSummaries:
     input: gnomad = GNOMAD
     output: table = "out/sample_m2_summary.table"
     benchmark: "out/benchmarks/M2_PS.txt"
-    singularity: "docker://broadinstitute/gatk:4.0.6.0"
+    conda: "env.yaml"
     params: n="10", R="'span[hosts=1] rusage[mem=20]'", o="out/logs/m2_ps.out", eo="out/logs/m2_ps.err", J="M2_PS"
     shell: "gatk --java-options -Xmx8g GetPileupSummaries \
             -I {TUMOR} \
@@ -79,7 +79,7 @@ rule CalculateContamination:
     input: table = "out/sample_m2_summary.table"
     output: table = "out/sample_m2_contamination.table"
     benchmark: "out/benchmarks/M2_CT.txt"
-    singularity: "docker://broadinstitute/gatk:4.0.6.0"
+    conda: "env.yaml"
     params: n="10", R="'span[hosts=1] rusage[mem=20]'", o="out/logs/m2_ct.out", eo="out/logs/m2_ct.err", J="M2_CT"
     shell: "gatk --java-options -Xmx8g CalculateContamination \
             -I {input.table} \
@@ -90,7 +90,7 @@ rule FilterMutectCalls:
     input: vcf="out/sample_m2.vcf.gz", idx="out/sample_m2.vcf.gz.tbi", table = "out/sample_m2_contamination.table"
     output: vcf="out/sample_m2_filtered.vcf.gz", idx="out/sample_m2_filtered.vcf.gz.tbi"
     benchmark: "out/benchmarks/M2_PS.txt"
-    singularity: "docker://broadinstitute/gatk:4.0.6.0"
+    conda: "env.yaml"
     params: n="10", R="'span[hosts=1] rusage[mem=20]'", o="out/logs/m2_ps.out", eo="out/logs/m2_ps.err", J="M2_PS"
     shell: "gatk --java-options -Xmx8g FilterMutectCalls \
             -V {input.vcf} \
