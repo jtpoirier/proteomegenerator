@@ -1,0 +1,5 @@
+Building DAG of jobs...
+MissingInputException in line 48 of /lila/home/chenz4/proteomegenerator/gatk.sm:
+Missing input files for rule all:
+out/custom_ref/sample_ref.gtf
+out/custom_ref/sample_ref.fa

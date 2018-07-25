@@ -1,0 +1,23 @@
+Building DAG of jobs...
+Creating conda environment /lila/home/chenz4/proteomegenerator/env.yaml...
+Downloading remote packages.
+Environment for ../../../../home/chenz4/proteomegenerator/env.yaml created (location: .snakemake/conda/6f0747b3)
+Using shell: /bin/bash
+Provided cluster nodes: 50
+Job counts:
+	count	jobs
+	1	all
+	1	vcf2vci
+	2
+
+rule vcf2vci:
+    input: out/sample_m2_filtered.vcf, out/sample_m2_filtered.vcf.gz.tbi
+    output: out/custom_ref/sample.vci.fa
+    log: out/logs/vcf2vci.txt
+    jobid: 1
+    benchmark: out/benchmarks/vcf2vci.txt
+
+Submitted job 1 with external jobid 'Job <4256252> is submitted to default queue <cpuqueue>.'.
+Terminating processes on user request, this might take some time.
+Will exit after finishing currently running jobs.
+Cancelling snakemake on user request.

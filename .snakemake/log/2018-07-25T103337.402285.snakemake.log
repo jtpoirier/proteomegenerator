@@ -1,0 +1,4 @@
+Building DAG of jobs...
+MissingInputException in line 52 of /lila/home/chenz4/proteomegenerator/customRef.sm:
+Missing input files for rule PatchRefGenome:
+/home/chenz4/customRef/hs37d5.fa

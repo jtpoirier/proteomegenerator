@@ -1,0 +1,20 @@
+Building DAG of jobs...
+Pulling singularity image docker://d3bcenter/alpine-gatk3.8.
+WorkflowError:
+Failed to pull singularity image from docker://d3bcenter/alpine-gatk3.8:
+[33mWARNING: pull for Docker Hub is not guaranteed to produce the
+(B[m[33mWARNING: same image on repeated pull. Use Singularity Registry
+(B[m[33mWARNING: (shub://) to pull exactly equivalent images.
+(B[mDocker image path: index.docker.io/d3bcenter/alpine-gatk3.8:latest
+Cache folder set to /lila/home/chenz4/.singularity/docker
+[1/2] ||----------------------------------|   0.0% [1/2] |=================|-----------------|  50.0% [2/2] |===================================| 100.0% 
+Importing: base Singularity environment
+Importing: /lila/home/chenz4/.singularity/docker/sha256:b56ae66c29370df48e7377c8f9baa744a3958058a766793f821dadcb144a4647.tar.gz
+Importing: /lila/home/chenz4/.singularity/docker/sha256:89c84dcf8f6c700a12fa37eba5039d22ef195ee118ffd707e9c61a90fb2fbe14.tar.gz
+
+gzip: /lila/home/chenz4/.singularity/docker/sha256:89c84dcf8f6c700a12fa37eba5039d22ef195ee118ffd707e9c61a90fb2fbe14.tar.gz: not in gzip format
+tar: This does not look like a tar archive
+tar: Exiting with failure status due to previous errors
+Cleaning up...
+[31mERROR: pulling container failed!
+(B[m

@@ -1,0 +1,63 @@
+Building DAG of jobs...
+Pulling singularity image docker://continuumio/miniconda3:4.5.4.
+Creating conda environment /lila/home/chenz4/proteomegenerator/env.yaml...
+Downloading remote packages.
+Environment for ../../../../home/chenz4/proteomegenerator/env.yaml created (location: .snakemake/conda/99541fed)
+Using shell: /bin/bash
+Provided cluster nodes: 50
+Job counts:
+	count	jobs
+	1	CalculateContamination
+	1	FilterMutectCalls
+	1	Mutect2
+	1	PileupSummaries
+	1	all
+	5
+
+rule Mutect2:
+    input: /lila/data/kentsis/testfiles/m2_test/m2/tumor.bam, /lila/data/kentsis/testfiles/m2_test/m2/normal.bam
+    output: out/sample_m2.vcf.gz, out/sample_m2.vcf.gz.tbi
+    jobid: 3
+    benchmark: out/benchmarks/MuTect2.txt
+
+Submitted job 3 with external jobid 'Job <4244182> is submitted to default queue <cpuqueue>.'.
+
+rule PileupSummaries:
+    input: /lila/data/kentsis/testfiles/m2_test/m2/chr17_small_exac_common_3_grch38.vcf.gz
+    output: out/sample_m2_summary.table
+    jobid: 4
+    benchmark: out/benchmarks/M2_PS.txt
+
+Submitted job 4 with external jobid 'Job <4244183> is submitted to default queue <cpuqueue>.'.
+Finished job 4.
+1 of 5 steps (20%) done
+
+rule CalculateContamination:
+    input: out/sample_m2_summary.table
+    output: out/sample_m2_contamination.table
+    jobid: 2
+    benchmark: out/benchmarks/M2_CT.txt
+
+Submitted job 2 with external jobid 'Job <4244184> is submitted to default queue <cpuqueue>.'.
+Finished job 2.
+2 of 5 steps (40%) done
+Finished job 3.
+3 of 5 steps (60%) done
+
+rule FilterMutectCalls:
+    input: out/sample_m2.vcf.gz, out/sample_m2.vcf.gz.tbi, out/sample_m2_contamination.table
+    output: out/sample_m2_filtered.vcf.gz, out/sample_m2_filtered.vcf.gz.tbi
+    jobid: 1
+    benchmark: out/benchmarks/M2_PS.txt
+
+Submitted job 1 with external jobid 'Job <4244189> is submitted to default queue <cpuqueue>.'.
+Finished job 1.
+4 of 5 steps (80%) done
+
+localrule all:
+    input: out/sample_m2_filtered.vcf.gz
+    jobid: 0
+
+Finished job 0.
+5 of 5 steps (100%) done
+Complete log: /lila/home/chenz4/proteomegenerator/.snakemake/log/2018-07-24T121132.778810.snakemake.log

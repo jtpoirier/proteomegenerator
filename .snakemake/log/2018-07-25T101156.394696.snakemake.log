@@ -1,0 +1,74 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cluster nodes: 50
+Job counts:
+	count	jobs
+	1	CreateSampleGTF
+	1	IndexSeparatedVcfs
+	1	LiftIndelsOverRef
+	1	PatchRefGenome
+	1	all
+	1	vcf2vci
+	6
+
+rule IndexSeparatedVcfs:
+    input: /lila/data/kentsis/testfiles/CR_test/ALL.chrY.phase3_integrated_v1b.20130502.genotypes.vcf
+    output: out/custom_ref/sample.vcf.gz, out/custom_ref/sample.vcf.gz.tbi
+    log: out/logs/indexSeparatedVCF.txt
+    jobid: 5
+    benchmark: out/benchmarks/index_separated_vcfs.txt
+
+Submitted job 5 with external jobid 'Job <4255385> is submitted to default queue <cpuqueue>.'.
+Finished job 5.
+1 of 6 steps (17%) done
+
+rule vcf2vci:
+    input: out/custom_ref/sample.vcf.gz, out/custom_ref/sample.vcf.gz.tbi
+    output: out/custom_ref/sample.vci.gz
+    log: out/logs/vcf2vci.txt
+    jobid: 3
+    benchmark: out/benchmarks/vcf2vci.txt
+
+Submitted job 3 with external jobid 'Job <4255386> is submitted to default queue <cpuqueue>.'.
+Finished job 3.
+2 of 6 steps (33%) done
+
+rule CreateSampleGTF:
+    input: out/custom_ref/sample.vci.gz, /lila/data/kentsis/testfiles/CR_test/Homo_sapiens.GRCh37.75.gtf
+    output: out/custom_ref/sample_ref.gtf
+    log: out/logs/sampleGTF.txt
+    jobid: 2
+    benchmark: out/benchmarks/sampleGTF.txt
+
+Submitted job 2 with external jobid 'Job <4255387> is submitted to default queue <cpuqueue>.'.
+
+rule PatchRefGenome:
+    input: out/custom_ref/sample.vci.gz, /lila/data/kentsis/testfiles/CR_test/hs37d5.fa
+    output: out/custom_ref/snps_patched.fa
+    log: out/logs/patchRef.txt
+    jobid: 4
+
+Submitted job 4 with external jobid 'Job <4255388> is submitted to default queue <cpuqueue>.'.
+Finished job 4.
+3 of 6 steps (50%) done
+
+rule LiftIndelsOverRef:
+    input: out/custom_ref/sample.vci.gz, out/custom_ref/snps_patched.fa
+    output: out/custom_ref/sample_ref.fa
+    log: out/logs/liftIndelRef.txt
+    jobid: 1
+    benchmark: out/benchmarks/lift_indels.txt
+
+Submitted job 1 with external jobid 'Job <4255391> is submitted to default queue <cpuqueue>.'.
+Finished job 2.
+4 of 6 steps (67%) done
+Finished job 1.
+5 of 6 steps (83%) done
+
+localrule all:
+    input: out/custom_ref/sample_ref.fa, out/custom_ref/sample_ref.gtf
+    jobid: 0
+
+Finished job 0.
+6 of 6 steps (100%) done
+Complete log: /lila/home/chenz4/proteomegenerator/.snakemake/log/2018-07-25T101156.394696.snakemake.log

@@ -1,0 +1,56 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cluster nodes: 50
+Job counts:
+	count	jobs
+	1	CreateSampleGTF
+	1	IndexSeparatedVcfs
+	1	LiftIndelsOverRef
+	1	PatchRefGenome
+	1	all
+	1	vcf2vci
+	6
+
+rule IndexSeparatedVcfs:
+    input: /lila/data/kentsis/testfiles/CR_test/ALL.chrY.phase3_integrated_v1b.20130502.genotypes.vcf
+    output: out/custom_ref/sample.vcf.gz, out/custom_ref/sample.vcf.gz.tbi
+    log: out/logs/indexSeparatedVCF.txt
+    jobid: 5
+    benchmark: out/benchmarks/index_separated_vcfs.txt
+
+Submitted job 5 with external jobid 'Job <4255546> is submitted to default queue <cpuqueue>.'.
+Finished job 5.
+1 of 6 steps (17%) done
+
+rule vcf2vci:
+    input: out/custom_ref/sample.vcf.gz, out/custom_ref/sample.vcf.gz.tbi
+    output: out/custom_ref/sample.vci.gz
+    log: out/logs/vcf2vci.txt
+    jobid: 3
+    benchmark: out/benchmarks/vcf2vci.txt
+
+Submitted job 3 with external jobid 'Job <4255552> is submitted to default queue <cpuqueue>.'.
+Finished job 3.
+2 of 6 steps (33%) done
+
+rule CreateSampleGTF:
+    input: out/custom_ref/sample.vci.gz, /lila/data/kentsis/testfiles/CR_test/Homo_sapiens.GRCh37.75.gtf
+    output: out/custom_ref/sample_ref.gtf
+    log: out/logs/sampleGTF.txt
+    jobid: 1
+    benchmark: out/benchmarks/sampleGTF.txt
+
+Submitted job 1 with external jobid 'Job <4255556> is submitted to default queue <cpuqueue>.'.
+
+rule PatchRefGenome:
+    input: out/custom_ref/sample.vci.gz, /lila/data/kentsis/testfiles/CR_test/hs37d5.fa
+    output: out/custom_ref/snps_patched.fa
+    log: out/logs/patchRef.txt
+    jobid: 4
+
+Submitted job 4 with external jobid 'Job <4255557> is submitted to default queue <cpuqueue>.'.
+Finished job 1.
+3 of 6 steps (50%) done
+Terminating processes on user request, this might take some time.
+Will exit after finishing currently running jobs.
+Cancelling snakemake on user request.

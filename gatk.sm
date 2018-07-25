@@ -46,7 +46,7 @@ REF_GTF="/lila/data/poirier/indexes/GRCh38/gencode.v20.annotation.gtf"
 
 
 rule all:
-    input: "out/custom_ref/sample_ref.fa", "out/custom_ref/sample_ref.gtf"
+    input: "out/custom_ref/sample.vci.fa"
 
 #Last line can be removed - added for igv viewing purposes
 rule Mutect2:
@@ -105,44 +105,16 @@ rule FilterMutectCalls:
 
 # Custom reference .fasta and .gtf creation
 rule vcf2vci:
-    input: vcf="out/sample_m2_filtered.vcf.gz", idx="out/sample_m2_filtered.vcf.gz.tbi"
-    output: "out/custom_ref/sample.vci.gz"
+    input: vcf="out/sample_m2_filtered.vcf", idx="out/sample_m2_filtered.vcf.gz.tbi"
+    output: "out/custom_ref/sample.vci.fa"
     benchmark: "out/benchmarks/vcf2vci.txt"
     log: "out/logs/vcf2vci.txt"
     conda: "env.yaml"
     params: n="4", R="'span[hosts=1] rusage[mem=8]'", \
 	    o="out/logs/vcf2vci.out", eo="out/logs/vcf2vci.err", \
 	    J="vcf2vci", out_name = "out/custom_ref/sample.vci"
-    shell: "g2gtools vcf2vci -i {input.vcf} -f {REF_FASTA} -s {VCF_INDIVIDUAL} -o {params.out_name} --diploid"
-
-rule PatchRefGenome:
-    input: vci_gz="out/custom_ref/sample.vci.gz", ref_fa={REF_FASTA}
-    output: "out/custom_ref/snps_patched.fa"
-    log: "out/logs/patchRef.txt"
-    conda: "env.yaml"
-    params: n="10", R="'span[hosts=1] rusage[mem=8]'", \
-	    o="out/logs/patch_ref.out", eo="out/logs/patch_ref.err", \
-	    J="patch_ref"
-    shell: "g2gtools patch -i {input.ref_fa} -c {input.vci_gz} -o {output} -p 10"
-
-rule LiftIndelsOverRef:
-    input: vci_gz="out/custom_ref/sample.vci.gz", patched_fa="out/custom_ref/snps_patched.fa"
-    output: "out/custom_ref/sample_ref.fa"
-    benchmark: "out/benchmarks/lift_indels.txt"
-    log: "out/logs/liftIndelRef.txt"
-    conda: "env.yaml"
-    params: n="4", R="'span[hosts=1] rusage[mem=8]'", \
-	    o="out/logs/lift_indels.out", eo="out/logs/lift_indels.err", \
-	    J="lift_indels_over_ref"
-    shell: "g2gtools transform -i {input.patched_fa} -c {input.vci_gz} -o {output}"
-
-rule CreateSampleGTF:
-    input: vci_gz="out/custom_ref/sample.vci.gz", ref_gtf={REF_GTF}
-    output: "out/custom_ref/sample_ref.gtf"
-    benchmark: "out/benchmarks/sampleGTF.txt"
-    log: "out/logs/sampleGTF.txt"
-    conda: "env.yaml"
-    params: n="4", R="'span[hosts=1] rusage[mem=8]'", \
-	    o="out/logs/sampleGTF.out", eo="out/logs/sampleGTF.err", \
-	    J="sampleGTF"
-    shell: "g2gtools convert -i {input.ref_gtf} -c {input.vci_gz} -o {output}"
+    shell: "java -jar /lila/data/kentsis/testfiles/CR_test/GenomeAnalysisTK.jar \
+   		-T FastaAlternateReferenceMaker \
+  		-R {REF_FASTA} \
+   		-o {output} \
+   		-V {input.vcf}"
