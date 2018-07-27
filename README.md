@@ -22,4 +22,4 @@ Addition of 4 snakemake files to original proteomegenerator, all following GATK 
 * Create custom .fasta and .gtf files by incorporating SNPs and Indels VCF files
 
 
-![alt text](https://github.com/kentsisresearchgroup/proteomegenerator2.0/blob/master/workflow.png)
+![alt text](https://github.com/jtpoirier/proteomegenerator/blob/cr/workflow.png)
