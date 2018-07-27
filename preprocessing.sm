@@ -132,7 +132,7 @@ rule BaseRecalibrator:
     output: "out/{SAMPLE_NAME}.BQSR.report"
     benchmark: "out/benchmarks/{SAMPLE_NAME}_BQSR.txt"
     conda: "preprocess.yaml"
-    params: n="1", R="'span[hosts=1] rusage[mem=15]'", \
+    params: n="1", R="'span[hosts=1] rusage[mem=130]'", \
 	        o="out/logs/recal.out", eo="out/logs/recal.err", \
 	        J="base_recal_{SAMPLE_NAME}"
     shell: "gatk --java-options -Xmx350g BaseRecalibrator \
