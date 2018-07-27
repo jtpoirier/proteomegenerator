@@ -1,0 +1,4 @@
+Building DAG of jobs...
+WildcardError in line 28 of /lila/home/chenz4/proteomegenerator/preprocessing.sm:
+Wildcards in input files cannot be determined from output files:
+'SAMPLE_NAME'

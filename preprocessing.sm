@@ -6,7 +6,7 @@
 
 shell.executable("/bin/bash")
 import glob,os,subprocess
-WD="/lila/kentsis/testfiles/test_pp/"
+WD="/lila/data/kentsis/testfiles/K052M2_test/"
 workdir: WD
 TMP = "/scratch/chenz4/"
 
@@ -26,7 +26,7 @@ REF_INDEL = "/lila/data/kentsis/Databases/resources_broad_hg38_v0_Homo_sapiens_a
 # End Config files
 
 rule all:
-    input: "out/{SAMPLE_NAME}.recal.analysis_ready.bam"
+    input: expand("out/{SAMPLE_NAME}.recal.analysis_ready.bam", SAMPLE_NAME = SAMPLE_NAME)
 
 rule UnalignFastqReadsByRG:
     input: fastq1 = {FASTQ1}, fastq2 = {FASTQ2}
@@ -41,10 +41,9 @@ rule UnalignFastqReadsByRG:
             READ_GROUP_NAME={READ_GROUP} \
             SAMPLE_NAME={SAMPLE_NAME}"
 
-
 rule AlignFastqReadsByRG:
     input: fastq1 = {FASTQ1}, fastq2 = {FASTQ2}
-    output: "out/{SAMPLE_NAME}.aligned.bam")
+    output: "out/{SAMPLE_NAME}.aligned.bam"
     benchmark: "out/benchmarks/{SAMPLE_NAME}.align.txt"
     conda: "preprocess.yaml"
     params: n="36", R="'span[hosts=1] rusage[mem=10]'", o="out/logs/bwa_fastq.out", eo="out/logs/bwa_fastq.err", J="bwa_align_{SAMPLE_NAME}"
@@ -52,13 +51,12 @@ rule AlignFastqReadsByRG:
             -t {params.n} \
             -R '{READ_GROUP}' \
             {REF_FASTA} \
-            {input} | \
-            samtools view -Shu -@ {params.n} - | \
-            sambamba sort -n -m 350G --tmpdir {TMP} -t {params.n} -o {output}"
+            {input.fastq1} {input.fastq2} | \
+            samtools sort -@{params.n} -o {output} -"
 
 rule MergeUnmappedAndAlignedBAMs:
     input: aligned="out/{SAMPLE_NAME}.aligned.bam", unaligned="out/{SAMPLE_NAME}.unaligned.bam"
-    output: "out/{SAMPLE_NAME}}.aligned_unaligned_merged.bam"
+    output: "out/{SAMPLE_NAME}.aligned_unaligned_merged.bam"
     conda: "preprocess.yaml"
     params: n="36", R="'span[hosts=1] rusage[mem=10]'", o="out/logs/merge_aubam.out", eo="out/logs/merge_aubam.err", J="merge_aubam"
     shell: "java -Xmx350g -jar picard.jar MergeBamAlignment \
@@ -82,7 +80,6 @@ rule MergeUnmappedAndAlignedBAMs:
             UNMAP_CONTAMINANT_READS=true"
 
 # 1 sample but many units (readgroups)
-
 rule MarkDuplicates:
     input: "out/{SAMPLE_NAME}}.aligned_unaligned_merged.bam"
     output: "out/{SAMPLE_NAME}.merged.RGmerged.dedup.bam"
@@ -97,7 +94,6 @@ rule MarkDuplicates:
             ASSUME_SORT_ORDER='queryname' \
 	        MAX_RECORDS_IN_RAM=32000000 \
             CREATE_MD5_FILE=true"
-
 
 # Using sambamba sort bc multithreaded -> faster
 rule SortAndFixRealignedBamTags:
@@ -117,7 +113,6 @@ rule SortAndFixRealignedBamTags:
             CREATE_MD5_FILE=true \
 	        MAX_RECORDS_IN_RAM=16000000 \
             REFERENCE_SEQUENCE={REF_FASTA}"
-
 
 rule BaseRecalibrator:
     input: bam="out/{SAMPLE_NAME}.merged.RGmerged.dedup.fixedtags.readyforBQSR.bam"
