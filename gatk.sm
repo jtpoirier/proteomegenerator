@@ -8,7 +8,7 @@
 
 shell.executable("/bin/bash")
 import glob,os,subprocess
-WD="/lila/data/kentsis/testfiles/CR_test/"
+WD="/lila/data/kentsis/testfiles/K052M2_test/"
 workdir: WD
 TMP = "/scratch/chenz4"
 
@@ -22,8 +22,8 @@ REF_FASTA = "/lila/data/kentsis/testfiles/m2_test/m2/resources_broad_hg38_v0_Hom
 REF_DICT = "/lila/data/kentsis/testfiles/m2_test/m2/resources_broad_hg38_v0_Homo_sapiens_assembly38.dict"
 REF_INDEX = "/lila/data/kentsis/testfiles/m2_test/m2/resources_broad_hg38_v0_Homo_sapiens_assembly38.fasta.fai"
 
-TUMOR = "/lila/data/kentsis/testfiles/m2_test/m2/tumor.bam"
-NORMAL = "/lila/data/kentsis/testfiles/m2_test/m2/normal.bam"
+TUMOR = "/lila/data/kentsis/testfiles/K052M2_test/k052_chr.bam"
+#NORMAL = "/lila/data/kentsis/testfiles/m2_test/m2/normal.bam"
 
 #DBSNP = "/home/chenz4/customRef/reference/Homo_sapiens_assembly38.dbsnp138.vcf"
 #COSMIC = "/home/chenz4/customRef/reference/resources_broad_hg38_v0_Homo_sapiens_assembly38.known_indels.vcf.gz"
@@ -36,21 +36,44 @@ INT_LIST =  "/lila/data/kentsis/testfiles/m2_test/m2/chr17plus.interval_list"
 GNOMAD = "/lila/data/kentsis/testfiles/m2_test/m2/chr17_small_exac_common_3_grch38.vcf.gz"
 # End Config files
 
-RG_TUMOR = "HCC1143_tumor"
-RG_NORMAL = "HCC1143_normal"
+RG_TUMOR = "K052_tumor"
+#RG_NORMAL = "HCC1143_normal"
 
 #Lists VCF samples names one by one
 VCF_INDIVIDUAL = "HCC1143_tumor"
 
 REF_GTF="/lila/data/poirier/indexes/GRCh38/gencode.v20.annotation.gtf"
 
+GATK3_JAR = "/lila/data/kentsis/testfiles/CR_test/GenomeAnalysisTK.jar"
 
 rule all:
-    input: "out/custom_ref/sample.vci.fa"
+    input: "out/custom_ref/sample_ref.fa"
 
+#Comparing both tumor and normal sample
 #Last line can be removed - added for igv viewing purposes
+#rule Mutect2:
+#    input: tumor=TUMOR,normal=NORMAL
+#    output: vcf="out/sample_m2.vcf.gz", idx="out/sample_m2.vcf.gz.tbi"
+#    benchmark: "out/benchmarks/MuTect2.txt"
+#    conda: "env.yaml"
+#    params: n="20", R="'span[hosts=1] rusage[mem=20]'", o="out/logs/mutect.out", eo="out/logs/mutect.err", J="mutect2"
+#    shell: "gatk --java-options -Xmx8g Mutect2 \
+#            -R {REF_FASTA} \
+#            -I {input.tumor} \
+#            -I {input.normal}\
+#            -tumor {RG_TUMOR} \
+#            -normal {RG_NORMAL} \
+#            -pon {PON} \
+#            --germline-resource {GERM_RES} \
+#            --af-of-alleles-not-in-resource 0.0000025 \
+#            --disable-read-filter MateOnSameContigOrNoMappedMateReadFilter \
+#            -L {INT_LIST} \
+#            -O {output.vcf} \
+#            -bamout out/2_tumor_normal_m2.bam"
+
+#Tumor-only mode
 rule Mutect2:
-    input: tumor=TUMOR,normal=NORMAL,
+    input: tumor=TUMOR
     output: vcf="out/sample_m2.vcf.gz", idx="out/sample_m2.vcf.gz.tbi"
     benchmark: "out/benchmarks/MuTect2.txt"
     conda: "env.yaml"
@@ -58,16 +81,10 @@ rule Mutect2:
     shell: "gatk --java-options -Xmx8g Mutect2 \
             -R {REF_FASTA} \
             -I {input.tumor} \
-            -I {input.normal}\
             -tumor {RG_TUMOR} \
-            -normal {RG_NORMAL} \
-            -pon {PON} \
-            --germline-resource {GERM_RES} \
-            --af-of-alleles-not-in-resource 0.0000025 \
-            --disable-read-filter MateOnSameContigOrNoMappedMateReadFilter \
-            -L {INT_LIST} \
-            -O {output.vcf} \
-            -bamout out/2_tumor_normal_m2.bam"
+            -O {output.vcf}"
+
+
 
 # Estimating cross-sample contamination
 rule PileupSummaries:
@@ -104,17 +121,19 @@ rule FilterMutectCalls:
             -O {output.vcf}"
 
 # Custom reference .fasta and .gtf creation
-rule vcf2vci:
-    input: vcf="out/sample_m2_filtered.vcf", idx="out/sample_m2_filtered.vcf.gz.tbi"
-    output: "out/custom_ref/sample.vci.fa"
-    benchmark: "out/benchmarks/vcf2vci.txt"
-    log: "out/logs/vcf2vci.txt"
+rule vcf2fasta:
+    input: vcf="out/sample_m2_filtered.vcf.gz", idx="out/sample_m2.vcf.gz.tbi"
+    output: "out/custom_ref/sample_ref.fa"
+    benchmark: "out/benchmarks/vcf2fasta.txt"
+    log: "out/logs/vcf2fasta.txt"
     conda: "env.yaml"
     params: n="4", R="'span[hosts=1] rusage[mem=8]'", \
-	    o="out/logs/vcf2vci.out", eo="out/logs/vcf2vci.err", \
-	    J="vcf2vci", out_name = "out/custom_ref/sample.vci"
-    shell: "java -jar /lila/data/kentsis/testfiles/CR_test/GenomeAnalysisTK.jar \
+	    o="out/logs/vcf2fasta.out", eo="out/logs/vcf2fasta.err", \
+	    J="vcf2fasta"
+    shell: "java -jar {GATK3_JAR} \
    		-T FastaAlternateReferenceMaker \
   		-R {REF_FASTA} \
    		-o {output} \
    		-V {input.vcf}"
+
+

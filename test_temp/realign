@@ -1,0 +1,10 @@
+#!/bin/bash
+#BSUB -J realignBAM
+#BSUB -n 1
+#BSUB -R span[hosts=1]
+#BSUB -R rusage[mem=15]
+#BSUB -W 07:00
+#BSUB -o %J.stdout
+#BSUB -e %J.stderr
+
+java -jar /lila/data/kentsis/testfiles/K052M2_test/picard.jar SamToFastq I=/lila/data/kentsis/testfiles/K052M2_test/k052_unaligned.bam FASTQ=/lila/data/kentsis/testfiles/K052M2_test/k052_unaligned_r1.fastq SECOND_END_FASTQ=/lila/data/kentsis/testfiles/K052M2_test/k052_unaligned_r2.fastq

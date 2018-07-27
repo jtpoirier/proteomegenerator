@@ -1,0 +1,4 @@
+Building DAG of jobs...
+MissingInputException in line 124 of /lila/home/chenz4/proteomegenerator/gatk.sm:
+Missing input files for rule vcf2fasta:
+out/sample_m2_filtered.vcf

@@ -4,37 +4,62 @@
 
 # Read groups should all be specified in the config file
 
+shell.executable("/bin/bash")
+import glob,os,subprocess
+WD="/lila/kentsis/testfiles/test_pp/"
+workdir: WD
+TMP = "/scratch/chenz4/"
 
+snakemake.utils.makedirs('out')
+
+# Begin Config files
+singularity: "docker://continuumio/miniconda3:4.5.4"
+
+FASTQ1 = "/lila/data/kentsis/testfiles/K052M2_test/k052_unaligned_r1.fastq"
+FASTQ2 = "/lila/data/kentsis/testfiles/K052M2_test/k052_unaligned_r2.fastq"
+READ_GROUP = "@RG\\tID:K052\\tSM:K052_tumor\\tCN:MSK\\tDT:2018-07-27\\tLB:Library\\tPL:ILLUMINA"
+SAMPLE_NAME = "K052_tumor"
+REF_FASTA = "/lila/data/kentsis/testfiles/m2_test/m2/resources_broad_hg38_v0_Homo_sapiens_assembly38.fasta"
+REF_SNP = "/lila/data/kentsis/Databases/Homo_sapiens_assembly38.dbsnp138.vcf"
+REF_INDEL = "/lila/data/kentsis/Databases/resources_broad_hg38_v0_Homo_sapiens_assembly38.known_indels.vcf.gz"
+
+# End Config files
+
+rule all:
+    input: "out/{SAMPLE_NAME}.recal.analysis_ready.bam"
 
 rule UnalignFastqReadsByRG:
-    input: lambda wildcards: config["units"][wildcards.unit]
-    output: temp("out/{unit}.unaligned.bam")
-    benchmark: "out/benchmarks/{unit}.unaligned.txt"
-    params: n="36", R="'span[hosts=1] rusage[mem=10]'", o="out/logs/picard_unalign.out", eo="out/logs/picard_unalign.err", read_group=lambda wildcards: config["read_groups"][wildcards.unit], J="picard_unalign_{wildcards.unit}"
+    input: fastq1 = {FASTQ1}, fastq2 = {FASTQ2}
+    output: "out/{SAMPLE_NAME}.unaligned.bam"
+    benchmark: "out/benchmarks/{SAMPLE_NAME}.unaligned.txt"
+    conda: "preprocess.yaml"
+    params: n="36", R="'span[hosts=1] rusage[mem=10]'", o="out/logs/picard_unalign.out", eo="out/logs/picard_unalign.err", J="picard_unalign_{SAMPLE_NAME}"
     shell: "java -Xmx350g -jar picard.jar FastqToSam \
-            FASTQ={input[0]} \
-            FASTQ2={input[1]} \
+            FASTQ={input.fastq1} \
+            FASTQ2={input.fastq2} \
             OUTPUT={output} \
-            READ_GROUP_NAME={params.read_group} \
-            SAMPLE_NAME={config["sample"]}"
+            READ_GROUP_NAME={READ_GROUP} \
+            SAMPLE_NAME={SAMPLE_NAME}"
 
 
 rule AlignFastqReadsByRG:
-    input: lambda wildcards: config["units"][wildcards.unit]
-    output: temp("out/{unit}.aligned.bam")
-    benchmark: "out/benchmarks/{unit}.align.txt"
-    params: n="36", R="'span[hosts=1] rusage[mem=10]'", o="out/logs/bwa_fastq.out", eo="out/logs/bwa_fastq.err", read_group=lambda wildcards: config["read_groups"][wildcards.unit], J="bwa_align_{wildcards.unit}"
+    input: fastq1 = {FASTQ1}, fastq2 = {FASTQ2}
+    output: "out/{SAMPLE_NAME}.aligned.bam")
+    benchmark: "out/benchmarks/{SAMPLE_NAME}.align.txt"
+    conda: "preprocess.yaml"
+    params: n="36", R="'span[hosts=1] rusage[mem=10]'", o="out/logs/bwa_fastq.out", eo="out/logs/bwa_fastq.err", J="bwa_align_{SAMPLE_NAME}"
     shell: "bwa mem -M \
             -t {params.n} \
-            -R '{params.read_group}' \
-            {config["ref"]} \
+            -R '{READ_GROUP}' \
+            {REF_FASTA} \
             {input} | \
             samtools view -Shu -@ {params.n} - | \
             sambamba sort -n -m 350G --tmpdir {TMP} -t {params.n} -o {output}"
 
 rule MergeUnmappedAndAlignedBAMs:
-    input: aligned="out/{readgroup}.aligned.bam", unaligned="out/{readgroup}.unaligned.bam"
-    output: "out/{readgroup}.aligned_unaligned_merged.bam"
+    input: aligned="out/{SAMPLE_NAME}.aligned.bam", unaligned="out/{SAMPLE_NAME}.unaligned.bam"
+    output: "out/{SAMPLE_NAME}}.aligned_unaligned_merged.bam"
+    conda: "preprocess.yaml"
     params: n="36", R="'span[hosts=1] rusage[mem=10]'", o="out/logs/merge_aubam.out", eo="out/logs/merge_aubam.err", J="merge_aubam"
     shell: "java -Xmx350g -jar picard.jar MergeBamAlignment \
             TMP_DIR={TMP} \
@@ -44,7 +69,7 @@ rule MergeUnmappedAndAlignedBAMs:
             ALIGNED_BAM={input.aligned} \
             UNMAPPED_BAM={input.unaligned} \
             OUTPUT={output} \
-            REFERENCE_SEQUENCE={config[ref]} \
+            REFERENCE_SEQUENCE={REF_FASTA} \
             PAIRED_RUN=true \
             SORT_ORDER='unsorted' \
             IS_BISULFITE_SEQUENCE=false \
@@ -54,33 +79,17 @@ rule MergeUnmappedAndAlignedBAMs:
             ADD_MATE_CIGAR=true \
             MAX_INSERTIONS_OR_DELETIONS=-1 \
             PRIMARY_ALIGNMENT_STRATEGY=MostDistant \
-            PROGRAM_RECORD_ID='bwamem' \
-            PROGRAM_GROUP_VERSION={BWA_VERSION} \
-            PROGRAM_GROUP_COMMAND_LINE={BWA} \
-            PROGRAM_GROUP_NAME='bwamem' \
             UNMAP_CONTAMINANT_READS=true"
 
 # 1 sample but many units (readgroups)
 
-# rule MergeFqRGsAndMarkDuplicates:
-#     input: temp(lambda wildcards: expand("out/{sample}.aligned_unaligned_merged.bam", sample=config["samples"][wildcards.sample]))
-#     output: bam=temp("out/{sample}.RGmerged.dedup.bam")
-#     params: n="36", R="'span[hosts=1] rusage[mem=11]'", o="out/logs/mergeRGs_markdups.out", eo="out/logs/mergeRGs_markdups.err", J="mergeRGs_markdups"
-#     shell: "picard MarkDuplicates -Xmx390g TMP_DIR={TMP} \
-#             $(echo '{input}' | sed -r \'s/[^ ]+/INPUT=&/g') \
-#             OUTPUT={output.bam} \
-#             METRICS_FILE=out/logs/markdups.metrics \
-#             VALIDATION_STRINGENCY=SILENT \
-#             OPTICAL_DUPLICATE_PIXEL_DISTANCE=2500 \
-#             ASSUME_SORT_ORDER='queryname' \
-#             MAX_RECORDS_IN_RAM=94000000"
-
-rule MergeRealignedBamRGsAndMarkDuplicates:
-    input: lambda wildcards: expand("out/{sample}.aligned_unaligned_merged.bam", sample=config["samples"][wildcards.sample])
-    output: "out/{sample}.merged.RGmerged.dedup.bam"
+rule MarkDuplicates:
+    input: "out/{SAMPLE_NAME}}.aligned_unaligned_merged.bam"
+    output: "out/{SAMPLE_NAME}.merged.RGmerged.dedup.bam"
+    conda: "preprocess.yaml"
     params: n="1", R="'span[hosts=1] rusage[mem=130]'", o="out/logs/markdups.out", eo="out/logs/markdups.err", J="markdups"
-    shell: "java -Xmx350g -jar picard.jar MarkDuplicates -Xmx128g TMP_DIR={TMP} \
-            $(echo '{input}' | sed -r \'s/[^ ]+/INPUT=&/g') \
+    shell: "java -Xmx350g -jar picard.jar MarkDuplicates TMP_DIR={TMP} \
+            INPUT={input} \
 	        OUTPUT={output} \
             METRICS_FILE='{WD}/out/logs/markdups.metrics' \
             VALIDATION_STRINGENCY=SILENT \
@@ -89,19 +98,51 @@ rule MergeRealignedBamRGsAndMarkDuplicates:
 	        MAX_RECORDS_IN_RAM=32000000 \
             CREATE_MD5_FILE=true"
 
+
+# Using sambamba sort bc multithreaded -> faster
 rule SortAndFixRealignedBamTags:
-    input: "out/{sample}.merged.RGmerged.dedup.bam"
-    output: bam="out/{sample}.merged.RGmerged.dedup.fixedtags.readyforBQSR.bam", \
-            idx="out/{sample}.merged.RGmerged.dedup.fixedtags.readyforBQSR.bai"
-    benchmark: "out/benchmarks/SortAndFixTags.txt"
+    input: "out/{SAMPLE_NAME}.merged.RGmerged.dedup.bam"
+    output: bam="out/{SAMPLE_NAME}.merged.RGmerged.dedup.fixedtags.readyforBQSR.bam", \
+            idx="out/{SAMPLE_NAME}.merged.RGmerged.dedup.fixedtags.readyforBQSR.bai"
+    benchmark: "out/benchmarks/{SAMPLE_NAME}_SortAndFixTags.txt"
+    conda: "preprocess.yaml"
     params: n="36", R="'span[hosts=1] rusage[mem=10]'", \
             o="out/logs/sort_fix_tags.out", eo="out/logs/sort_fix_tags.err", \
             J="sort_fix_tags"
     shell: "sambamba sort -t {params.n} -m 350G --tmpdir {TMP} -o /dev/stdout {input} | \
-            java -Xmx350g -jar picard.jar SetNmMdAndUqTags -Xmx64g TMP_DIR={TMP} \
+            java -Xmx350g -jar picard.jar SetNmMdAndUqTags TMP_DIR={TMP} \
             INPUT=/dev/stdin \
             OUTPUT={output.bam} \
             CREATE_INDEX=true \
             CREATE_MD5_FILE=true \
 	        MAX_RECORDS_IN_RAM=16000000 \
-            REFERENCE_SEQUENCE={config[ref]}"
+            REFERENCE_SEQUENCE={REF_FASTA}"
+
+
+rule BaseRecalibrator:
+    input: bam="out/{SAMPLE_NAME}.merged.RGmerged.dedup.fixedtags.readyforBQSR.bam"
+    output: "out/{SAMPLE_NAME}.BQSR.report"
+    benchmark: "out/benchmarks/{SAMPLE_NAME}_BQSR.txt"
+    conda: "preprocess.yaml"
+    params: n="1", R="'span[hosts=1] rusage[mem=15]'", \
+	        o="out/logs/recal/{SAMPLE_NAME}_recal.out", eo="out/logs/recal/{SAMPLE_NAME}_recal.err", \
+	        J="base_recal_{SAMPLE_NAME}"
+    shell: "gatk --java-options -Xmx350g BaseRecalibrator \
+            -R {REF_FASTA} -I {input.bam} \
+	        --use-original-qualities -O {output} \
+            -knownSites {REF_SNP} -knownSites {REF_INDEL}"
+
+# Final rule to make analysis ready BAM file
+rule ApplyBQSR:
+    input: bqsr="out/{SAMPLE_NAME}.BQSR.report", bam="out/{SAMPLE_NAME}.merged.RGmerged.dedup.fixedtags.readyforBQSR.bam"
+    output: "out/{SAMPLE_NAME}.recal.analysis_ready.bam"
+    conda: "preprocess.yaml"
+    params: n="1", R="'span[hosts=1] rusage[mem=15]'", \
+	        o="out/logs/apply_bqsr.out", eo="out/logs/apply_bqsr.err", \
+	        J="apply_bqsr"
+    shell: "gatk --java-options -Xmx350g ApplyBQSR \
+	      -R {REF_FASTA} -I {input.bam} -O {output} \
+	      -bqsr {input.bqsr} \
+          --static-quantized-quals 10 --static-quantized-quals 20 --static-quantized-quals 30 \
+          --add-output-sam-program-record \
+          --use-original-qualities"

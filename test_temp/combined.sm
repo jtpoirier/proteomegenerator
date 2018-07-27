@@ -113,7 +113,7 @@ rule vcf2vci:
     params: n="4", R="'span[hosts=1] rusage[mem=8]'", \
 	    o="out/logs/vcf2vci.out", eo="out/logs/vcf2vci.err", \
 	    J="vcf2vci", out_name = "out/custom_ref/sample.vci"
-    shell: "g2gtools vcf2vci -i {input.vcf} -f {REF_FASTA} -s {VCF_INDIVIDUAL} -o {params.out_name} --diploid"
+    shell: "g2gtools vcf2vci -i {input.vcf} -s {VCF_INDIVIDUAL} -o {params.out_name} --diploid"
 
 rule PatchRefGenome:
     input: vci_gz="out/custom_ref/sample.vci.gz", ref_fa={REF_FASTA}
@@ -146,3 +146,15 @@ rule CreateSampleGTF:
 	    o="out/logs/sampleGTF.out", eo="out/logs/sampleGTF.err", \
 	    J="sampleGTF"
     shell: "g2gtools convert -i {input.ref_gtf} -c {input.vci_gz} -o {output}"
+
+# Chain file creation
+rule vcf2chain:
+    input: vcf="out/sample_m2_filtered.vcf.gz", idx="out/sample_m2_filtered.vcf.gz.tbi"
+    output: "out/custom_ref/REF-to-" + VCF_INDIVIDUAL + ".chain"
+    benchmark: "out/benchmarks/chn.txt"
+    conda: "chain.yaml"
+    params: n="4", R="'span[hosts=1] rusage[mem=8]'", \
+	    o="out/logs/chain.out", eo="out/logs/chain.err", \
+	    J="vcf2chain"
+    shell: "g2gtools vcf2chain -f {REF_FASTA} -i {input.vcf} -s {VCF_INDIVIDUAL} -o {output}"
+

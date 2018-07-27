@@ -1,0 +1,27 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cluster nodes: 50
+Job counts:
+	count	jobs
+	1	all
+	1	vcf2fasta
+	2
+
+rule vcf2fasta:
+    input: out/sample_m2_filtered.vcf, out/sample_m2_filtered.vcf.gz.tbi
+    output: out/custom_ref/sample_ref.fa
+    log: out/logs/vcf2fasta.txt
+    jobid: 1
+    benchmark: out/benchmarks/vcf2fasta.txt
+
+Submitted job 1 with external jobid 'Job <4279314> is submitted to default queue <cpuqueue>.'.
+Finished job 1.
+1 of 2 steps (50%) done
+
+localrule all:
+    input: out/custom_ref/sample_ref.fa, out/custom_ref/REF-to-HCC1143_tumor.chain
+    jobid: 0
+
+Finished job 0.
+2 of 2 steps (100%) done
+Complete log: /lila/home/chenz4/proteomegenerator/.snakemake/log/2018-07-26T120814.919184.snakemake.log

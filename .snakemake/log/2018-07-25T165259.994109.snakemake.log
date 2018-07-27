@@ -1,0 +1,3 @@
+RuleException in line 131 of /lila/home/chenz4/proteomegenerator/gatk.sm:
+Conda environments are only allowed with shell, script, or wrapper directives (not with run).
+  File "/lila/home/chenz4/proteomegenerator/gatk.sm", line 131, in <module>

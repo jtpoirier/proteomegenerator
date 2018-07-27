@@ -1,0 +1,13 @@
+Building DAG of jobs...
+Creating conda environment /lila/home/chenz4/proteomegenerator/chain.yaml...
+Downloading remote packages.
+CreateCondaEnvironmentException:
+Could not create conda environment from /lila/home/chenz4/proteomegenerator/chain.yaml:
+Solving environment: ...working... failed
+
+UnsatisfiableError: The following specifications were found to be in conflict:
+  - g2gtools==0.1.31=py27_0
+  - widgetsnbextension==3.2.1=py36_0
+Use "conda info <package>" to see the dependencies for each package.
+
+
