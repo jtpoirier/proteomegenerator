@@ -1,0 +1,49 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cluster nodes: 50
+Job counts:
+	count	jobs
+	1	ApplyBQSR
+	1	BaseRecalibrator
+	1	MarkDuplicates
+	1	SortAndFixRealignedBamTags
+	1	all
+	5
+
+rule MarkDuplicates:
+    input: out/K052_tumor}.aligned_unaligned_merged.bam
+    output: out/K052_tumor.merged.RGmerged.dedup.bam
+    jobid: 4
+    wildcards: SAMPLE_NAME=K052_tumor
+
+Submitted job 4 with external jobid 'Job <4281012> is submitted to default queue <cpuqueue>.'.
+Finished job 4.
+1 of 5 steps (20%) done
+
+rule SortAndFixRealignedBamTags:
+    input: out/K052_tumor.merged.RGmerged.dedup.bam
+    output: out/K052_tumor.merged.RGmerged.dedup.fixedtags.readyforBQSR.bam, out/K052_tumor.merged.RGmerged.dedup.fixedtags.readyforBQSR.bai
+    jobid: 2
+    benchmark: out/benchmarks/K052_tumor_SortAndFixTags.txt
+    wildcards: SAMPLE_NAME=K052_tumor
+
+Submitted job 2 with external jobid 'Job <4281248> is submitted to default queue <cpuqueue>.'.
+Finished job 2.
+2 of 5 steps (40%) done
+
+rule BaseRecalibrator:
+    input: out/K052_tumor.merged.RGmerged.dedup.fixedtags.readyforBQSR.bam
+    output: out/K052_tumor.BQSR.report
+    jobid: 3
+    benchmark: out/benchmarks/K052_tumor_BQSR.txt
+    wildcards: SAMPLE_NAME=K052_tumor
+
+Submitted job 3 with external jobid 'Job <4281251> is submitted to default queue <cpuqueue>.'.
+    Error in rule BaseRecalibrator:
+        jobid: 3
+        output: out/K052_tumor.BQSR.report
+        conda-env: /lila/data/kentsis/testfiles/K052M2_test/.snakemake/conda/3b20e511
+
+Job failed, going on with independent jobs.
+Exiting because a job execution failed. Look above for error message
+Complete log: /lila/home/chenz4/proteomegenerator/.snakemake/log/2018-07-27T133422.689205.snakemake.log

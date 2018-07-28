@@ -1,0 +1,26 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cluster nodes: 50
+Job counts:
+	count	jobs
+	1	FilterMutectCalls
+	1	Mutect2
+	1	all
+	1	vcf2fasta
+	4
+
+rule Mutect2:
+    input: /lila/data/kentsis/testfiles/K052M2_test/out/K052_tumor.recal.analysis_ready.bam
+    output: out/sample_m2.vcf.gz, out/sample_m2.vcf.gz.tbi
+    jobid: 3
+    benchmark: out/benchmarks/MuTect2.txt
+
+Submitted job 3 with external jobid 'Job <4281343> is submitted to default queue <cpuqueue>.'.
+    Error in rule Mutect2:
+        jobid: 3
+        output: out/sample_m2.vcf.gz, out/sample_m2.vcf.gz.tbi
+        conda-env: /lila/data/kentsis/testfiles/K052M2_test/.snakemake/conda/90a98403
+
+Job failed, going on with independent jobs.
+Exiting because a job execution failed. Look above for error message
+Complete log: /lila/home/chenz4/proteomegenerator/.snakemake/log/2018-07-27T170519.795778.snakemake.log

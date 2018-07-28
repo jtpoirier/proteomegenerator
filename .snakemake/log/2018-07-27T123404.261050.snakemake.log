@@ -1,0 +1,30 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cluster nodes: 50
+Job counts:
+	count	jobs
+	1	AlignFastqReadsByRG
+	1	ApplyBQSR
+	1	BaseRecalibrator
+	1	MarkDuplicates
+	1	MergeUnmappedAndAlignedBAMs
+	1	SortAndFixRealignedBamTags
+	1	all
+	7
+
+rule AlignFastqReadsByRG:
+    input: /lila/data/kentsis/testfiles/K052M2_test/k052_unaligned_r1.fastq, /lila/data/kentsis/testfiles/K052M2_test/k052_unaligned_r2.fastq
+    output: out/K052_tumor}.aligned.bam
+    jobid: 6
+    benchmark: out/benchmarks/K052_tumor}.align.txt
+    wildcards: SAMPLE_NAME=K052_tumor}
+
+Submitted job 6 with external jobid 'Job <4280981> is submitted to default queue <cpuqueue>.'.
+    Error in rule AlignFastqReadsByRG:
+        jobid: 6
+        output: out/K052_tumor}.aligned.bam
+        conda-env: /lila/data/kentsis/testfiles/K052M2_test/.snakemake/conda/3b20e511
+
+Job failed, going on with independent jobs.
+Exiting because a job execution failed. Look above for error message
+Complete log: /lila/home/chenz4/proteomegenerator/.snakemake/log/2018-07-27T123404.261050.snakemake.log

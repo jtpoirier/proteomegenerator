@@ -7,4 +7,4 @@
 #BSUB -o %J.stdout
 #BSUB -e %J.stderr
 
-java -jar /lila/data/kentsis/testfiles/K052M2_test/picard.jar SamToFastq I=/lila/data/kentsis/testfiles/K052M2_test/k052_unaligned.bam FASTQ=/lila/data/kentsis/testfiles/K052M2_test/k052_unaligned_r1.fastq SECOND_END_FASTQ=/lila/data/kentsis/testfiles/K052M2_test/k052_unaligned_r2.fastq
+/lila/data/kentsis/testfiles/K052M2_test/.conda/pkgs/bwa-0.7.17-ha92aebf_3/bin/bwa index -p resources_broad_hg38_v0_Homo_sapiens_assembly38.fasta -a bwtsw /lila/data/kentsis/testfiles/m2_test/m2/resources_broad_hg38_v0_Homo_sapiens_assembly38.fasta

@@ -1,0 +1,21 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cluster nodes: 50
+Job counts:
+	count	jobs
+	1	FilterMutectCalls
+	1	Mutect2
+	1	all
+	1	vcf2fasta
+	4
+
+rule Mutect2:
+    input: /lila/data/kentsis/testfiles/K052M2_test/out/K052_tumor.recal.analysis_ready.bam
+    output: out/sample_m2.vcf.gz, out/sample_m2.vcf.gz.tbi
+    jobid: 2
+    benchmark: out/benchmarks/MuTect2.txt
+
+Submitted job 2 with external jobid 'Job <4281341> is submitted to default queue <cpuqueue>.'.
+Terminating processes on user request, this might take some time.
+Will exit after finishing currently running jobs.
+Cancelling snakemake on user request.
