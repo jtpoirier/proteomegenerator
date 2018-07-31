@@ -1,0 +1,56 @@
+Building DAG of jobs...
+Creating conda environment /lila/home/chenz4/proteomegenerator/envs/preprocess.yaml...
+Downloading remote packages.
+Environment for ../../../../home/chenz4/proteomegenerator/envs/preprocess.yaml created (location: .snakemake/conda/04c05d6f)
+Using shell: /bin/bash
+Provided cluster nodes: 50
+Job counts:
+	count	jobs
+	1	AlignFastqReadsByRG
+	1	ApplyBQSR
+	1	BaseRecalibrator
+	1	MarkDuplicates
+	1	MergeUnmappedAndAlignedBAMs
+	1	SortAndFixRealignedBamTags
+	1	UnalignFastqReadsByRG
+	1	all
+	8
+
+rule AlignFastqReadsByRG:
+    input: /lila/data/kentsis/testfiles/K052M2_test/k052_unaligned_r1.fastq, /lila/data/kentsis/testfiles/K052M2_test/k052_unaligned_r2.fastq
+    output: out/preprocess/K052_tumor.aligned.bam
+    jobid: 6
+    benchmark: out/benchmarks/preprocess/K052_tumor.align.txt
+    wildcards: SAMPLE_NAME=K052_tumor
+
+Submitted job 6 with external jobid 'Job <4284042> is submitted to default queue <cpuqueue>.'.
+
+rule UnalignFastqReadsByRG:
+    input: /lila/data/kentsis/testfiles/K052M2_test/k052_unaligned_r1.fastq, /lila/data/kentsis/testfiles/K052M2_test/k052_unaligned_r2.fastq
+    output: out/preprocess/K052_tumor.unaligned.bam
+    jobid: 7
+    benchmark: out/benchmarks/preprocess/K052_tumor.unaligned.txt
+    wildcards: SAMPLE_NAME=K052_tumor
+
+Submitted job 7 with external jobid 'Job <4284043> is submitted to default queue <cpuqueue>.'.
+Finished job 7.
+1 of 8 steps (12%) done
+Finished job 6.
+2 of 8 steps (25%) done
+
+rule MergeUnmappedAndAlignedBAMs:
+    input: out/preprocess/K052_tumor.aligned.bam, out/preprocess/K052_tumor.unaligned.bam
+    output: out/preprocess/K052_tumor.aligned_unaligned_merged.bam
+    jobid: 5
+    benchmark: out/benchmarks/preprocess/K052_tumor.merge_aubam.txt
+    wildcards: SAMPLE_NAME=K052_tumor
+
+Submitted job 5 with external jobid 'Job <4284049> is submitted to default queue <cpuqueue>.'.
+    Error in rule MergeUnmappedAndAlignedBAMs:
+        jobid: 5
+        output: out/preprocess/K052_tumor.aligned_unaligned_merged.bam
+        conda-env: /lila/data/kentsis/testfiles/K052M2_test/.snakemake/conda/04c05d6f
+
+Job failed, going on with independent jobs.
+Exiting because a job execution failed. Look above for error message
+Complete log: /lila/home/chenz4/proteomegenerator/.snakemake/log/2018-07-30T111841.313032.snakemake.log

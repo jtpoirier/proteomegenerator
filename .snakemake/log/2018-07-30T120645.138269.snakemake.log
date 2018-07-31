@@ -1,0 +1,33 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cluster nodes: 50
+Job counts:
+	count	jobs
+	1	ApplyBQSR
+	1	BaseRecalibrator
+	1	MarkDuplicates
+	1	MergeUnmappedAndAlignedBAMs
+	1	SortAndFixRealignedBamTags
+	1	all
+	6
+
+rule MergeUnmappedAndAlignedBAMs:
+    input: out/preprocess/K052_tumor.aligned.bam, out/preprocess/K052_tumor.unaligned.bam
+    output: out/preprocess/K052_tumor.aligned_unaligned_merged.bam
+    jobid: 5
+    benchmark: out/benchmarks/preprocess/K052_tumor.merge_aubam.txt
+    wildcards: SAMPLE_NAME=K052_tumor
+
+Submitted job 5 with external jobid 'Job <4284102> is submitted to default queue <cpuqueue>.'.
+Finished job 5.
+1 of 6 steps (17%) done
+
+rule MarkDuplicates:
+    input: out/preprocess/K052_tumor.aligned_unaligned_merged.bam
+    output: out/preprocess/K052_tumor.merged.RGmerged.dedup.bam
+    jobid: 4
+    benchmark: out/benchmarks/preprocess/K052_tumor.markdups.txt
+    wildcards: SAMPLE_NAME=K052_tumor
+
+RuleException in line 93 of /lila/home/chenz4/proteomegenerator/preprocessing.sm:
+NameError: The name 'WD' is unknown in this context. Please make sure that you defined that variable. Also note that braces not used for variable access have to be escaped by repeating them, i.e. {{print $1}}

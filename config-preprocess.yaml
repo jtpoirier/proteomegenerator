@@ -1,0 +1,17 @@
+directories:
+  work_directory: "/lila/data/kentsis/testfiles/K052M2_test/"
+  temporary_directory: "/scratch/chenz4/"
+references:
+  fasta: "/lila/data/kentsis/Databases/resources_broad_hg38_v0_Homo_sapiens_assembly38.fasta"
+  snp: "/lila/data/kentsis/Databases/resources_broad_hg38_v0_Homo_sapiens_assembly38.dbsnp138.vcf"
+  indel: "/lila/data/kentsis/Databases/resources_broad_hg38_v0_Homo_sapiens_assembly38.known_indels.vcf.gz"
+fastq:
+  one: "/lila/data/kentsis/testfiles/K052M2_test/k052_unaligned_r1.fastq"
+  two: "/lila/data/kentsis/testfiles/K052M2_test/k052_unaligned_r2.fastq"
+readgroup:
+  id: "K052"
+  sample: "K052_tumor"
+  library: "Library"
+  platform: "ILLUMINA"
+  sequencing_center: "MSK"
+  run_date: "2018-07-27"

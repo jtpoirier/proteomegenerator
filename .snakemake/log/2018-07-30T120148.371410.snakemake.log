@@ -1,0 +1,29 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cluster nodes: 50
+Job counts:
+	count	jobs
+	1	ApplyBQSR
+	1	BaseRecalibrator
+	1	MarkDuplicates
+	1	MergeUnmappedAndAlignedBAMs
+	1	SortAndFixRealignedBamTags
+	1	all
+	6
+
+rule MergeUnmappedAndAlignedBAMs:
+    input: out/preprocess/K052_tumor.aligned.bam, out/preprocess/K052_tumor.unaligned.bam
+    output: out/preprocess/K052_tumor.aligned_unaligned_merged.bam
+    jobid: 5
+    benchmark: out/benchmarks/preprocess/K052_tumor.merge_aubam.txt
+    wildcards: SAMPLE_NAME=K052_tumor
+
+Submitted job 5 with external jobid 'Job <4284093> is submitted to default queue <cpuqueue>.'.
+    Error in rule MergeUnmappedAndAlignedBAMs:
+        jobid: 5
+        output: out/preprocess/K052_tumor.aligned_unaligned_merged.bam
+        conda-env: /lila/data/kentsis/testfiles/K052M2_test/.snakemake/conda/04c05d6f
+
+Job failed, going on with independent jobs.
+Exiting because a job execution failed. Look above for error message
+Complete log: /lila/home/chenz4/proteomegenerator/.snakemake/log/2018-07-30T120148.371410.snakemake.log
