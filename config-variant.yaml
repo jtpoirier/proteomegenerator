@@ -1,11 +1,11 @@
 directories:
-  work_directory: "/lila/data/kentsis/testfiles/K052M2_test/"
+  work_directory: "/lila/data/kentsis/testfiles/K052_subset/"
   temporary_directory: "/scratch/chenz4/"
 references:
   fasta: "/lila/data/kentsis/Databases/resources_broad_hg38_v0_Homo_sapiens_assembly38.fasta"
 samples:
   tumor:
-    file: "/lila/data/kentsis/testfiles/K052M2_test/out/preprocess/K052_tumor.recal.analysis_ready.bam"
+    file: "/lila/data/kentsis/testfiles/K052M2_test/K052_DNA_subset.bam"
     name: "K052_tumor"
   normal:
     file: "/lila/data/kentsis/testfiles/K052M2_test/out/preprocess/normal.bam"
