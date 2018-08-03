@@ -16,7 +16,6 @@ dependencies:
   - tabix=0.2.5=ha92aebf_2
   - jpeg=9c=h470a237_0
   - python-lzo=1.11=py36_0
-  - r-base=3.4.1=hff14c37_6
   - _r-mutex=1.0.0=mro_2
   - appdirs=1.4.3=py36h28b3542_0
   - asn1crypto=0.24.0=py36_0

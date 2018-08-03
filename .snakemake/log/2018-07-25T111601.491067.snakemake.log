@@ -1,27 +1,0 @@
-Building DAG of jobs...
-Pulling singularity image docker://broadinstitute/gatk3:3.8-0.
-WorkflowError:
-Failed to pull singularity image from docker://broadinstitute/gatk3:3.8-0:
-[33mWARNING: pull for Docker Hub is not guaranteed to produce the
-(B[m[33mWARNING: same image on repeated pull. Use Singularity Registry
-(B[m[33mWARNING: (shub://) to pull exactly equivalent images.
-(B[mDocker image path: index.docker.io/broadinstitute/gatk3:3.8-0
-Cache folder set to /lila/home/chenz4/.singularity/docker
-[1/14] ||----------------------------------|   0.0% [1/14] |==|--------------------------------|   7.1% [2/14] |=====|-----------------------------|  14.3% [3/14] |=======|---------------------------|  21.4% [4/14] |==========|------------------------|  28.6% [5/14] |============|----------------------|  35.7% [6/14] |===============|-------------------|  42.9% [7/14] |=================|-----------------|  50.0% [8/14] |====================|--------------|  57.1% [9/14] |======================|------------|  64.3% [10/14] |=========================|---------|  71.4% [11/14] |===========================|-------|  78.6% [12/14] |==============================|----|  85.7% [13/14] |================================|--|  92.9% [14/14] |===================================| 100.0% 
-Importing: base Singularity environment
-Importing: /lila/home/chenz4/.singularity/docker/sha256:8ad8b3f87b378cfae583fef34e47a3c9203847d779961b7351cbf786af0bc09f.tar.gz
-Importing: /lila/home/chenz4/.singularity/docker/sha256:751fe39c4d348c7fc411d46929c1dac390e3d7107efc9f8f69641b50e14459f7.tar.gz
-Importing: /lila/home/chenz4/.singularity/docker/sha256:b165e84cccc10bc56e89091e37339ab98afbef36d1f06cd9c1c531af4dc18aa1.tar.gz
-Importing: /lila/home/chenz4/.singularity/docker/sha256:acfcc7cbc59b7a596fd525d7565bb8df98f7cc2eef6aecde5b2428910a55d40f.tar.gz
-Importing: /lila/home/chenz4/.singularity/docker/sha256:04b7a9efc4af31d0be1ab9c42ea79d4fd37ab4f37819484dee0432c6f970887b.tar.gz
-Importing: /lila/home/chenz4/.singularity/docker/sha256:b16e55fe528577cd1aef5bb088da95b07521d9489bb895d68885ba7cd3cf296c.tar.gz
-Importing: /lila/home/chenz4/.singularity/docker/sha256:8c5cbb866b5570e0aced559ab8b213a73d5fd87a9a7b9465c3e3a47c532b4c4e.tar.gz
-Importing: /lila/home/chenz4/.singularity/docker/sha256:e5686d56ae4adf4a08d5e25b879e8aa787a3696de585aeef52ef8c764d215203.tar.gz
-Importing: /lila/home/chenz4/.singularity/docker/sha256:d606dbac3f99c86b2fda0f700aa7e9d38f6960402810ce57ca0abaa595aa33d7.tar.gz
-
-gzip: /lila/home/chenz4/.singularity/docker/sha256:d606dbac3f99c86b2fda0f700aa7e9d38f6960402810ce57ca0abaa595aa33d7.tar.gz: not in gzip format
-tar: This does not look like a tar archive
-tar: Exiting with failure status due to previous errors
-Cleaning up...
-[31mERROR: pulling container failed!
-(B[m

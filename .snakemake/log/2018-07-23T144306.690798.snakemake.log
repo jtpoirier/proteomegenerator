@@ -1,4 +1,0 @@
-Building DAG of jobs...
-MissingInputException in line 67 of /lila/home/chenz4/proteomegenerator2.0/mutect2.sm:
-Missing input files for rule PileupSummaries:
-/home/chenz4/customRef/m2/chr17_small_exac_common_3_grch38.vcf.gz

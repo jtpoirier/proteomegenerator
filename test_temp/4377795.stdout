@@ -1,0 +1,53 @@
+Sender: LSF System <lsfadmin@ls05>
+Subject: Job 4377795: <realignBAM> in cluster <lila> Done
+
+Job <realignBAM> was submitted from host <lilac> by user <chenz4> in cluster <lila> at Fri Aug  3 14:04:56 2018
+Job was executed on host(s) <ls05>, in queue <cpuqueue>, as user <chenz4> in cluster <lila> at Fri Aug  3 14:04:56 2018
+</home/chenz4> was used as the home directory.
+</lila/home/chenz4/proteomegenerator/test_temp> was used as the working directory.
+Started at Fri Aug  3 14:04:56 2018
+Terminated at Fri Aug  3 14:05:05 2018
+Results reported at Fri Aug  3 14:05:05 2018
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+#!/bin/bash
+#BSUB -J realignBAM
+#BSUB -n 1
+#BSUB -R span[hosts=1]
+#BSUB -R rusage[mem=15]
+#BSUB -W 05:00
+#BSUB -o %J.stdout
+#BSUB -e %J.stderr
+
+java -jar /lila/data/kentsis/testfiles/K052M2_test/picard.jar RevertSam I=/lila/data/kentsis/testfiles/K052M2_test/K052_DNA_subset_remove_unaligned.bam O=/lila/data/kentsis/testfiles/K052M2_test/K052_DNA_subset_unaligned.bam
+
+java -jar /lila/data/kentsis/testfiles/K052M2_test/picard.jar SamToFastq I=/lila/data/kentsis/testfiles/K052M2_test/K052_DNA_subset_unaligned.bam FASTQ=/lila/data/kentsis/testfiles/K052M2_test/K052_DNA_subset_r1.fastq SECOND_END_FASTQ=/lila/data/kentsis/testfiles/K052M2_test/K052_DNA_subset_r2.fastq
+
+------------------------------------------------------------
+
+Successfully completed.
+
+Resource usage summary:
+
+    CPU time :                                   6.97 sec.
+    Max Memory :                                 -
+    Average Memory :                             -
+    Total Requested Memory :                     15.00 GB
+    Delta Memory :                               -
+    Max Swap :                                   -
+    Max Processes :                              4
+    Max Threads :                                14
+    Run time :                                   10 sec.
+    Turnaround time :                            9 sec.
+
+The output (if any) follows:
+
+
+
+PS:
+
+Read file <4377795.stderr> for stderr output of this job.
+

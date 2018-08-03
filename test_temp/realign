@@ -3,8 +3,10 @@
 #BSUB -n 1
 #BSUB -R span[hosts=1]
 #BSUB -R rusage[mem=15]
-#BSUB -W 07:00
+#BSUB -W 05:00
 #BSUB -o %J.stdout
 #BSUB -e %J.stderr
 
-/lila/data/kentsis/testfiles/K052M2_test/.conda/pkgs/bwa-0.7.17-ha92aebf_3/bin/bwa index -p resources_broad_hg38_v0_Homo_sapiens_assembly38.fasta -a bwtsw /lila/data/kentsis/testfiles/m2_test/m2/resources_broad_hg38_v0_Homo_sapiens_assembly38.fasta
+java -jar /lila/data/kentsis/testfiles/K052M2_test/picard.jar RevertSam I=/lila/data/kentsis/testfiles/K052M2_test/K052_DNA_subset_remove_unaligned.bam O=/lila/data/kentsis/testfiles/K052M2_test/K052_DNA_subset_unaligned.bam
+
+java -jar /lila/data/kentsis/testfiles/K052M2_test/picard.jar SamToFastq I=/lila/data/kentsis/testfiles/K052M2_test/K052_DNA_subset_unaligned.bam FASTQ=/lila/data/kentsis/testfiles/K052M2_test/K052_DNA_subset_r1.fastq SECOND_END_FASTQ=/lila/data/kentsis/testfiles/K052M2_test/K052_DNA_subset_r2.fastq

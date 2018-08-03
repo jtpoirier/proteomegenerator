@@ -1,3 +1,0 @@
-Building DAG of jobs...
-Pulling singularity image docker://continuumio/miniconda3:4.5.4.
-Cancelling snakemake on user request.

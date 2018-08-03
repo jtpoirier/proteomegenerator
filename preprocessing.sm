@@ -40,7 +40,7 @@ rule UnalignFastqReadsByRG:
     conda: "envs/preprocess.yaml"
     params: n="20", R="'span[hosts=1] rusage[mem=10]'", \
             o="out/logs/preprocess/picard_unalign.out", eo="out/logs/preprocess/picard_unalign.err", J="picard_unalign"
-    shell: "java -Xmx350g -jar picard.jar FastqToSam \
+    shell: "picard FastqToSam \
             FASTQ={input.fastq1} \
             FASTQ2={input.fastq2} \
             OUTPUT={output} \
@@ -72,7 +72,7 @@ rule MergeUnmappedAndAlignedBAMs:
     conda: "envs/preprocess.yaml"
     params: n="36", R="'span[hosts=1] rusage[mem=10]'", \
             o="out/logs/preprocess/merge_aubam.out", eo="out/logs/preprocess/merge_aubam.err", J="merge_aubam"
-    shell: "java -Xmx350g -jar picard.jar MergeBamAlignment \
+    shell: "picard MergeBamAlignment \
             TMP_DIR={TMP} \
             VALIDATION_STRINGENCY=SILENT \
             EXPECTED_ORIENTATIONS=FR \
@@ -99,7 +99,7 @@ rule MarkDuplicates:
     conda: "envs/preprocess.yaml"
     params: n="1", R="'span[hosts=1] rusage[mem=130]'", \
             o="out/logs/preprocess/markdups.out", eo="out/logs/preprocess/markdups.err", J="markdups"
-    shell: "java -Xmx350g -jar picard.jar MarkDuplicates TMP_DIR={TMP} \
+    shell: "picard MarkDuplicates TMP_DIR={TMP} \
             INPUT={input} \
 	        OUTPUT={output} \
             METRICS_FILE='{WD}/out/logs/markdups.metrics' \
@@ -118,7 +118,7 @@ rule SortAndFixRealignedBamTags:
     params: n="36", R="'span[hosts=1] rusage[mem=10]'", \
             o="out/logs/preprocess/sort_fix_tags.out", eo="out/logs/preprocess/sort_fix_tags.err", J="sort_fix_tags"
     shell: "sambamba sort -t {params.n} -m 350G --tmpdir {TMP} -o /dev/stdout {input} | \
-            java -Xmx350g -jar picard.jar SetNmMdAndUqTags TMP_DIR={TMP} \
+            picard SetNmMdAndUqTags TMP_DIR={TMP} \
             INPUT=/dev/stdin \
             OUTPUT={output.bam} \
             CREATE_INDEX=true \

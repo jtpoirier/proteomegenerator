@@ -1,2 +1,0 @@
-SyntaxError in line 59 of /lila/home/chenz4/proteomegenerator/preprocessing.sm:
-No rule keywords allowed after run/shell/script/wrapper/cwl in rule AlignFastqReadsByRG. (preprocessing.sm, line 59)

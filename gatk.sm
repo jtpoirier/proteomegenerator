@@ -43,7 +43,7 @@ rule Mutect2_with_normal:
     input: tumor=TUMOR,normal=NORMAL
     output: vcf="out/variants/{RG_TUMOR}_m2.vcf.gz", idx="out/variants/{RG_TUMOR}_m2.vcf.gz.tbi"
     benchmark: "out/benchmarks/variants/{RG_TUMOR}_m2_with_normal.txt"
-    conda: "envs/variant.yaml"
+    conda: "envs/preprocess.yaml"
     params: n="20", R="'span[hosts=1] rusage[mem=20]'", \
             o="out/logs/variants/m2_with_normal.out", eo="out/logs/variants/m2_with_normal.err", J="m2_with_normal"
     shell: "gatk --java-options -Xmx8g Mutect2 \
@@ -60,7 +60,7 @@ rule Mutect2_tumor_only:
     input: tumor=TUMOR
     output: vcf="out/variants/{RG_TUMOR}_m2.vcf.gz", idx="out/variants/{RG_TUMOR}_m2.vcf.gz.tbi"
     benchmark: "out/benchmarks/variants/{RG_TUMOR}_m2_tumor_only.txt"
-    conda: "envs/variant.yaml"
+    conda: "envs/preprocess.yaml"
     params: n="36", R="'span[hosts=1] rusage[mem=10]'", \
             o="out/logs/variants/m2_tumor_only.out", eo="out/logs/variants/m2_tumor_only.err", J="m2_tumor_only"
     shell: "gatk --java-options -Xmx8g Mutect2 \
@@ -76,7 +76,7 @@ rule FilterMutectCalls:
     input: vcf="out/variants/{RG_TUMOR}_m2.vcf.gz", idx="out/variants/{RG_TUMOR}_m2.vcf.gz.tbi"
     output: vcf="out/variants/{RG_TUMOR}_m2_filtered.vcf.gz", idx="out/variants/{RG_TUMOR}_m2_filtered.vcf.gz.tbi"
     benchmark: "out/benchmarks/variants/{RG_TUMOR}_m2_filter.txt"
-    conda: "envs/variant.yaml"
+    conda: "envs/preprocess.yaml"
     params: n="36", R="'span[hosts=1] rusage[mem=10]'", \
             o="out/logs/variants/m2_filter.out", eo="out/logs/variants/m2_filter.err", J="m2_Filter"
     shell: "gatk --java-options -Xmx8g FilterMutectCalls \
@@ -89,7 +89,7 @@ rule SelectSNPs:
     input: vcf="out/variants/{RG_TUMOR}_m2_filtered.vcf.gz", idx="out/variants/{RG_TUMOR}_m2_filtered.vcf.gz.tbi"
     output: vcf="out/variants/{RG_TUMOR}_m2_filtered_snps.vcf.gz"
     benchmark: "out/benchmarks/variants/{RG_TUMOR}_select_snp.txt"
-    conda: "envs/variant.yaml"
+    conda: "envs/preprocess.yaml"
     params: n="36", R="'span[hosts=1] rusage[mem=10]'", \
             o="out/logs/variants/select_snp.out", eo="out/logs/variants/select_snp.err", J="select_snp"
     shell: "gatk --java-options -Xmx8g SelectVariants \
@@ -103,7 +103,7 @@ rule vcf2fasta:
     input: vcf="out/variants/{RG_TUMOR}_m2_filtered_snps.vcf.gz"
     output: "out/custom_ref/{RG_TUMOR}_SNP_patched.fa"
     benchmark: "out/benchmarks/custom_ref/{RG_TUMOR}_vcf2fasta.txt"
-    conda: "envs/variant.yaml"
+    conda: "envs/preprocess.yaml"
     params: n="36", R="'span[hosts=1] rusage[mem=10]'", \
             o="out/logs/custom_ref/vcf2fasta.out", eo="out/logs/custom_ref/vcf2fasta.err", J="vcf2fasta"
     shell: "java -jar {GATK3_JAR} \

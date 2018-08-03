@@ -1,4 +1,0 @@
-Building DAG of jobs...
-MissingInputException in line 118 of /lila/home/chenz4/proteomegenerator/combined.sm:
-Missing input files for rule PatchRefGenome:
-/lila/data/kentsis/testfiles/m2_test/m2/resources_broad_hg38_v0_Homo_sapiens_assembly38.fasta
