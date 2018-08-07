@@ -1,0 +1,14 @@
+Building DAG of jobs...
+Creating conda environment /lila/home/chenz4/proteomegenerator/envs/preprocess.yaml...
+Downloading remote packages.
+CreateCondaEnvironmentException:
+Could not create conda environment from /lila/home/chenz4/proteomegenerator/envs/preprocess.yaml:
+Solving environment: ...working... failed
+
+UnsatisfiableError: The following specifications were found to be in conflict:
+  - mro-base==3.5.0=h1c2f66e_0
+  - r-reshape==0.8.6=r3.4.1_0 -> r-base=3.4.1 -> _r-mutex=1[build=anacondar_1]
+  - r-reshape==0.8.6=r3.4.1_0 -> r-base=3.4.1 -> pango=1.40 -> glib=2.50
+Use "conda info <package>" to see the dependencies for each package.
+
+

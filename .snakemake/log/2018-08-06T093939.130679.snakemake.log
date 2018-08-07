@@ -1,0 +1,4 @@
+Building DAG of jobs...
+MissingInputException in line 116 of /lila/home/chenz4/proteomegenerator/gatk.sm:
+Missing input files for rule rmd:
+out/variants/K052_tumor_m2_filtered_snps.vcf

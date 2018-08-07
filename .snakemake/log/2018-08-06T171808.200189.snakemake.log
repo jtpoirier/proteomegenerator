@@ -1,0 +1,129 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cluster nodes: 50
+Job counts:
+	count	jobs
+	1	Predict
+	1	all
+	1	blastp
+	1	cdna_alignment_orf_to_genome_orf
+	1	gff3_file_to_bed
+	1	gff3_file_to_proteins
+	2	maxQuant
+	2	mqpar_conversion
+	1	reorderFASTA
+	11
+
+rule blastp:
+    input: out/all-merge/reference.transcripts.fasta.transdecoder_dir/longest_orfs.pep, /data/poirier/indexes/uniprot/UP000005640.fasta.pin, /data/poirier/indexes/uniprot/UP000005640.fasta.phr, /data/poirier/indexes/uniprot/UP000005640.fasta.psq
+    output: out/all-merge/reference.blastp.outfmt6
+    log: out/logs/reference.blastp.txt
+    jobid: 19
+    benchmark: out/benchmarks/reference.blastp.json
+    wildcards: model=reference
+
+Submitted job 19 with external jobid 'Job <4403564> is submitted to default queue <cpuqueue>.'.
+
+localrule mqpar_conversion:
+    input: out/all-merge/merged/proteome.unique.fasta
+    output: out/merged_mqpar.xml
+    log: out/logs/merged.mqpar_conversion.txt
+    jobid: 8
+    benchmark: out/benchmarks/merged.mqpar_conversion.txt
+    wildcards: model=merged
+
+Finished job 8.
+1 of 11 steps (9%) done
+
+rule maxQuant:
+    input: out/merged_mqpar.xml
+    output: out/all-merge/merged/combined/txt/summary.txt
+    log: out/logs/merged.maxQuant.txt
+    jobid: 4
+    benchmark: out/benchmarks/merged.maxQuant.txt
+    wildcards: model=merged
+
+Submitted job 4 with external jobid 'Job <4403565> is submitted to default queue <cpuqueue>.'.
+Finished job 19.
+2 of 11 steps (18%) done
+
+rule Predict:
+    input: out/all-merge/reference.transcripts.fasta.transdecoder_dir/longest_orfs.pep, out/all-merge/reference.transcripts.fasta, out/all-merge/reference.blastp.outfmt6
+    output: out/all-merge/reference.transcripts.fasta.transdecoder.pep, out/all-merge/reference.transcripts.fasta.transdecoder.gff3
+    log: ../logs/reference.Predict.txt
+    jobid: 11
+    benchmark: out/benchmarks/reference.Predict.json
+    wildcards: model=reference
+
+Submitted job 11 with external jobid 'Job <4422481> is submitted to default queue <cpuqueue>.'.
+Finished job 11.
+3 of 11 steps (27%) done
+
+rule cdna_alignment_orf_to_genome_orf:
+    input: out/all-merge/reference/transcripts.gff3, out/all-merge/reference.transcripts.fasta, out/all-merge/reference.transcripts.fasta.transdecoder.gff3
+    output: out/all-merge/reference/transcripts.genome.gff3
+    log: out/logs/reference.cdna_alignment_orf_to_genome_orf.txt
+    jobid: 5
+    benchmark: out/benchmarks/reference.cdna_alignment_orf_to_genome_orf.txt
+    wildcards: model=reference
+
+Submitted job 5 with external jobid 'Job <4422490> is submitted to default queue <cpuqueue>.'.
+Finished job 5.
+4 of 11 steps (36%) done
+
+rule gff3_file_to_bed:
+    input: out/all-merge/reference/transcripts.genome.gff3
+    output: out/all-merge/reference/proteome.bed
+    log: out/logs/reference.gff3_file_to_bed.txt
+    jobid: 1
+    benchmark: out/benchmarks/reference.gff3_file_to_bed.txt
+    wildcards: model=reference
+
+Submitted job 1 with external jobid 'Job <4422492> is submitted to default queue <cpuqueue>.'.
+
+rule gff3_file_to_proteins:
+    input: out/all-merge/reference/transcripts.genome.gff3
+    output: out/all-merge/reference/proteome.fasta
+    log: out/logs/reference.gff3_file_to_proteins.txt
+    jobid: 20
+    benchmark: out/benchmarks/reference.gff3_file_to_proteins.txt
+    wildcards: model=reference
+
+Submitted job 20 with external jobid 'Job <4422493> is submitted to default queue <cpuqueue>.'.
+Finished job 1.
+5 of 11 steps (45%) done
+Finished job 20.
+6 of 11 steps (55%) done
+
+rule reorderFASTA:
+    input: out/all-merge/reference/proteome.fasta
+    output: out/all-merge/reference/proteome.unique.fasta
+    log: out/logs/reference.reorderFASTA.txt
+    jobid: 12
+    benchmark: out/benchmarks/reference.reorderFASTA.txt
+    wildcards: model=reference
+
+Submitted job 12 with external jobid 'Job <4422495> is submitted to default queue <cpuqueue>.'.
+Finished job 12.
+7 of 11 steps (64%) done
+
+localrule mqpar_conversion:
+    input: out/all-merge/reference/proteome.unique.fasta
+    output: out/reference_mqpar.xml
+    log: out/logs/reference.mqpar_conversion.txt
+    jobid: 6
+    benchmark: out/benchmarks/reference.mqpar_conversion.txt
+    wildcards: model=reference
+
+Finished job 6.
+8 of 11 steps (73%) done
+
+rule maxQuant:
+    input: out/reference_mqpar.xml
+    output: out/all-merge/reference/combined/txt/summary.txt
+    log: out/logs/reference.maxQuant.txt
+    jobid: 2
+    benchmark: out/benchmarks/reference.maxQuant.txt
+    wildcards: model=reference
+
+Submitted job 2 with external jobid 'Job <4422496> is submitted to default queue <cpuqueue>.'.

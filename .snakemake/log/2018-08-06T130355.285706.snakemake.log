@@ -1,0 +1,14 @@
+Building DAG of jobs...
+Creating conda environment /lila/home/chenz4/proteomegenerator/envs/preprocess.yaml...
+Downloading remote packages.
+CreateCondaEnvironmentException:
+Could not create conda environment from /lila/home/chenz4/proteomegenerator/envs/preprocess.yaml:
+Solving environment: ...working... failed
+
+UnsatisfiableError: The following specifications were found to be in conflict:
+  - bioconductor-organismdbi==1.20.0=r3.4.1_0 -> bioconductor-annotationdbi[version='>=1.33.15'] -> bioconductor-s4vectors[version='>=0.9.25'] -> r-base=3.3.2 -> icu=54
+  - bioconductor-organismdbi==1.20.0=r3.4.1_0 -> bioconductor-annotationdbi[version='>=1.33.15'] -> bioconductor-s4vectors[version='>=0.9.25'] -> r-base=3.3.2 -> pango=1.40 -> freetype[version='>=2.8,<2.9.0a0']
+  - fontconfig==2.13.0=h9420a91_0
+Use "conda info <package>" to see the dependencies for each package.
+
+

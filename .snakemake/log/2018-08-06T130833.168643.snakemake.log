@@ -1,0 +1,14 @@
+Building DAG of jobs...
+Creating conda environment /lila/home/chenz4/proteomegenerator/envs/preprocess.yaml...
+Downloading remote packages.
+CreateCondaEnvironmentException:
+Could not create conda environment from /lila/home/chenz4/proteomegenerator/envs/preprocess.yaml:
+Solving environment: ...working... failed
+
+UnsatisfiableError: The following specifications were found to be in conflict:
+  - freetype==2.8=hab7d2ae_1
+  - libedit==3.1.20170329=h6b74fdf_2
+  - r-rcolorbrewer==1.1_2=r3.4.1_3
+Use "conda info <package>" to see the dependencies for each package.
+
+

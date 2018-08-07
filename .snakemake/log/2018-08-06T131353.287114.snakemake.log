@@ -1,0 +1,13 @@
+Building DAG of jobs...
+Creating conda environment /lila/home/chenz4/proteomegenerator/envs/preprocess.yaml...
+Downloading remote packages.
+CreateCondaEnvironmentException:
+Could not create conda environment from /lila/home/chenz4/proteomegenerator/envs/preprocess.yaml:
+Solving environment: ...working... failed
+
+UnsatisfiableError: The following specifications were found to be in conflict:
+  - ncurses==5.9=10
+  - python==3.7.0=hc3d631a_0 -> ncurses[version='>=6.1,<7.0a0']
+Use "conda info <package>" to see the dependencies for each package.
+
+

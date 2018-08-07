@@ -1,0 +1,3 @@
+NameError in line 89 of /lila/home/chenz4/proteomegenerator/Snakefile-K0562:
+name 'L1R1' is not defined
+  File "/lila/home/chenz4/proteomegenerator/Snakefile-K0562", line 89, in <module>

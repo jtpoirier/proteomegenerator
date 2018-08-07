@@ -1,0 +1,14 @@
+Building DAG of jobs...
+Creating conda environment /lila/home/chenz4/proteomegenerator/envs/preprocess.yaml...
+Downloading remote packages.
+CreateCondaEnvironmentException:
+Could not create conda environment from /lila/home/chenz4/proteomegenerator/envs/preprocess.yaml:
+Solving environment: ...working... failed
+
+UnsatisfiableError: The following specifications were found to be in conflict:
+  - certifi==2018.4.16=py37_0
+  - r-kernsmooth==2.23_15=r3.4.1_0
+  - tk==8.6.7=hc745277_3
+Use "conda info <package>" to see the dependencies for each package.
+
+

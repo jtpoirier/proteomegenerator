@@ -1,0 +1,3 @@
+NameError in line 27 of /lila/home/chenz4/proteomegenerator/Snakefile-K0562:
+name 'wildcards' is not defined
+  File "/lila/home/chenz4/proteomegenerator/Snakefile-K0562", line 27, in <module>

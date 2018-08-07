@@ -1,0 +1,108 @@
+Building DAG of jobs...
+Creating conda environment /lila/home/chenz4/proteomegenerator/envs/rmd.yaml...
+Downloading remote packages.
+CreateCondaEnvironmentException:
+Could not create conda environment from /lila/home/chenz4/proteomegenerator/envs/rmd.yaml:
+
+# >>>>>>>>>>>>>>>>>>>>>> ERROR REPORT <<<<<<<<<<<<<<<<<<<<<<
+
+    Traceback (most recent call last):
+      File "/opt/conda/lib/python3.6/site-packages/conda/exceptions.py", line 819, in __call__
+        return func(*args, **kwargs)
+      File "/opt/conda/lib/python3.6/site-packages/conda_env/cli/main.py", line 74, in do_call
+        exit_code = getattr(module, func_name)(args, parser)
+      File "/opt/conda/lib/python3.6/site-packages/conda_env/cli/main_create.py", line 79, in execute
+        directory=os.getcwd())
+      File "/opt/conda/lib/python3.6/site-packages/conda_env/specs/__init__.py", line 20, in detect
+        if spec.can_handle():
+      File "/opt/conda/lib/python3.6/site-packages/conda_env/specs/yaml_file.py", line 14, in can_handle
+        self._environment = env.from_file(self.filename)
+      File "/opt/conda/lib/python3.6/site-packages/conda_env/env.py", line 84, in from_file
+        return from_yaml(yamlstr, filename=filename)
+      File "/opt/conda/lib/python3.6/site-packages/conda_env/env.py", line 72, in from_yaml
+        data = yaml_load_standard(yamlstr)
+      File "/opt/conda/lib/python3.6/site-packages/conda/common/serialize.py", line 74, in yaml_load_standard
+        return yaml.load(string, Loader=yaml.Loader, version="1.2")
+      File "/opt/conda/lib/python3.6/site-packages/ruamel_yaml/main.py", line 639, in load
+        return loader._constructor.get_single_data()  # type: ignore
+      File "/opt/conda/lib/python3.6/site-packages/ruamel_yaml/constructor.py", line 102, in get_single_data
+        node = self.composer.get_single_node()
+      File "/opt/conda/lib/python3.6/site-packages/ruamel_yaml/composer.py", line 75, in get_single_node
+        document = self.compose_document()
+      File "/opt/conda/lib/python3.6/site-packages/ruamel_yaml/composer.py", line 96, in compose_document
+        node = self.compose_node(None, None)
+      File "/opt/conda/lib/python3.6/site-packages/ruamel_yaml/composer.py", line 132, in compose_node
+        node = self.compose_mapping_node(anchor)
+      File "/opt/conda/lib/python3.6/site-packages/ruamel_yaml/composer.py", line 194, in compose_mapping_node
+        item_value = self.compose_node(node, item_key)
+      File "/opt/conda/lib/python3.6/site-packages/ruamel_yaml/composer.py", line 130, in compose_node
+        node = self.compose_sequence_node(anchor)
+      File "/opt/conda/lib/python3.6/site-packages/ruamel_yaml/composer.py", line 162, in compose_sequence_node
+        while not self.parser.check_event(SequenceEndEvent):
+      File "/opt/conda/lib/python3.6/site-packages/ruamel_yaml/parser.py", line 144, in check_event
+        self.current_event = self.state()
+      File "/opt/conda/lib/python3.6/site-packages/ruamel_yaml/parser.py", line 482, in parse_block_sequence_first_entry
+        return self.parse_block_sequence_entry()
+      File "/opt/conda/lib/python3.6/site-packages/ruamel_yaml/parser.py", line 488, in parse_block_sequence_entry
+        token.move_comment(self.scanner.peek_token())
+      File "/opt/conda/lib/python3.6/site-packages/ruamel_yaml/scanner.py", line 173, in peek_token
+        self.fetch_more_tokens()
+      File "/opt/conda/lib/python3.6/site-packages/ruamel_yaml/scanner.py", line 310, in fetch_more_tokens
+        % utf8(ch), self.reader.get_mark())
+    ruamel_yaml.scanner.ScannerError: while scanning for the next token
+    found character '\t' that cannot start any token
+      in "<unicode string>", line 8, column 45:
+         ... _impl_linux-64=2.28.1=had2808c_3		
+                                             ^ (line: 8)
+
+`$ /opt/conda/bin/conda-env create --file /lila/data/kentsis/testfiles/K052_sub/.snakemake/conda/7e2db73e.yaml --prefix /lila/data/kentsis/testfiles/K052_sub/.snakemake/conda/7e2db73e`
+
+  environment variables:
+                 CIO_TEST=<not set>
+  CONDA_AUTO_UPDATE_CONDA=false
+               CONDA_ROOT=/opt/conda
+          LD_LIBRARY_PATH=/.singularity.d/libs
+                  MANPATH=/admin/lsf/10.1/man:
+               MODULEPATH=/usr/share/Modules/modulefiles:/etc/modulefiles:/opt/common/modulefile
+                          s
+                     PATH=/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin
+                          :/bin
+       REQUESTS_CA_BUNDLE=<not set>
+            SSL_CERT_FILE=<not set>
+
+     active environment : None
+       user config file : /lila/data/kentsis/testfiles/K052_sub/.condarc
+ populated config files : 
+          conda version : 4.5.4
+    conda-build version : not installed
+         python version : 3.6.5.final.0
+       base environment : /opt/conda  (read only)
+           channel URLs : https://repo.anaconda.com/pkgs/main/linux-64
+                          https://repo.anaconda.com/pkgs/main/noarch
+                          https://repo.anaconda.com/pkgs/free/linux-64
+                          https://repo.anaconda.com/pkgs/free/noarch
+                          https://repo.anaconda.com/pkgs/r/linux-64
+                          https://repo.anaconda.com/pkgs/r/noarch
+                          https://repo.anaconda.com/pkgs/pro/linux-64
+                          https://repo.anaconda.com/pkgs/pro/noarch
+          package cache : /opt/conda/pkgs
+                          /lila/data/kentsis/testfiles/K052_sub/.conda/pkgs
+       envs directories : /lila/data/kentsis/testfiles/K052_sub/.conda/envs
+                          /opt/conda/envs
+               platform : linux-64
+             user-agent : conda/4.5.4 requests/2.18.4 CPython/3.6.5 Linux/3.10.0-514.21.2.el7.x86_64 debian/9 glibc/2.24
+                UID:GID : 1505:6021
+             netrc file : None
+           offline mode : False
+
+
+An unexpected error has occurred. Conda has prepared the above report.
+If submitted, this report will be used by core maintainers to improve
+future releases of conda.
+Would you like conda to send this report to the core maintainers?
+[y/N]: 
+No report sent. To permanently opt-out, use
+
+    $ conda config --set report_errors false
+
+

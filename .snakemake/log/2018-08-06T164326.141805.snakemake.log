@@ -1,0 +1,24 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cluster nodes: 50
+Job counts:
+	count	jobs
+	1	all
+	1	rmd
+	2
+
+rule rmd:
+    input: out/custom_ref/K052_tumor_SNP_patched.fa, out/variants/K052_tumor_m2_filtered_snps.vcf
+    output: out/K052_tumor_report.html
+    jobid: 1
+    benchmark: out/benchmarks/custom_ref/K052_tumor_rmd.txt
+    wildcards: RG_TUMOR=K052_tumor
+
+Submitted job 1 with external jobid 'Job <4384550> is submitted to default queue <cpuqueue>.'.
+    Error in rule rmd:
+        jobid: 1
+        output: out/K052_tumor_report.html
+
+Job failed, going on with independent jobs.
+Exiting because a job execution failed. Look above for error message
+Complete log: /lila/home/chenz4/proteomegenerator/.snakemake/log/2018-08-06T164326.141805.snakemake.log

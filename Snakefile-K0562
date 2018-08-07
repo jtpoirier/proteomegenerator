@@ -12,35 +12,32 @@ PAR = SMDir + "/MaxQuant/mqpar_template.xml"
 ### Begin User Variables
 
 # Directories
-WD = "/lila/data/kentsis/testfiles/K0562_warm/"
+WD = config["directories"]["work_directory"]
 workdir: WD
-TMP = '/scratch/chenz4'
+TMP = config["directories"]["temporary_directory"]
 
 # References
-FASTA='/data/poirier/indexes/GRCh38/GRCh38.genome.fa'
-# Comment out or delete the "GTF" variable to force de novo mode
-GTF='/data/poirier/indexes/GRCh38/gencode.v20.annotation.gtf'
-INDEX = '/data/poirier/indexes/GRCh38/STAR'
-UNIPROT="/data/poirier/indexes/uniprot/UP000005640.fasta"
+FASTA=config["references"]["fasta"]
+# If GTF file exists, then use it. Else, run on de novo mode
+GTF=config["references"]["gtf"]
+INDEX = config["references"]["index"]
+UNIPROT=config["references"]["uniprot"]
 
 # Samples
-K0562 = 'FCH9EFLADXX-HUMbghEAACRAAPEI-225'.split()
-SAMPLES = K0562
-L1R1="/data/kentsis/RNAseq/K0562/{sample}_L1_1.fq.gz"
-L2R1="/data/kentsis/RNAseq/K0562/{sample}_L2_1.fq.gz"
-L1R2="/data/kentsis/RNAseq/K0562/{sample}_L1_2.fq.gz"
-L2R2="/data/kentsis/RNAseq/K0562/{sample}_L2_2.fq.gz"
+SAMPLES = config["samples"]["name"].split()
+READ_ONE = ",".join(list(config["samples"]["read_one"]))
+READ_TWO = ",".join(list(config["samples"]["read_two"]))
 
 # MaxQuant
-RAW = "/lila/data/kentsis/testfiles/K056PGTest"
-THREADS = str(multiprocessing.cpu_count())
+RAW = config["maxquant"]["raw_directory"]
+THREADS = config["maxquant"]["threads"]
 
 ### End User Variables
 
 if os.path.exists(SMDir + "/MaxQuant/mqpar.xml") :
     PAR = SMDir + "/MaxQuant/mqpar.xml"
 
-if 'GTF' in locals():
+if os.path.exists(GTF):
     ruleorder: STAR_GTF > STAR_denovo
     MODELS = 'merged reference'.split()
 else:
@@ -51,12 +48,12 @@ snakemake.utils.makedirs(TMP)
 snakemake.utils.makedirs('out/benchmarks')
 
 rule all:
-    input: expand("out/all-merge/{model}/combined/txt/summary.txt", model=MODELS)
+    input: expand("out/all-merge/{model}/combined/txt/summary.txt", model=MODELS), expand("out/all-merge/{model}/proteome.bed",model=MODELS)
 
 include: "pgm"
 
 rule STAR_GTF:
-    input: l1r1=L1R1, l2r1=L2R1, l1r2=L1R2, l2r2=L2R2, index=INDEX
+    input: index=INDEX
     output: temp("out/{sample}.Aligned.sortedByCoord.out.bam")
     benchmark: "out/benchmarks/{sample}.align.json"
     log: "out/logs/{sample}.align.txt"
@@ -64,7 +61,7 @@ rule STAR_GTF:
     params: n="12", R="'span[hosts=1] rusage[mem=20]'", J="align", o="out/logs/align.out", eo="out/logs/align.err"
     shell: "STAR \
         --genomeDir {input.index} \
-        --readFilesIn {input.l1r1},{input.l2r1} {input.l1r2},{input.l2r2} \
+        --readFilesIn {READ_ONE} {READ_TWO} \
         --outFileNamePrefix out/{wildcards.sample}. \
         --outSAMattributes NH HI XS \
         --outSAMattrRGline ID:{wildcards.sample} LB:1 PL:illumina PU:1 SM:{wildcards.sample} \
@@ -90,7 +87,7 @@ rule STAR_GTF:
         --sjdbGTFfile {GTF} \2 > {log}"
 
 rule STAR_denovo:
-    input: l1r1=L1R1, l2r1=L2R1, l1r2=L1R2, l2r2=L2R2, index=INDEX
+    input: index=INDEX
     output: temp("out/{sample}.Aligned.sortedByCoord.out.bam")
     benchmark: "out/benchmarks/{sample}.align.json"
     log: "out/logs/{sample}.align.txt"
@@ -98,7 +95,7 @@ rule STAR_denovo:
     params: n="12", R="'span[hosts=1] rusage[mem=20]'", J="align", o="out/logs/align.out", eo="out/logs/align.err"
     shell: "STAR \
         --genomeDir {input.index} \
-        --readFilesIn {input.l1r1},{input.l2r1} {input.l1r2},{input.l2r2} \
+        --readFilesIn {READ_ONE} {READ_TWO} \
         --outFileNamePrefix out/{wildcards.sample}. \
         --outSAMattributes NH HI XS \
         --outSAMattrRGline ID:{wildcards.sample} LB:1 PL:illumina PU:1 SM:{wildcards.sample} \
@@ -121,7 +118,6 @@ rule STAR_denovo:
         --outSJfilterReads Unique \
         --outFilterMultimapNmax 10 \
         --sjdbOverhang 100 \2 > {log}"
-
 
 #snakemake --snakefile Snakefile-K0562 --cluster "bsub -J {params.J} -n {params.n} -R {params.R} -W 4:00 -o {params.o} -eo {params.eo}" --jn {rulename}.{jobid}.sj -j 50 -k --latency-wait 60 --use-conda --use-singularity --singularity-args "--bind /data:/data,/lila:/lila" --ri -n
 # --rulegraph | dot -Tpdf > dag.pdf

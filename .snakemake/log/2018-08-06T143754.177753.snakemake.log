@@ -1,0 +1,272 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cluster nodes: 50
+Job counts:
+	count	jobs
+	1	BuildBamIndex
+	2	LongOrfs
+	2	Predict
+	1	STAR_GTF
+	1	StringTie_GTF
+	1	UCSC_GTF
+	1	all
+	2	blastp
+	2	cdna_alignment_orf_to_genome_orf
+	1	filter
+	2	gff3_file_to_bed
+	2	gff3_file_to_proteins
+	2	gtf_file_to_cDNA_seqs
+	2	gtf_to_alignment_gff3
+	2	maxQuant
+	1	merge
+	2	mqpar_conversion
+	2	reorderFASTA
+	29
+
+rule STAR_GTF:
+    input: /data/poirier/indexes/GRCh38/STAR
+    output: out/FCH9EFLADXX-HUMbghEAACRAAPEI-225.Aligned.sortedByCoord.out.bam
+    log: out/logs/FCH9EFLADXX-HUMbghEAACRAAPEI-225.align.txt
+    jobid: 29
+    benchmark: out/benchmarks/FCH9EFLADXX-HUMbghEAACRAAPEI-225.align.json
+    wildcards: sample=FCH9EFLADXX-HUMbghEAACRAAPEI-225
+
+Submitted job 29 with external jobid 'Job <4384206> is submitted to default queue <cpuqueue>.'.
+Finished job 29.
+1 of 29 steps (3%) done
+
+rule filter:
+    input: out/FCH9EFLADXX-HUMbghEAACRAAPEI-225.Aligned.sortedByCoord.out.bam
+    output: out/FCH9EFLADXX-HUMbghEAACRAAPEI-225.Aligned.trimmed.out.bam
+    log: out/logs/FCH9EFLADXX-HUMbghEAACRAAPEI-225.filter.txt
+    jobid: 28
+    benchmark: out/benchmarks/FCH9EFLADXX-HUMbghEAACRAAPEI-225.filter.txt
+    wildcards: sample=FCH9EFLADXX-HUMbghEAACRAAPEI-225
+
+Submitted job 28 with external jobid 'Job <4384218> is submitted to default queue <cpuqueue>.'.
+Removing temporary output file out/FCH9EFLADXX-HUMbghEAACRAAPEI-225.Aligned.sortedByCoord.out.bam.
+Finished job 28.
+2 of 29 steps (7%) done
+
+rule BuildBamIndex:
+    input: out/FCH9EFLADXX-HUMbghEAACRAAPEI-225.Aligned.trimmed.out.bam
+    output: out/FCH9EFLADXX-HUMbghEAACRAAPEI-225.Aligned.trimmed.out.bai
+    log: out/logs/FCH9EFLADXX-HUMbghEAACRAAPEI-225.BuildBamIndex.txt
+    jobid: 27
+    benchmark: out/benchmarks/FCH9EFLADXX-HUMbghEAACRAAPEI-225.BuildBamIndex.txt
+    wildcards: sample=FCH9EFLADXX-HUMbghEAACRAAPEI-225
+
+Submitted job 27 with external jobid 'Job <4384338> is submitted to default queue <cpuqueue>.'.
+Finished job 27.
+3 of 29 steps (10%) done
+
+rule StringTie_GTF:
+    input: out/FCH9EFLADXX-HUMbghEAACRAAPEI-225.Aligned.trimmed.out.bam, out/FCH9EFLADXX-HUMbghEAACRAAPEI-225.Aligned.trimmed.out.bai
+    output: out/FCH9EFLADXX-HUMbghEAACRAAPEI-225-stringtie.gtf
+    log: out/logs/FCH9EFLADXX-HUMbghEAACRAAPEI-225.filterAndTrimBed.txt
+    jobid: 26
+    benchmark: out/benchmarks/FCH9EFLADXX-HUMbghEAACRAAPEI-225.StringTie.txt
+    wildcards: sample=FCH9EFLADXX-HUMbghEAACRAAPEI-225
+
+Submitted job 26 with external jobid 'Job <4384339> is submitted to default queue <cpuqueue>.'.
+Finished job 26.
+4 of 29 steps (14%) done
+
+rule merge:
+    input: out/FCH9EFLADXX-HUMbghEAACRAAPEI-225-stringtie.gtf
+    output: out/all-merge/merged.gtf
+    log: out/logs/merge.txt
+    jobid: 24
+    benchmark: out/benchmarks/merge.txt
+
+Submitted job 24 with external jobid 'Job <4384347> is submitted to default queue <cpuqueue>.'.
+Finished job 24.
+5 of 29 steps (17%) done
+
+localrule UCSC_GTF:
+    input: out/all-merge/merged.gtf
+    output: out/all-merge/merged-UCSC.gtf, out/all-merge/reference-UCSC.gtf
+    log: out/logs/UCSC.txt
+    jobid: 19
+    benchmark: out/benchmarks/UCSC.txt
+
+Activating singularity image /lila/data/kentsis/testfiles/K0562_newtest/.snakemake/singularity/7fab8edb3f0c745f022e1142ae9830f5.simg
+Finished job 19.
+6 of 29 steps (21%) done
+
+rule gtf_file_to_cDNA_seqs:
+    input: out/all-merge/merged-UCSC.gtf
+    output: out/all-merge/merged.transcripts.fasta, out/all-merge/merged.transcripts.gtf
+    log: out/logs/merged.gtf_file_to_cDNA_seqs.txt
+    jobid: 11
+    benchmark: out/benchmarks/merged.gtf_file_to_cDNA_seqs.txt
+    wildcards: model=merged
+
+Submitted job 11 with external jobid 'Job <4384348> is submitted to default queue <cpuqueue>.'.
+
+rule gtf_file_to_cDNA_seqs:
+    input: out/all-merge/reference-UCSC.gtf
+    output: out/all-merge/reference.transcripts.fasta, out/all-merge/reference.transcripts.gtf
+    log: out/logs/reference.gtf_file_to_cDNA_seqs.txt
+    jobid: 16
+    benchmark: out/benchmarks/reference.gtf_file_to_cDNA_seqs.txt
+    wildcards: model=reference
+
+Submitted job 16 with external jobid 'Job <4384349> is submitted to default queue <cpuqueue>.'.
+Finished job 11.
+7 of 29 steps (24%) done
+
+rule LongOrfs:
+    input: out/all-merge/merged.transcripts.fasta
+    output: out/all-merge/merged.transcripts.fasta.transdecoder_dir/longest_orfs.pep
+    log: ../logs/merged.LongOrfs.txt
+    jobid: 20
+    benchmark: out/benchmarks/merged.LongOrfs.json
+    wildcards: model=merged
+
+Submitted job 20 with external jobid 'Job <4384350> is submitted to default queue <cpuqueue>.'.
+
+rule gtf_to_alignment_gff3:
+    input: out/all-merge/merged.transcripts.gtf
+    output: out/all-merge/merged/transcripts.gff3
+    log: out/logs/merged.gtf_to_alignment_gff3.txt
+    jobid: 13
+    benchmark: out/benchmarks/merged.gtf_to_alignment_gff3.txt
+    wildcards: model=merged
+
+Submitted job 13 with external jobid 'Job <4384351> is submitted to default queue <cpuqueue>.'.
+Finished job 13.
+8 of 29 steps (28%) done
+Finished job 16.
+9 of 29 steps (31%) done
+
+rule LongOrfs:
+    input: out/all-merge/reference.transcripts.fasta
+    output: out/all-merge/reference.transcripts.fasta.transdecoder_dir/longest_orfs.pep
+    log: ../logs/reference.LongOrfs.txt
+    jobid: 22
+    benchmark: out/benchmarks/reference.LongOrfs.json
+    wildcards: model=reference
+
+Submitted job 22 with external jobid 'Job <4384352> is submitted to default queue <cpuqueue>.'.
+
+rule gtf_to_alignment_gff3:
+    input: out/all-merge/reference.transcripts.gtf
+    output: out/all-merge/reference/transcripts.gff3
+    log: out/logs/reference.gtf_to_alignment_gff3.txt
+    jobid: 14
+    benchmark: out/benchmarks/reference.gtf_to_alignment_gff3.txt
+    wildcards: model=reference
+
+Submitted job 14 with external jobid 'Job <4384353> is submitted to default queue <cpuqueue>.'.
+Finished job 14.
+10 of 29 steps (34%) done
+Finished job 20.
+11 of 29 steps (38%) done
+
+rule blastp:
+    input: out/all-merge/merged.transcripts.fasta.transdecoder_dir/longest_orfs.pep, /data/poirier/indexes/uniprot/UP000005640.fasta.pin, /data/poirier/indexes/uniprot/UP000005640.fasta.phr, /data/poirier/indexes/uniprot/UP000005640.fasta.psq
+    output: out/all-merge/merged.blastp.outfmt6
+    log: out/logs/merged.blastp.txt
+    jobid: 21
+    benchmark: out/benchmarks/merged.blastp.json
+    wildcards: model=merged
+
+Submitted job 21 with external jobid 'Job <4384356> is submitted to default queue <cpuqueue>.'.
+Finished job 22.
+12 of 29 steps (41%) done
+
+rule blastp:
+    input: out/all-merge/reference.transcripts.fasta.transdecoder_dir/longest_orfs.pep, /data/poirier/indexes/uniprot/UP000005640.fasta.pin, /data/poirier/indexes/uniprot/UP000005640.fasta.phr, /data/poirier/indexes/uniprot/UP000005640.fasta.psq
+    output: out/all-merge/reference.blastp.outfmt6
+    log: out/logs/reference.blastp.txt
+    jobid: 23
+    benchmark: out/benchmarks/reference.blastp.json
+    wildcards: model=reference
+
+Submitted job 23 with external jobid 'Job <4384386> is submitted to default queue <cpuqueue>.'.
+Finished job 21.
+13 of 29 steps (45%) done
+
+rule Predict:
+    input: out/all-merge/merged.transcripts.fasta.transdecoder_dir/longest_orfs.pep, out/all-merge/merged.transcripts.fasta, out/all-merge/merged.blastp.outfmt6
+    output: out/all-merge/merged.transcripts.fasta.transdecoder.pep, out/all-merge/merged.transcripts.fasta.transdecoder.gff3
+    log: ../logs/merged.Predict.txt
+    jobid: 12
+    benchmark: out/benchmarks/merged.Predict.json
+    wildcards: model=merged
+
+Submitted job 12 with external jobid 'Job <4384452> is submitted to default queue <cpuqueue>.'.
+Finished job 12.
+14 of 29 steps (48%) done
+
+rule cdna_alignment_orf_to_genome_orf:
+    input: out/all-merge/merged/transcripts.gff3, out/all-merge/merged.transcripts.fasta, out/all-merge/merged.transcripts.fasta.transdecoder.gff3
+    output: out/all-merge/merged/transcripts.genome.gff3
+    log: out/logs/merged.cdna_alignment_orf_to_genome_orf.txt
+    jobid: 7
+    benchmark: out/benchmarks/merged.cdna_alignment_orf_to_genome_orf.txt
+    wildcards: model=merged
+
+Submitted job 7 with external jobid 'Job <4384541> is submitted to default queue <cpuqueue>.'.
+Finished job 7.
+15 of 29 steps (52%) done
+
+rule gff3_file_to_bed:
+    input: out/all-merge/merged/transcripts.genome.gff3
+    output: out/all-merge/merged/proteome.bed
+    log: out/logs/merged.gff3_file_to_bed.txt
+    jobid: 3
+    benchmark: out/benchmarks/merged.gff3_file_to_bed.txt
+    wildcards: model=merged
+
+Submitted job 3 with external jobid 'Job <4384542> is submitted to default queue <cpuqueue>.'.
+
+rule gff3_file_to_proteins:
+    input: out/all-merge/merged/transcripts.genome.gff3
+    output: out/all-merge/merged/proteome.fasta
+    log: out/logs/merged.gff3_file_to_proteins.txt
+    jobid: 18
+    benchmark: out/benchmarks/merged.gff3_file_to_proteins.txt
+    wildcards: model=merged
+
+Submitted job 18 with external jobid 'Job <4384543> is submitted to default queue <cpuqueue>.'.
+Finished job 3.
+16 of 29 steps (55%) done
+Finished job 18.
+17 of 29 steps (59%) done
+
+rule reorderFASTA:
+    input: out/all-merge/merged/proteome.fasta
+    output: out/all-merge/merged/proteome.unique.fasta
+    log: out/logs/merged.reorderFASTA.txt
+    jobid: 10
+    benchmark: out/benchmarks/merged.reorderFASTA.txt
+    wildcards: model=merged
+
+Submitted job 10 with external jobid 'Job <4385733> is submitted to default queue <cpuqueue>.'.
+Finished job 10.
+18 of 29 steps (62%) done
+
+localrule mqpar_conversion:
+    input: out/all-merge/merged/proteome.unique.fasta
+    output: out/merged_mqpar.xml
+    log: out/logs/merged.mqpar_conversion.txt
+    jobid: 6
+    benchmark: out/benchmarks/merged.mqpar_conversion.txt
+    wildcards: model=merged
+
+    Error in rule mqpar_conversion:
+        jobid: 6
+        output: out/merged_mqpar.xml
+        log: out/logs/merged.mqpar_conversion.txt
+
+RuleException:
+FileNotFoundError in line 234 of /lila/home/chenz4/proteomegenerator/pgm:
+[Errno 2] No such file or directory: '/lila/data/kentsis/testfiles/K056PGTest'
+  File "/lila/home/chenz4/proteomegenerator/pgm", line 234, in __rule_mqpar_conversion
+  File "/home/chenz4/miniconda3/lib/python3.6/concurrent/futures/thread.py", line 56, in run
+Job failed, going on with independent jobs.
+Terminating processes on user request, this might take some time.
+Will exit after finishing currently running jobs.
+Complete log: /lila/home/chenz4/proteomegenerator/.snakemake/log/2018-08-06T143754.177753.snakemake.log

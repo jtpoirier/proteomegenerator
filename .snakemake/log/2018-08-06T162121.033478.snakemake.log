@@ -1,0 +1,8 @@
+Building DAG of jobs...
+Pulling singularity image docker://bioconductor/release_base2.
+Creating conda environment /lila/home/chenz4/proteomegenerator/envs/rmd.yaml...
+Downloading remote packages.
+CreateCondaEnvironmentException:
+Could not create conda environment from /lila/home/chenz4/proteomegenerator/envs/rmd.yaml:
+bash: conda: command not found
+

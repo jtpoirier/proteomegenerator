@@ -1,0 +1,21 @@
+Building DAG of jobs...
+Creating conda environment /lila/home/chenz4/proteomegenerator/envs/preprocess.yaml...
+Downloading remote packages.
+Environment for ../../../../home/chenz4/proteomegenerator/envs/preprocess.yaml created (location: .snakemake/conda/1fb79823)
+Using shell: /bin/bash
+Provided cluster nodes: 50
+Job counts:
+	count	jobs
+	1	all
+	1	rmd
+	2
+
+rule rmd:
+    input: out/custom_ref/K052_tumor_SNP_patched.fa, out/variants/K052_tumor_m2_filtered_snps.vcf
+    output: out/K052_tumor_report.html
+    jobid: 1
+    benchmark: out/benchmarks/custom_ref/K052_tumor_rmd.txt
+    wildcards: RG_TUMOR=K052_tumor
+
+RuleException in line 116 of /lila/home/chenz4/proteomegenerator/gatk.sm:
+'OutputFiles' object has no attribute 'report'
