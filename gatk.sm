@@ -11,7 +11,8 @@ SMDir = os.getcwd()
 GATK3_JAR = SMDir + "/GenomeAnalysisTK.jar"
 
 # Begin User Variables - edit in config-preprocess.yaml file
-workdir: config["directories"]["work_directory"]
+WD = config["directories"]["work_directory"]
+workdir: WD
 TMP = config["directories"]["temporary_directory"]
 
 # Provided by Broad Institute, but can be created with 'picard CreateSequenceDictionary' and 'samtools faidx'
@@ -114,10 +115,10 @@ rule vcf2fasta:
 
 # R Markdown report
 rule rmd:
-    input: custom = "out/custom_ref/{RG_TUMOR}_SNP_patched.fa", vcf = "out/variants/{RG_TUMOR}_m2_filtered_snps.vcf"
+    input: ref = REF_FASTA, custom = WD + "out/custom_ref/{RG_TUMOR}_SNP_patched.fa", bam = TUMOR, vcf = WD + "out/variants/{RG_TUMOR}_m2_filtered_snps.vcf"
     output: report="out/{RG_TUMOR}_report.html"
     benchmark: "out/benchmarks/custom_ref/{RG_TUMOR}_rmd.txt"
-    conda: "envs/rmd331.yaml"
+    conda: "envs/rmd.yaml"
     params: n="1", R="'span[hosts=1] rusage[mem=10]'", \
             o="out/logs/custom_ref/rmd.out", eo="out/logs/custom_ref/rmd.err", J="RMarkdown"
     script: "scripts/K052_test.Rmd"
