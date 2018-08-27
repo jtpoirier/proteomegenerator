@@ -20,10 +20,8 @@ Current Problems:
 * R markdown not working properly
 * How to detect translocations? (https://academic.oup.com/gigascience/article/6/10/gix091/4160384) seems promising
 * How to patch reference genome?
- 
-** Can use USCS tool if given chain file (this is difficult to generate)
-
-** Otherwise, wait for g2gtools or GATK
+  * Can use USCS tool if given chain file (this is difficult to generate)
+  * Otherwise, wait for g2gtools or GATK
 
 
 ![alt text](https://github.com/jtpoirier/proteomegenerator/blob/cr/workflow.png)
