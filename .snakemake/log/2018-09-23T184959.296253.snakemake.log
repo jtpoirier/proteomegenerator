@@ -1,0 +1,3 @@
+NameError in line 211 of /lila/home/chenz4/proteomegenerator/pgm2.sm:
+name 'TUMOR' is not defined
+  File "/lila/home/chenz4/proteomegenerator/pgm2.sm", line 211, in <module>
