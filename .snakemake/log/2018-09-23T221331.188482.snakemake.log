@@ -1,0 +1,44 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cluster nodes: 50
+Job counts:
+	count	jobs
+	1	BuildBamIndex
+	1	LongOrfs
+	1	Predict
+	1	STAR_denovo
+	1	StringTie_denovo
+	1	UCSC_denovo
+	1	all
+	1	blastp
+	1	cdna_alignment_orf_to_genome_orf
+	1	filter
+	1	gff3_file_to_bed
+	1	gff3_file_to_proteins
+	1	gtf_file_to_cDNA_seqs
+	1	gtf_to_alignment_gff3
+	1	index
+	1	maxQuant
+	1	merge
+	1	mqpar_conversion
+	1	reorderFASTA
+	19
+[Errno 13] Permission denied: '/data/poirier/indexes/GRCh38/STAR'
+
+rule index:
+    input: out/custom_ref/K052_tumor_SNP_patched.fa
+    output: /data/poirier/indexes/GRCh38/STAR
+    log: out/logs/index.txt
+    jobid: 26
+    benchmark: out/benchmarks/index.txt
+
+Submitted job 26 with external jobid 'Job <4706070> is submitted to default queue <cpuqueue>.'.
+    Error in rule index:
+        jobid: 26
+        output: /data/poirier/indexes/GRCh38/STAR
+        log: out/logs/index.txt
+        conda-env: /lila/data/kentsis/testfiles/pgm2_test/.snakemake/conda/6d5478e3
+
+Job failed, going on with independent jobs.
+Exiting because a job execution failed. Look above for error message
+Complete log: /lila/home/chenz4/proteomegenerator/.snakemake/log/2018-09-23T221331.188482.snakemake.log

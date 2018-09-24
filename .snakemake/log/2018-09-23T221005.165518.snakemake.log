@@ -1,0 +1,4 @@
+TypeError in line 70 of /lila/home/chenz4/proteomegenerator/pgm2.sm:
+stat: path should be string, bytes, os.PathLike or integer, not NoneType
+  File "/lila/home/chenz4/proteomegenerator/pgm2.sm", line 70, in <module>
+  File "/home/chenz4/miniconda3/lib/python3.6/genericpath.py", line 19, in exists

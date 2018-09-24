@@ -90,7 +90,7 @@ rule UnalignFastqReadsByRG:
     input: fastq1 = {FASTQ1}, fastq2 = {FASTQ2}
     output: "out/preprocess/{SAMPLE_NAME}.unaligned.bam"
     benchmark: "out/benchmarks/preprocess/{SAMPLE_NAME}.unaligned.txt"
-    conda: "envs/preprocess.yaml"
+    conda: "envs/pgm2.yaml"
     params: n="20", R="'span[hosts=1] rusage[mem=10]'", \
             o="out/logs/preprocess/picard_unalign.out", eo="out/logs/preprocess/picard_unalign.err", J="picard_unalign"
     shell: "picard FastqToSam \
@@ -108,7 +108,7 @@ rule AlignFastqReadsByRG:
     input: fastq1 = {FASTQ1}, fastq2 = {FASTQ2}
     output: "out/preprocess/{SAMPLE_NAME}.aligned.bam"
     benchmark: "out/benchmarks/preprocess/{SAMPLE_NAME}.align.txt"
-    conda: "envs/preprocess.yaml"
+    conda: "envs/pgm2.yaml"
     params: n="20", R="'span[hosts=1] rusage[mem=10]'", \
             o="out/logs/preprocess/bwa_fastq.out", eo="out/logs/preprocess/bwa_fastq.err", J="bwa_align"
     shell: "bwa mem -M \
@@ -122,7 +122,7 @@ rule MergeUnmappedAndAlignedBAMs:
     input: aligned="out/preprocess/{SAMPLE_NAME}.aligned.bam", unaligned="out/preprocess/{SAMPLE_NAME}.unaligned.bam"
     output: "out/preprocess/{SAMPLE_NAME}.aligned_unaligned_merged.bam"
     benchmark: "out/benchmarks/preprocess/{SAMPLE_NAME}.merge_aubam.txt"
-    conda: "envs/preprocess.yaml"
+    conda: "envs/pgm2.yaml"
     params: n="36", R="'span[hosts=1] rusage[mem=10]'", \
             o="out/logs/preprocess/merge_aubam.out", eo="out/logs/preprocess/merge_aubam.err", J="merge_aubam"
     shell: "picard MergeBamAlignment \
@@ -149,7 +149,7 @@ rule MarkDuplicates:
     input: "out/preprocess/{SAMPLE_NAME}.aligned_unaligned_merged.bam"
     output: "out/preprocess/{SAMPLE_NAME}.merged.RGmerged.dedup.bam"
     benchmark: "out/benchmarks/preprocess/{SAMPLE_NAME}.markdups.txt"
-    conda: "envs/preprocess.yaml"
+    conda: "envs/pgm2.yaml"
     params: n="1", R="'span[hosts=1] rusage[mem=130]'", \
             o="out/logs/preprocess/markdups.out", eo="out/logs/preprocess/markdups.err", J="markdups"
     shell: "picard MarkDuplicates TMP_DIR={TMP} \
@@ -167,7 +167,7 @@ rule SortAndFixRealignedBamTags:
     output: bam="out/preprocess/{SAMPLE_NAME}.merged.RGmerged.dedup.fixedtags.readyforBQSR.bam", \
             idx="out/preprocess/{SAMPLE_NAME}.merged.RGmerged.dedup.fixedtags.readyforBQSR.bai"
     benchmark: "out/benchmarks/preprocess/{SAMPLE_NAME}_SortAndFixTags.txt"
-    conda: "envs/preprocess.yaml"
+    conda: "envs/pgm2.yaml"
     params: n="36", R="'span[hosts=1] rusage[mem=10]'", \
             o="out/logs/preprocess/sort_fix_tags.out", eo="out/logs/preprocess/sort_fix_tags.err", J="sort_fix_tags"
     shell: "sambamba sort -t {params.n} -m 350G --tmpdir {TMP} -o /dev/stdout {input} | \
@@ -183,7 +183,7 @@ rule BaseRecalibrator:
     input: bam="out/preprocess/{SAMPLE_NAME}.merged.RGmerged.dedup.fixedtags.readyforBQSR.bam"
     output: "out/preprocess/{SAMPLE_NAME}.BQSR.report"
     benchmark: "out/benchmarks/preprocess/{SAMPLE_NAME}_BQSR.txt"
-    conda: "envs/preprocess.yaml"
+    conda: "envs/pgm2.yaml"
     params: n="1", R="'span[hosts=1] rusage[mem=130]'", \
 	        o="out/logs/preprocess/recal.out", eo="out/logs/preprocess/recal.err", J="base_recal"
     shell: "gatk --java-options -Xmx350g BaseRecalibrator \
@@ -195,7 +195,7 @@ rule ApplyBQSR:
     input: bqsr="out/preprocess/{SAMPLE_NAME}.BQSR.report", bam="out/preprocess/{SAMPLE_NAME}.merged.RGmerged.dedup.fixedtags.readyforBQSR.bam"
     output: "out/preprocess/{SAMPLE_NAME}.recal.analysis_ready.bam"
     benchmark: "out/benchmarks/preprocess/{SAMPLE_NAME}_apply_bqsr.txt"
-    conda: "envs/preprocess.yaml"
+    conda: "envs/pgm2.yaml"
     params: n="1", R="'span[hosts=1] rusage[mem=15]'", \
 	        o="out/logs/preprocess/apply_bqsr.out", eo="out/logs/preprocess/apply_bqsr.err", J="apply_bqsr"
     shell: "gatk --java-options -Xmx350g ApplyBQSR \
@@ -208,13 +208,13 @@ rule ApplyBQSR:
 ### Variant-calling ###
 # Comparing both tumor and normal sample
 rule Mutect2_with_normal:
-    input: tumor="out/preprocess/{SAMPLE_NAME}.recal.analysis_ready.bam",normal=NORMAL
+    input: tumor="out/preprocess/{RG_TUMOR}.recal.analysis_ready.bam",normal=NORMAL
     output: vcf="out/variants/{RG_TUMOR}_m2.vcf.gz", idx="out/variants/{RG_TUMOR}_m2.vcf.gz.tbi"
     benchmark: "out/benchmarks/variants/{RG_TUMOR}_m2_with_normal.txt"
-    conda: "envs/variant.yaml"
+    conda: "envs/pgm2.yaml"
     params: n="20", R="'span[hosts=1] rusage[mem=20]'", \
             o="out/logs/variants/m2_with_normal.out", eo="out/logs/variants/m2_with_normal.err", J="m2_with_normal"
-    shell: "gatk --java-options -Xmx8g Mutect2 \
+    shell: "gatk --java-options -Xmx350g Mutect2 \
             -R {REF_FASTA} \
             -I {input.tumor} \
             -I {input.normal}\
@@ -225,13 +225,13 @@ rule Mutect2_with_normal:
 
 # Tumor-only mode
 rule Mutect2_tumor_only:
-    input: tumor="out/preprocess/{SAMPLE_NAME}.recal.analysis_ready.bam"
+    input: tumor="out/preprocess/{RG_TUMOR}.recal.analysis_ready.bam"
     output: vcf="out/variants/{RG_TUMOR}_m2.vcf.gz", idx="out/variants/{RG_TUMOR}_m2.vcf.gz.tbi"
     benchmark: "out/benchmarks/variants/{RG_TUMOR}_m2_tumor_only.txt"
-    conda: "envs/variant.yaml"
+    conda: "envs/pgm2.yaml"
     params: n="36", R="'span[hosts=1] rusage[mem=10]'", \
             o="out/logs/variants/m2_tumor_only.out", eo="out/logs/variants/m2_tumor_only.err", J="m2_tumor_only"
-    shell: "gatk --java-options -Xmx8g Mutect2 \
+    shell: "gatk --java-options -Xmx350g Mutect2 \
             -R {REF_FASTA} \
             -I {input.tumor} \
             -tumor {RG_TUMOR} \
@@ -244,7 +244,7 @@ rule FilterMutectCalls:
     input: vcf="out/variants/{RG_TUMOR}_m2.vcf.gz", idx="out/variants/{RG_TUMOR}_m2.vcf.gz.tbi"
     output: vcf="out/variants/{RG_TUMOR}_m2_filtered.vcf.gz", idx="out/variants/{RG_TUMOR}_m2_filtered.vcf.gz.tbi"
     benchmark: "out/benchmarks/variants/{RG_TUMOR}_m2_filter.txt"
-    conda: "envs/variant.yaml"
+    conda: "envs/pgm2.yaml"
     params: n="36", R="'span[hosts=1] rusage[mem=10]'", \
             o="out/logs/variants/m2_filter.out", eo="out/logs/variants/m2_filter.err", J="m2_Filter"
     shell: "gatk --java-options -Xmx8g FilterMutectCalls \
@@ -257,7 +257,7 @@ rule SelectSNPs:
     input: vcf="out/variants/{RG_TUMOR}_m2_filtered.vcf.gz", idx="out/variants/{RG_TUMOR}_m2_filtered.vcf.gz.tbi"
     output: vcf="out/variants/{RG_TUMOR}_m2_filtered_snps.vcf.gz"
     benchmark: "out/benchmarks/variants/{RG_TUMOR}_select_snp.txt"
-    conda: "envs/variant.yaml"
+    conda: "envs/pgm2.yaml"
     params: n="36", R="'span[hosts=1] rusage[mem=10]'", \
             o="out/logs/variants/select_snp.out", eo="out/logs/variants/select_snp.err", J="select_snp"
     shell: "gatk --java-options -Xmx8g SelectVariants \
@@ -271,7 +271,7 @@ rule vcf2fasta:
     input: vcf="out/variants/{RG_TUMOR}_m2_filtered_snps.vcf.gz"
     output: "out/custom_ref/{RG_TUMOR}_SNP_patched.fa"
     benchmark: "out/benchmarks/custom_ref/{RG_TUMOR}_vcf2fasta.txt"
-    conda: "envs/variant.yaml"
+    conda: "envs/pgm2.yaml"
     params: n="36", R="'span[hosts=1] rusage[mem=10]'", \
             o="out/logs/custom_ref/vcf2fasta.out", eo="out/logs/custom_ref/vcf2fasta.err", J="vcf2fasta"
     shell: "java -jar {GATK3_JAR} \
@@ -360,7 +360,7 @@ rule STAR_denovo:
         --sjdbOverhang 100 \2 > {log}"
 
 rule index:
-    input: fasta="out/custom_ref/{RG_TUMOR}_SNP_patched.fa"
+    input: fasta="out/custom_ref/" + RG_TUMOR + "_SNP_patched.fa"
     output: INDEX
     benchmark: "out/benchmarks/index.txt"
     log: "out/logs/index.txt"
@@ -468,7 +468,7 @@ else:
         shell: "cat {input} | grep chr > {output.merged} 2> {log}"
 
 rule gtf_file_to_cDNA_seqs:
-    input: "out/all-merge/{model}-UCSC.gtf", custom_fasta = "out/custom_ref/{RG_TUMOR}_SNP_patched.fa"
+    input: "out/all-merge/{model}-UCSC.gtf", custom_fasta = "out/custom_ref/" + RG_TUMOR + "_SNP_patched.fa"
     output: fasta="out/all-merge/{model}.transcripts.fasta",
         gtf="out/all-merge/{model}.transcripts.gtf"
     benchmark: "out/benchmarks/{model}.gtf_file_to_cDNA_seqs.txt"
@@ -566,7 +566,7 @@ rule gff3_file_to_bed:
     shell: "cat {input} | grep -P \"\tCDS\t\" | gffread --force-exons - -o- | gff3_file_to_bed.pl /dev/stdin | tail -n +2 > {output} 2> {log}"
 
 rule gff3_file_to_proteins:
-    input: "out/all-merge/{model}/transcripts.genome.gff3", custom_fasta = "out/custom_ref/{RG_TUMOR}_SNP_patched.fa"
+    input: "out/all-merge/{model}/transcripts.genome.gff3", custom_fasta = "out/custom_ref/" + RG_TUMOR + "_SNP_patched.fa"
     output: "out/all-merge/{model}/proteome.fasta"
     benchmark: "out/benchmarks/{model}.gff3_file_to_proteins.txt"
     log: "out/logs/{model}.gff3_file_to_proteins.txt"
