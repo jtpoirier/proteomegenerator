@@ -1,3 +1,0 @@
-TypeError in line 120 of /lila/home/chenz4/proteomegenerator/gatk.sm:
-singularity() takes 2 positional arguments but 3 were given
-  File "/lila/home/chenz4/proteomegenerator/gatk.sm", line 120, in <module>

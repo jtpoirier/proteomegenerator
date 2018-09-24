@@ -1,3 +1,0 @@
-NameError in line 117 of /lila/home/chenz4/proteomegenerator/gatk.sm:
-name 'workdir' is not defined
-  File "/lila/home/chenz4/proteomegenerator/gatk.sm", line 117, in <module>

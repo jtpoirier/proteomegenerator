@@ -1,4 +1,0 @@
-NameError in line 76 of /lila/home/chenz4/proteomegenerator/pgm:
-name 'SAMPLES' is not defined
-  File "/lila/home/chenz4/proteomegenerator/Snakefile-K0562", line 52, in <module>
-  File "/lila/home/chenz4/proteomegenerator/pgm", line 76, in <module>

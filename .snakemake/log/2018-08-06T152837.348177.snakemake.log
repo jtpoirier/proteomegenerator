@@ -1,3 +1,0 @@
-Building DAG of jobs...
-Pulling singularity image docker://bioconductor/release_base2.
-Cancelling snakemake on user request.
