@@ -267,6 +267,7 @@ rule SelectSNPs:
             -O {output.vcf}"
 
 # Custom reference .fasta creation
+# FastaAlternateReferenceMaker alters the header of the genome -> this would need to be manually fixed
 rule vcf2fasta:
     input: vcf="out/variants/{RG_TUMOR}_m2_filtered_snps.vcf.gz"
     output: "out/custom_ref/{RG_TUMOR}_SNP_patched.fa"
@@ -279,6 +280,8 @@ rule vcf2fasta:
   		    -R {REF_FASTA} \
    		    -o {output} \
    		    -V {input.vcf}"
+
+### Rule to create new GTF insert here ###
 
 # R Markdown report - not generating properly -  temporarily removed
 # rule rmd:
@@ -359,6 +362,7 @@ rule STAR_denovo:
         --outFilterMultimapNmax 10 \
         --sjdbOverhang 100 \2 > {log}"
 
+# Need to fix the header of the fasta file before this rule can be used
 rule index:
     input: fasta="out/custom_ref/" + RG_TUMOR + "_SNP_patched.fa"
     output: INDEX
