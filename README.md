@@ -87,4 +87,4 @@ In addition, it will also generate all tables produced by MaxQuant in the user-s
 
 ## Citing ProteomeGenerator
 
-Please cite [ProteomeGenerator: A framework for comprehensive proteomics based on de novo transcriptome assembly and high-accuracy peptide mass spectral matching.](https://www.ncbi.nlm.nih.gov/pubmed/30295032).
+Please cite [ProteomeGenerator: A framework for comprehensive proteomics based on de novo transcriptome assembly and high-accuracy peptide mass spectral matching.](https://www.ncbi.nlm.nih.gov/pubmed/30295032)
