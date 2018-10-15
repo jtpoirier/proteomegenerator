@@ -2,7 +2,7 @@
 
 ## Introduction
 
-ProteomeGenerator is an open, modular, and scalable framework for reference guided and *de novo* proteogenomic database generation written in the [Snakemake](https://snakemake.readthedocs.io/en/stable/) workflow management system. The workflow consists of a base file that defines the project details and input samples, and pgm, a modular set of rules sourced as an include.
+ProteomeGenerator is an open, modular, and scalable framework for reference guided and *de novo* proteogenomics written in the [Snakemake](https://snakemake.readthedocs.io/en/stable/) workflow management system. The workflow consists of a base file that defines the project details and input samples, and pgm, a modular set of rules sourced as an include.
 
 ## Installation
 
@@ -33,7 +33,7 @@ ProteomeGenerator is installed to your preferred computing environment using git
 git clone https://github.com/jtpoirier/proteomegenerator
 ```
 
-This command downloads Snakefile-K0562, the configuraton file used in Cifani et al., as well as the required includes and accessory scripts to run ProteomeGenerator on your data set.
+This command downloads Snakefile-K0562, the configuraton file used in [Cifani et al.](https://www.ncbi.nlm.nih.gov/pubmed/30295032), as well as the required includes and accessory scripts to run ProteomeGenerator on your data set.
 
 ## Configuration
 
@@ -57,11 +57,11 @@ The "Samples" section should be edited to reflect the type, number, and naming s
 MaxQuant requires mass spectrometry data as RAW files, search database as FASTA file, and a parameter file. The search database FASTA file is produced by ProteomeGenerator.
 
 * The "RAW" variable specifies the directory containing all user-provided .raw mass spectrometry data files. ProteomeGenerator will run MaxQuant on all .raw files in this directory. To perform calculations on independent raw files, they should be organized in individual directories. 
-* The "THREADS" variable specifies the number of computational threads used by MaxQuant. Currently, it's set to the max # of CPUs. MaxQuant runs the fastest when calculations are performed on the same host. As such, "rule maxQuant" sets "-n THREADS" and "span[ptile=THREADS]". Alternatively, these parameters may be user-specified. When changing "THREADS" variable, ensure the number is enclosed by "str()".
-* The "MQ" variable specifies the MaxQuant executable file, which is provided in "/MaxQuant/bin/MaxQuantCmd.exe" as part of this container distribution. The currently provided version of MaxQuant is 1.6.2.3, including its license agreement for redistribution located in "/MaxQuant". To switch to alternate versions of MaxQuant, please update both the executable and the parameter file. 
-* The "PAR" variable specifies the template MaxQuant parameter file, which is provided in "/MaxQuant" and is used to generate specific search parameters, including file names, locations, as well as mass spectrum processing and analysis parameters.
+* The "THREADS" variable specifies the number of computational threads used by MaxQuant. Currently, it autodetects the total number of available CPUs on a given system. MaxQuant runs the fastest when calculations are performed on the same host. As such, "rule maxQuant" sets "-n THREADS" and "span[ptile=THREADS]". Alternatively, these parameters may be user-specified. When changing "THREADS" variable, ensure the number is enclosed by "str()".
+* The "MQ" variable specifies the MaxQuant executable file, which is provided in "MaxQuant/bin/MaxQuantCmd.exe" as part of this distribution. The currently provided version of MaxQuant is 1.6.2.3, including its license agreement for redistribution located in "MaxQuant". To switch to alternate versions of MaxQuant, please update both the executable and the parameter file. 
+* The "PAR" variable specifies the template MaxQuant parameter file, which is provided in "MaxQuant" and is used to generate specific search parameters, including file names, locations, as well as mass spectrum processing and analysis parameters.
 
-To alter the mass spectrum processing and analysis parameters, you must create a new MaxQuant parameter file by executing "/MaxQuant/bin/MaxQuantGui.exe" using Windows operating system. Click File > Load parameters... and load "/MaxQuant/mqpar_template.xml" and adjust the parameters. DO NOT add or remove RAW and FASTA files as they are specified by ProteomeGenerator. Finally, click File > Save parameters... and save it as "mqpar.xml" in the same directory as the template MaxQuant parameter file. ProteomeGenerator will automatically detect this file and use it as input for MaxQuant instead of its self-generated parameters.
+To alter the mass spectrum processing and analysis parameters, you must create a new MaxQuant parameter file by executing "MaxQuant/bin/MaxQuantGui.exe" using Windows operating system. Click File > Load parameters... and load "MaxQuant/mqpar_template.xml" and adjust the parameters. DO NOT add or remove RAW and FASTA files as they are specified by ProteomeGenerator. Finally, click File > Save parameters... and save it as "mqpar.xml" in the same directory as the template MaxQuant parameter file. ProteomeGenerator will automatically detect this file and use it as input for MaxQuant instead of its self-generated parameters.
 
 ## Running ProteomeGenerator
 
@@ -77,14 +77,14 @@ snakemake --snakefile Snakefile-K0562 --cluster \
 
 "-W" wall time argument need to be adjusted to account for larger datasets used in MaxQuant.
 
-"--bind" argument need to be adjusted so that Singularity can access files outside the container. You must bind the directory for ProteomeGenerator, "TMP", and "RAW" so ProteomeGenerator can read and write data on your system.
+"--bind" argument needs to be adjusted so that Singularity can access files outside the container. You must bind the directory for ProteomeGenerator, "TMP", and "RAW" so ProteomeGenerator can read and write data on your system.
 
 ### Expected Output
 
 ProteomeGenerator will generate an indexed bam file of mapped and filtered reads of the format {sample}.Aligned.trimmed.out.bam, a sample-specific GTF of the format {sample}-stringtie.gtf, and a proteogenomic database called proteome.unique.fasta. A GFF3 corresponding to each entry in the fasta database is also generated with the predicted spliced peptide sequences mapped onto genome space for easy viewing in the [Integrative Genomics Viewer](http://software.broadinstitute.org/software/igv/). If a reference GTF file is provided, the pipeline will generate a proteogenomic database based on these reference annotations in addition to the sample-specific database.
 
-Furthermore, it will generate all tables produced by MaxQuant in the user-specified working directory, under "out/all-merge/merged/combined/txt/".
+In addition, it will also generate all tables produced by MaxQuant in the user-specified working directory, under "out/all-merge/merged/combined/txt/".
 
 ## Citing ProteomeGenerator
 
-Please cite [https://www.biorxiv.org/content/early/2017/12/19/236844](https://www.biorxiv.org/content/early/2017/12/19/236844)
+Please cite [ProteomeGenerator: A framework for comprehensive proteomics based on de novo transcriptome assembly and high-accuracy peptide mass spectral matching.](https://www.ncbi.nlm.nih.gov/pubmed/30295032).
