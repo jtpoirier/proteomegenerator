@@ -1,0 +1,21 @@
+Building DAG of jobs...
+Pulling singularity image docker://mono:5.12.0.226.
+Pulling singularity image docker://continuumio/miniconda3:4.5.4.
+Creating conda environment /lila/home/chenz4/proteomegenerator/envs/pgm2.yaml...
+Downloading remote packages.
+Environment for ../../../../home/chenz4/proteomegenerator/envs/pgm2.yaml created (location: .snakemake/conda/0ba6ff72)
+Creating conda environment /lila/home/chenz4/proteomegenerator/envs/myenv.yaml...
+Downloading remote packages.
+Environment for ../../../../home/chenz4/proteomegenerator/envs/myenv.yaml created (location: .snakemake/conda/6665480e)
+Creating conda environment /lila/home/chenz4/proteomegenerator/envs/g2g.yaml...
+Downloading remote packages.
+CreateCondaEnvironmentException:
+Could not create conda environment from /lila/home/chenz4/proteomegenerator/envs/g2g.yaml:
+Solving environment: ...working... failed
+
+UnsatisfiableError: The following specifications were found to be in conflict:
+  - curl==7.61.1=hbc83047_0 -> libcurl==7.61.1=h20c2e04_0 -> openssl[version='>=1.1.1,<1.1.2.0a0']
+  - notebook==5.7.0=py36_0 -> ipykernel -> ipython[version='>=4.0'] -> pathlib2 -> python[version='>=2.7,<2.8.0a0'] -> openssl=1.0
+Use "conda info <package>" to see the dependencies for each package.
+
+

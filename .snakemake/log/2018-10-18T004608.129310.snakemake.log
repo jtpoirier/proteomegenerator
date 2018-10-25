@@ -1,0 +1,3 @@
+Building DAG of jobs...
+WorkflowError:
+Conda env file does not exist: /lila/home/chenz4/proteomegenerator/g2g.yaml

@@ -1,0 +1,26 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cluster nodes: 50
+Job counts:
+	count	jobs
+	1	all
+	1	g2g_VCI
+	1	g2g_patch
+	3
+
+rule g2g_VCI:
+    input: out/variants/K052_tumor_m2_filtered_snps.vcf.gz
+    output: out/variants/K052_tumor.vci.gz
+    jobid: 2
+    benchmark: out/benchmarks/variants/K052_tumor_g2g_VCI.txt
+    wildcards: RG_TUMOR=K052_tumor
+
+Submitted job 2 with external jobid 'Job <4869408> is submitted to default queue <cpuqueue>.'.
+    Error in rule g2g_VCI:
+        jobid: 2
+        output: out/variants/K052_tumor.vci.gz
+        conda-env: /lila/data/kentsis/testfiles/K052_sub/.snakemake/conda/85a7f1ab
+
+Job failed, going on with independent jobs.
+Exiting because a job execution failed. Look above for error message
+Complete log: /lila/home/chenz4/proteomegenerator/testfiles/.snakemake/log/2018-10-16T183706.135230.snakemake.log

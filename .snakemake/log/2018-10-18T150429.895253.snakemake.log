@@ -1,0 +1,43 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cluster nodes: 50
+Job counts:
+	count	jobs
+	1	BuildBamIndex
+	2	LongOrfs
+	2	Predict
+	1	STAR_GTF
+	1	StringTie_GTF
+	1	UCSC_GTF
+	1	all
+	2	blastp
+	2	cdna_alignment_orf_to_genome_orf
+	1	filter
+	2	gff3_file_to_bed
+	2	gff3_file_to_proteins
+	2	gtf_file_to_cDNA_seqs
+	2	gtf_to_alignment_gff3
+	1	index
+	2	maxQuant
+	1	merge
+	2	mqpar_conversion
+	2	reorderFASTA
+	30
+
+rule index:
+    input: out/custom_ref/K052_tumor_patched.fa, out/custom_ref/K052_tumor_patched.gtf
+    output: /lila/data/kentsis/Databases/STAR/
+    log: out/logs/index.txt
+    jobid: 37
+    benchmark: out/benchmarks/index.txt
+
+Submitted job 37 with external jobid 'Job <4877896> is submitted to default queue <cpuqueue>.'.
+    Error in rule index:
+        jobid: 37
+        output: /lila/data/kentsis/Databases/STAR/
+        log: out/logs/index.txt
+        conda-env: /lila/data/kentsis/testfiles/pgm2_test/.snakemake/conda/6d5478e3
+
+Job failed, going on with independent jobs.
+Exiting because a job execution failed. Look above for error message
+Complete log: /lila/home/chenz4/proteomegenerator/.snakemake/log/2018-10-18T150429.895253.snakemake.log

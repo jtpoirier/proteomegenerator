@@ -1,0 +1,28 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cluster nodes: 50
+Job counts:
+	count	jobs
+	1	all
+	1	maxQuant
+	2
+
+rule maxQuant:
+    input: out/reference_mqpar.xml
+    output: out/all-merge/reference/combined/txt/summary.txt
+    log: out/logs/reference.maxQuant.txt
+    jobid: 3
+    benchmark: out/benchmarks/reference.maxQuant.txt
+    wildcards: model=reference
+
+Submitted job 3 with external jobid 'Job <4896585> is submitted to default queue <cpuqueue>.'.
+Finished job 3.
+1 of 2 steps (50%) done
+
+localrule all:
+    input: out/all-merge/merged/combined/txt/summary.txt, out/all-merge/reference/combined/txt/summary.txt, out/all-merge/merged/proteome.bed, out/all-merge/reference/proteome.bed
+    jobid: 0
+
+Finished job 0.
+2 of 2 steps (100%) done
+Complete log: /lila/home/chenz4/proteomegenerator/.snakemake/log/2018-10-23T081156.798379.snakemake.log

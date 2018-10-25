@@ -1,0 +1,39 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cluster nodes: 50
+Job counts:
+	count	jobs
+	1	all
+	1	g2g_VCI
+	1	g2g_patch
+	3
+
+rule g2g_VCI:
+    input: out/variants/K052_tumor_m2_filtered_snps.vcf.gz
+    output: out/variants/K052_tumor.vci.gz
+    jobid: 2
+    benchmark: out/benchmarks/variants/K052_tumor_g2g_VCI.txt
+    wildcards: RG_TUMOR=K052_tumor
+
+Submitted job 2 with external jobid 'Job <4869410> is submitted to default queue <cpuqueue>.'.
+Finished job 2.
+1 of 3 steps (33%) done
+
+rule g2g_patch:
+    input: out/variants/K052_tumor.vci.gz
+    output: out/variants/K052_tumor_patched.fa
+    jobid: 1
+    benchmark: out/benchmarks/variants/K052_tumor_g2g_patch.txt
+    wildcards: RG_TUMOR=K052_tumor
+
+Submitted job 1 with external jobid 'Job <4869411> is submitted to default queue <cpuqueue>.'.
+Finished job 1.
+2 of 3 steps (67%) done
+
+localrule all:
+    input: out/variants/K052_tumor_patched.fa
+    jobid: 0
+
+Finished job 0.
+3 of 3 steps (100%) done
+Complete log: /lila/home/chenz4/proteomegenerator/testfiles/.snakemake/log/2018-10-16T183932.846940.snakemake.log

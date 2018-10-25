@@ -1,0 +1,131 @@
+# Input analysis_ready bam files and performs variant-calling
+# Outputs variant-calls .vcf file and SNP-patched genome fasta file
+
+shell.executable("/bin/bash")
+singularity: "docker://continuumio/miniconda3:4.5.4"
+
+import os
+import os.path
+#Retrieve Snakemake directory
+SMDir = os.getcwd()
+GATK3_JAR = SMDir + "/GenomeAnalysisTK.jar"
+
+# Begin User Variables - edit in config-preprocess.yaml file
+WD = config["directories"]["work_directory"]
+workdir: WD
+TMP = config["directories"]["temporary_directory"]
+
+# Provided by Broad Institute, but can be created with 'picard CreateSequenceDictionary' and 'samtools faidx'
+REF_FASTA = config["references"]["fasta"]
+GTF = config["references"]["gtf"]
+#REF_DICT = "/lila/data/kentsis/testfiles/m2_test/m2/resources_broad_hg38_v0_Homo_sapiens_assembly38.dict"
+#REF_INDEX = "/lila/data/kentsis/testfiles/m2_test/m2/resources_broad_hg38_v0_Homo_sapiens_assembly38.fasta.fai"
+
+TUMOR = config["samples"]["tumor"]["file"]
+RG_TUMOR = config["samples"]["tumor"]["name"]
+NORMAL = config["samples"]["normal"]["file"]
+RG_NORMAL = config["samples"]["normal"]["name"]
+# End User Variables
+
+# If there is a associated normal.bam sample, use it in Mutect2
+if os.path.exists(NORMAL):
+    ruleorder: Mutect2_with_normal > Mutect2_tumor_only
+else:
+    ruleorder: Mutect2_tumor_only > Mutect2_with_normal
+
+snakemake.utils.makedirs('out')
+snakemake.utils.makedirs('out/logs/variants')
+snakemake.utils.makedirs('out/logs/custom_ref')
+
+rule all:
+    input: expand("out/variants/{RG_TUMOR}_patched.fa", RG_TUMOR = RG_TUMOR)
+
+# Comparing both tumor and normal sample
+rule Mutect2_with_normal:
+    input: tumor=TUMOR,normal=NORMAL
+    output: vcf="out/variants/{RG_TUMOR}_m2.vcf.gz", idx="out/variants/{RG_TUMOR}_m2.vcf.gz.tbi"
+    benchmark: "out/benchmarks/variants/{RG_TUMOR}_m2_with_normal.txt"
+    conda: "test_env.yaml"
+    params: n="20", R="'span[hosts=1] rusage[mem=20]'", \
+            o="out/logs/variants/m2_with_normal.out", eo="out/logs/variants/m2_with_normal.err", J="m2_with_normal"
+    shell: "gatk --java-options -Xmx8g Mutect2 \
+            -R {REF_FASTA} \
+            -I {input.tumor} \
+            -I {input.normal}\
+            -tumor {RG_TUMOR} \
+            -normal {RG_NORMAL} \
+            --disable-read-filter MateOnSameContigOrNoMappedMateReadFilter \
+            -O {output.vcf}"
+
+# Tumor-only mode
+rule Mutect2_tumor_only:
+    input: tumor=TUMOR
+    output: vcf="out/variants/{RG_TUMOR}_m2.vcf.gz", idx="out/variants/{RG_TUMOR}_m2.vcf.gz.tbi"
+    benchmark: "out/benchmarks/variants/{RG_TUMOR}_m2_tumor_only.txt"
+    conda: "test_env.yaml"
+    params: n="36", R="'span[hosts=1] rusage[mem=10]'", \
+            o="out/logs/variants/m2_tumor_only.out", eo="out/logs/variants/m2_tumor_only.err", J="m2_tumor_only"
+    shell: "gatk --java-options -Xmx8g Mutect2 \
+            -R {REF_FASTA} \
+            -I {input.tumor} \
+            -tumor {RG_TUMOR} \
+            --native-pair-hmm-threads {params.n} \
+            --disable-read-filter MateOnSameContigOrNoMappedMateReadFilter \
+            -O {output.vcf}"
+
+# Filter contaminants
+rule FilterMutectCalls:
+    input: vcf="out/variants/{RG_TUMOR}_m2.vcf.gz", idx="out/variants/{RG_TUMOR}_m2.vcf.gz.tbi"
+    output: vcf="out/variants/{RG_TUMOR}_m2_filtered.vcf.gz", idx="out/variants/{RG_TUMOR}_m2_filtered.vcf.gz.tbi"
+    benchmark: "out/benchmarks/variants/{RG_TUMOR}_m2_filter.txt"
+    conda: "test_env.yaml"
+    params: n="36", R="'span[hosts=1] rusage[mem=10]'", \
+            o="out/logs/variants/m2_filter.out", eo="out/logs/variants/m2_filter.err", J="m2_Filter"
+    shell: "gatk --java-options -Xmx8g FilterMutectCalls \
+            -V {input.vcf} \
+            -O {output.vcf} \
+            --native-pair-hmm-threads {params.n}"
+
+# Keep only SNPs
+rule SelectSNPs:
+    input: vcf="out/variants/{RG_TUMOR}_m2_filtered.vcf.gz", idx="out/variants/{RG_TUMOR}_m2_filtered.vcf.gz.tbi"
+    output: vcf="out/variants/{RG_TUMOR}_m2_filtered_snps.vcf.gz"
+    benchmark: "out/benchmarks/variants/{RG_TUMOR}_select_snp.txt"
+    conda: "test_env.yaml"
+    params: n="36", R="'span[hosts=1] rusage[mem=10]'", \
+            o="out/logs/variants/select_snp.out", eo="out/logs/variants/select_snp.err", J="select_snp"
+    shell: "gatk --java-options -Xmx8g SelectVariants \
+            -R {REF_FASTA} \
+            -V {input.vcf} \
+            --select-type-to-include SNP \
+            -O {output.vcf}"
+
+# g2gtools pipeline
+rule g2g_VCI:
+    input: vcf="out/variants/{RG_TUMOR}_m2_filtered_snps.vcf.gz"
+    output: vci= "out/custom_ref/{RG_TUMOR}.vci.gz"
+    benchmark: "out/benchmarks/custom_ref/{RG_TUMOR}_g2g_VCI.txt"
+    conda: "g2g.yaml"
+    params: n="12", R="'span[hosts=1] rusage[mem=10]'", \
+            o="out/logs/custom_ref/g2g_VCI.out", eo="out/logs/custom_ref/g2g_VCI.err", J="g2g_VCI", \
+            vci= "out/custom_ref/{RG_TUMOR}.vci"
+    shell: "g2gtools vcf2vci -o {params.vci} -s {RG_TUMOR} --diploid -p {params.n} \
+            -f {REF_FASTA} -i {input.vcf}"
+
+rule g2g_patch:
+    input: vci= "out/custom_ref/{RG_TUMOR}.vci.gz"
+    output: fa= "out/custom_ref/{RG_TUMOR}_patched.fa"
+    benchmark: "out/benchmarks/custom_ref/{RG_TUMOR}_g2g_patch.txt"
+    conda: "g2g.yaml"
+    params: n="12", R="'span[hosts=1] rusage[mem=10]'", \
+            o="out/logs/custom_ref/g2g_patch.out", eo="out/logs/custom_ref/g2g_patch.err", J="g2g_patch"
+    shell: "g2gtools patch -i {REF_FASTA} -c {input.vci} -o {output.fa} -p {params.n}"
+
+rule g2g_lift:
+    input: vci= "out/custom_ref/{RG_TUMOR}.vci.gz"
+    output: gtf= "out/custom_ref/{RG_TUMOR}_patched.gtf"
+    benchmark: "out/benchmarks/custom_ref/{RG_TUMOR}_g2g_lift.txt"
+    conda: "g2g.yaml"
+    params: n="12", R="'span[hosts=1] rusage[mem=10]'", \
+            o="out/logs/custom_ref/g2g_lift.out", eo="out/logs/custom_ref/g2g_lift.err", J="g2g_lift"
+    shell: "g2gtools convert -i {GTF} -c {input.vci} -o {output.gtf} -p {params.n}"

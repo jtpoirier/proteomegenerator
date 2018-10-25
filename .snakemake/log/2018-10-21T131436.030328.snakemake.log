@@ -1,0 +1,13 @@
+Building DAG of jobs...
+Creating conda environment /lila/home/chenz4/proteomegenerator/envs/g2g.yaml...
+Downloading remote packages.
+CreateCondaEnvironmentException:
+Could not create conda environment from /lila/home/chenz4/proteomegenerator/envs/g2g.yaml:
+Solving environment: ...working... failed
+
+UnsatisfiableError: The following specifications were found to be in conflict:
+  - curl==7.61.1=hbc83047_0 -> libcurl==7.61.1=h20c2e04_0 -> openssl[version='>=1.1.1,<1.1.2.0a0']
+  - mkl_fft==1.0.6=py36h7dd41cf_0 -> numpy[version='>=1.11.3,<2.0a0'] -> numpy-base==1.11.3=py27hdbf6ddf_8 -> python[version='>=2.7,<2.8.0a0'] -> openssl=1.0
+Use "conda info <package>" to see the dependencies for each package.
+
+

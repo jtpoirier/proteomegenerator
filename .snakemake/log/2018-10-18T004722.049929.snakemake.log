@@ -1,0 +1,131 @@
+Building DAG of jobs...
+Using shell: /bin/bash
+Provided cluster nodes: 50
+Job counts:
+	count	jobs
+	1	AlignFastqReadsByRG
+	1	ApplyBQSR
+	1	BaseRecalibrator
+	1	BuildBamIndex
+	1	FilterMutectCalls
+	2	LongOrfs
+	1	MarkDuplicates
+	1	MergeUnmappedAndAlignedBAMs
+	1	Mutect2_tumor_only
+	2	Predict
+	1	STAR_GTF
+	1	SelectSNPs
+	1	SortAndFixRealignedBamTags
+	1	StringTie_GTF
+	1	UCSC_GTF
+	1	UnalignFastqReadsByRG
+	1	all
+	2	blastp
+	2	cdna_alignment_orf_to_genome_orf
+	1	filter
+	2	g2g_VCI
+	1	g2g_lift
+	1	g2g_patch
+	2	gff3_file_to_bed
+	2	gff3_file_to_proteins
+	2	gtf_file_to_cDNA_seqs
+	2	gtf_to_alignment_gff3
+	1	index
+	2	maxQuant
+	1	merge
+	2	mqpar_conversion
+	2	reorderFASTA
+	44
+
+rule AlignFastqReadsByRG:
+    input: /lila/home/chenz4/proteomegenerator/testfiles/K052_DNA_subset_r1.fastq, /lila/home/chenz4/proteomegenerator/testfiles/K052_DNA_subset_r2.fastq
+    output: out/preprocess/K052_tumor_SNP.aligned.bam
+    jobid: 50
+    benchmark: out/benchmarks/preprocess/K052_tumor_SNP.align.txt
+    wildcards: SAMPLE_NAME=K052_tumor_SNP
+
+Submitted job 50 with external jobid 'Job <4875394> is submitted to default queue <cpuqueue>.'.
+
+rule UnalignFastqReadsByRG:
+    input: /lila/home/chenz4/proteomegenerator/testfiles/K052_DNA_subset_r1.fastq, /lila/home/chenz4/proteomegenerator/testfiles/K052_DNA_subset_r2.fastq
+    output: out/preprocess/K052_tumor_SNP.unaligned.bam
+    jobid: 51
+    benchmark: out/benchmarks/preprocess/K052_tumor_SNP.unaligned.txt
+    wildcards: SAMPLE_NAME=K052_tumor_SNP
+
+Submitted job 51 with external jobid 'Job <4875395> is submitted to default queue <cpuqueue>.'.
+
+rule g2g_VCI:
+    input: out/variants/K052_tumor_m2_filtered_snps.vcf.gz
+    output: out/custom_ref/K052_tumor.vci.gz
+    jobid: 30
+    benchmark: out/benchmarks/custom_ref/K052_tumor_g2g_VCI.txt
+    wildcards: RG_TUMOR=K052_tumor
+
+Submitted job 30 with external jobid 'Job <4875396> is submitted to default queue <cpuqueue>.'.
+Finished job 51.
+1 of 44 steps (2%) done
+Finished job 30.
+2 of 44 steps (5%) done
+
+rule g2g_lift:
+    input: out/custom_ref/K052_tumor.vci.gz
+    output: out/custom_ref/K052_tumor_patched.gtf
+    jobid: 26
+    benchmark: out/benchmarks/custom_ref/K052_tumor_g2g_lift.txt
+    wildcards: RG_TUMOR=K052_tumor
+
+Submitted job 26 with external jobid 'Job <4875397> is submitted to default queue <cpuqueue>.'.
+Finished job 50.
+3 of 44 steps (7%) done
+
+rule MergeUnmappedAndAlignedBAMs:
+    input: out/preprocess/K052_tumor_SNP.aligned.bam, out/preprocess/K052_tumor_SNP.unaligned.bam
+    output: out/preprocess/K052_tumor_SNP.aligned_unaligned_merged.bam
+    jobid: 48
+    benchmark: out/benchmarks/preprocess/K052_tumor_SNP.merge_aubam.txt
+    wildcards: SAMPLE_NAME=K052_tumor_SNP
+
+    Error in rule g2g_lift:
+        jobid: 26
+        output: out/custom_ref/K052_tumor_patched.gtf
+        conda-env: /lila/data/kentsis/testfiles/pgm2_test/.snakemake/conda/49f101f6
+
+Job failed, going on with independent jobs.
+Submitted job 48 with external jobid 'Job <4875398> is submitted to default queue <cpuqueue>.'.
+Finished job 48.
+4 of 44 steps (9%) done
+
+rule MarkDuplicates:
+    input: out/preprocess/K052_tumor_SNP.aligned_unaligned_merged.bam
+    output: out/preprocess/K052_tumor_SNP.merged.RGmerged.dedup.bam
+    jobid: 45
+    benchmark: out/benchmarks/preprocess/K052_tumor_SNP.markdups.txt
+    wildcards: SAMPLE_NAME=K052_tumor_SNP
+
+Submitted job 45 with external jobid 'Job <4875399> is submitted to default queue <cpuqueue>.'.
+Finished job 45.
+5 of 44 steps (11%) done
+
+rule SortAndFixRealignedBamTags:
+    input: out/preprocess/K052_tumor_SNP.merged.RGmerged.dedup.bam
+    output: out/preprocess/K052_tumor_SNP.merged.RGmerged.dedup.fixedtags.readyforBQSR.bam, out/preprocess/K052_tumor_SNP.merged.RGmerged.dedup.fixedtags.readyforBQSR.bai
+    jobid: 42
+    benchmark: out/benchmarks/preprocess/K052_tumor_SNP_SortAndFixTags.txt
+    wildcards: SAMPLE_NAME=K052_tumor_SNP
+
+Submitted job 42 with external jobid 'Job <4875400> is submitted to default queue <cpuqueue>.'.
+Finished job 42.
+6 of 44 steps (14%) done
+
+rule BaseRecalibrator:
+    input: out/preprocess/K052_tumor_SNP.merged.RGmerged.dedup.fixedtags.readyforBQSR.bam
+    output: out/preprocess/K052_tumor_SNP.BQSR.report
+    jobid: 43
+    benchmark: out/benchmarks/preprocess/K052_tumor_SNP_BQSR.txt
+    wildcards: SAMPLE_NAME=K052_tumor_SNP
+
+Submitted job 43 with external jobid 'Job <4875401> is submitted to default queue <cpuqueue>.'.
+Terminating processes on user request, this might take some time.
+Will exit after finishing currently running jobs.
+Complete log: /lila/home/chenz4/proteomegenerator/.snakemake/log/2018-10-18T004722.049929.snakemake.log

@@ -1,0 +1,71 @@
+Building DAG of jobs...
+Creating conda environment /lila/home/chenz4/proteomegenerator/envs/pgm2.yaml...
+Downloading remote packages.
+CreateCondaEnvironmentException:
+Could not create conda environment from /lila/home/chenz4/proteomegenerator/envs/pgm2.yaml:
+Solving environment: ...working... failed
+
+# >>>>>>>>>>>>>>>>>>>>>> ERROR REPORT <<<<<<<<<<<<<<<<<<<<<<
+
+`$ /opt/conda/bin/conda-env create --file /lila/data/kentsis/testfiles/pgm2_test_full/.snakemake/conda/23c7d3f4.yaml --prefix /lila/data/kentsis/testfiles/pgm2_test_full/.snakemake/conda/23c7d3f4`
+
+  environment variables:
+                 CIO_TEST=<not set>
+  CONDA_AUTO_UPDATE_CONDA=false
+               CONDA_ROOT=/opt/conda
+              CONDA_SHLVL=0
+          LD_LIBRARY_PATH=/.singularity.d/libs
+                  MANPATH=/admin/lsf/10.1/man:
+               MODULEPATH=/usr/share/Modules/modulefiles:/etc/modulefiles:/opt/common/modulefile
+                          s
+                     PATH=/opt/conda/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin
+                          :/bin
+       REQUESTS_CA_BUNDLE=<not set>
+            SSL_CERT_FILE=<not set>
+
+     active environment : None
+            shell level : 0
+       user config file : /lila/data/kentsis/testfiles/pgm2_test_full/.condarc
+ populated config files : 
+          conda version : 4.5.4
+    conda-build version : not installed
+         python version : 3.6.5.final.0
+       base environment : /opt/conda  (read only)
+           channel URLs : https://repo.anaconda.com/pkgs/main/linux-64
+                          https://repo.anaconda.com/pkgs/main/noarch
+                          https://repo.anaconda.com/pkgs/free/linux-64
+                          https://repo.anaconda.com/pkgs/free/noarch
+                          https://repo.anaconda.com/pkgs/r/linux-64
+                          https://repo.anaconda.com/pkgs/r/noarch
+                          https://repo.anaconda.com/pkgs/pro/linux-64
+                          https://repo.anaconda.com/pkgs/pro/noarch
+          package cache : /opt/conda/pkgs
+                          /lila/data/kentsis/testfiles/pgm2_test_full/.conda/pkgs
+       envs directories : /lila/data/kentsis/testfiles/pgm2_test_full/.conda/envs
+                          /opt/conda/envs
+               platform : linux-64
+             user-agent : conda/4.5.4 requests/2.18.4 CPython/3.6.5 Linux/3.10.0-514.21.2.el7.x86_64 debian/9 glibc/2.24
+                UID:GID : 1505:6021
+             netrc file : None
+           offline mode : False
+
+
+V V V V V V V V V V V V V V V V V V V V V V V V V V V V V V V
+
+CondaHTTPError: HTTP 000 CONNECTION FAILED for url <https://conda.anaconda.org/r/noarch/repodata.json>
+Elapsed: -
+
+An HTTP error occurred when trying to retrieve this URL.
+HTTP errors are often intermittent, and a simple retry will get you on your way.
+ConnectionError(MaxRetryError('HTTPSConnectionPool(host=\'conda.anaconda.org\', port=443): Max retries exceeded with url: /r/noarch/repodata.json (Caused by ReadTimeoutError("HTTPSConnectionPool(host=\'conda.anaconda.org\', port=443): Read timed out. (read timeout=9.15)",))',),)
+
+A reportable application error has occurred. Conda has prepared the above report.
+If submitted, this report will be used by core maintainers to improve
+future releases of conda.
+Would you like conda to send this report to the core maintainers?
+[y/N]: 
+No report sent. To permanently opt-out, use
+
+    $ conda config --set report_errors false
+
+
