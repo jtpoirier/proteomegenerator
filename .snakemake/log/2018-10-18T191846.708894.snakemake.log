@@ -1,2 +1,0 @@
-SyntaxError in line 71 of /lila/home/chenz4/proteomegenerator/pgm2.sm:
-Expected a descending order of rule names, e.g. rule1 > rule2 > rule3 ... (pgm2.sm, line 71)

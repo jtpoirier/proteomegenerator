@@ -18,15 +18,15 @@ PAR = SMDir + "/MaxQuant/mqpar_template.xml"
 WD = config["directories"]["work_directory"]
 workdir: WD
 TMP = config["directories"]["temporary_directory"]
+INDEX = config["directories"]["index"]
 
 # Reference assembly must have dictionary and index in same directory
 REF_FASTA = config["references"]["fasta"]
 REF_SNP = config["references"]["snp"]
 REF_INDEL = config["references"]["indel"]
 # If GTF file exists, then use it. Else, run on de novo mode
-GTF=config["references"]["gtf"]
-INDEX = config["references"]["index"]
-UNIPROT=config["references"]["uniprot"]
+GTF = config["references"]["gtf"]
+UNIPROT = config["references"]["uniprot"]
 
 # Preprocessing
 FASTQ1 = config["preprocess"]["fastq1"]
@@ -47,6 +47,7 @@ RG_NORMAL = config["variant"]["normal"]["name"]
 SAMPLES = config["rna"]["name"].split()
 READ_ONE = ",".join(list(config["rna"]["read_one"]))
 READ_TWO = ",".join(list(config["rna"]["read_two"]))
+ORF = config["rna"]["orf"]
 
 # MaxQuant
 RAW = config["maxquant"]["raw_directory"]
@@ -267,7 +268,6 @@ rule SelectSNPs:
             -O {output.vcf}"
 
 # Custom reference .fasta creation
-# May need to alter the header of the genome -> this would need to be manually fixed
 rule g2g_VCI:
     input: vcf="out/variants/{RG_TUMOR}_m2_filtered_snps.vcf.gz"
     output: vci= "out/custom_ref/{RG_TUMOR}.vci.gz"
@@ -296,21 +296,8 @@ rule g2g_lift:
     params: n="12", R="'span[hosts=1] rusage[mem=10]'", \
             o="out/logs/custom_ref/g2g_lift.out", eo="out/logs/custom_ref/g2g_lift.err", J="g2g_lift"
     shell: "g2gtools convert -i {GTF} -c {input.vci} -o {output.gtf}"
-
-### Rule to create new GTF insert here ###
-
-# R Markdown report - not generating properly -  temporarily removed
-# rule rmd:
-#     input: ref = REF_FASTA, custom = WD + "out/custom_ref/{RG_TUMOR}_SNP_patched.fa", bam = TUMOR, vcf = WD + "out/variants/{RG_TUMOR}_m2_filtered_snps.vcf"
-#     output: report="out/{RG_TUMOR}_report.html"
-#     benchmark: "out/benchmarks/custom_ref/{RG_TUMOR}_rmd.txt"
-#     conda: "envs/rmd.yaml"
-#     params: n="1", R="'span[hosts=1] rusage[mem=10]'", \
-#             o="out/logs/custom_ref/rmd.out", eo="out/logs/custom_ref/rmd.err", J="RMarkdown"
-#     script: "scripts/K052_test.Rmd"
-
+    
 ### ProteomeGenerator 1.0 ###
-#### Here is a place where we would input custom .gtf file instead
 rule STAR_GTF:
     input: index=INDEX, gtf= "out/custom_ref/" + RG_TUMOR + "_patched.gtf"
     output: temp("out/{sample}.Aligned.sortedByCoord.out.bam")
@@ -378,7 +365,6 @@ rule STAR_denovo:
         --outFilterMultimapNmax 10 \
         --sjdbOverhang 100 \2 > {log}"
 
-# Need to fix the header of the fasta file before this rule can be used
 rule index:
     input: fasta="out/custom_ref/" + RG_TUMOR + "_patched.fa", gtf= "out/custom_ref/" + RG_TUMOR + "_patched.gtf"
     output: INDEX
@@ -414,7 +400,6 @@ rule BuildBamIndex:
             INPUT={input} 2> {log}"
 
 if os.path.exists(GTF):
-    #### Here is a place where we would input custom .gtf file instead
     rule StringTie_GTF:
         input: bam="out/{sample}.Aligned.trimmed.out.bam", bai="out/{sample}.Aligned.trimmed.out.bai", gtf= "out/custom_ref/" + RG_TUMOR + "_patched.gtf"
         output: "out/{sample}-stringtie.gtf"
@@ -467,7 +452,6 @@ rule merge:
 
 if os.path.exists(GTF):
     localrules: UCSC_GTF, mqpar_conversion
-    #### Here is a place where we would input custom .gtf file instead
     rule UCSC_GTF:
         input: "out/all-merge/merged.gtf", gtf= "out/custom_ref/" + RG_TUMOR + "_patched.gtf"
         output: merged="out/all-merge/merged-UCSC.gtf", reference="out/all-merge/reference-UCSC.gtf"
@@ -511,7 +495,7 @@ rule LongOrfs:
     shell: "cd out/all-merge ; \
         TransDecoder.LongOrfs \
         -t {wildcards.model}.transcripts.fasta \
-        -m 100 2> {log}"
+        -m {ORF} 2> {log}"
 
 rule makeblastdb:
     input: UNIPROT
@@ -578,12 +562,21 @@ rule cdna_alignment_orf_to_genome_orf:
 
 rule gff3_file_to_bed:
     input: "out/all-merge/{model}/transcripts.genome.gff3"
-    output: "out/all-merge/{model}/proteome.bed"
+    output: temp("out/all-merge/{model}/proteome_temp.bed")
     benchmark: "out/benchmarks/{model}.gff3_file_to_bed.txt"
     log: "out/logs/{model}.gff3_file_to_bed.txt"
     conda: "envs/myenv.yaml"
     params: n="1", R="'span[hosts=1] rusage[mem=10]'", J="gff3_file_to_bed", o="out/logs/gff3_file_to_bed.out", eo="out/logs/gff3_file_to_bed.err"
     shell: "cat {input} | grep -P \"\tCDS\t\" | gffread --force-exons - -o- | gff3_file_to_bed.pl /dev/stdin | tail -n +2 > {output} 2> {log}"
+    
+rule proteome_bed_merge:
+    input: "out/all-merge/{model}/proteome_temp.bed"
+    output: "out/all-merge/{model}/proteome.bed"
+    benchmark: "out/benchmarks/{model}.proteome_bed_merge.txt"
+    log: "out/logs/{model}.proteome_bed_merge.txt"
+    conda: "envs/myenv.yaml"
+    params: n="1", R="'span[hosts=1] rusage[mem=10]'", J="proteome_bed_merge", o="out/logs/proteome_bed_merge.out", eo="out/logs/proteome_bed_merge.err"
+    shell: "sed 's/_R//1' {input} | sed 's/_L//1' > {output}"
 
 rule gff3_file_to_proteins:
     input: "out/all-merge/{model}/transcripts.genome.gff3", fasta="out/custom_ref/" + RG_TUMOR + "_patched.fa"
