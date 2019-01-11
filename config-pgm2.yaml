@@ -1,7 +1,7 @@
 directories:
-  work_directory: "/lila/data/kentsis/testfiles/pgm2_test/"
-  temporary_directory: "/scratch/chenz4"
-  index: "/lila/data/kentsis/Databases/STAR/"
+  work_directory: "/lila/data/kentsis/testfiles/pgm2_test_partial/"
+  temporary_directory: "/scratch/chenz4p"
+  index: "/lila/data/kentsis/Databases/STAR_partial/"
 references:
   fasta: "/lila/data/kentsis/Databases/GRCh38/GRCh38.genome.fa"
   snp: "/lila/data/kentsis/Databases/resources_broad_hg38_v0_Homo_sapiens_assembly38.dbsnp138.vcf"
@@ -9,8 +9,8 @@ references:
   gtf: "/lila/data/kentsis/Databases/GRCh38/gencode.v20.annotation.gtf"
   uniprot: "/data/poirier/indexes/uniprot/UP000005640.fasta"
 preprocess:
-  fastq1: "/lila/home/chenz4/proteomegenerator/testfiles/K052_DNA_subset_r1.fastq"
-  fastq2: "/lila/home/chenz4/proteomegenerator/testfiles/K052_DNA_subset_r2.fastq"
+  fastq1: "/lila/home/chenz4/pgtemp/testfiles/K052_DNA_subset_r1.fastq"
+  fastq2: "/lila/home/chenz4/pgtemp/testfiles/K052_DNA_subset_r2.fastq"
 readgroup:
   id: "K052"
   sample: "K052_tumor"

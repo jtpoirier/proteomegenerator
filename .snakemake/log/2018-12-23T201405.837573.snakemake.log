@@ -1,0 +1,13 @@
+Building DAG of jobs...
+Creating conda environment /lila/home/chenz4/proteomegenerator/envs/pgm2.yaml...
+Downloading remote packages.
+CreateCondaEnvironmentException:
+Could not create conda environment from /lila/home/chenz4/proteomegenerator/envs/pgm2.yaml:
+Solving environment: ...working... failed
+
+UnsatisfiableError: The following specifications were found to be in conflict:
+  - mkl==2019.0=118
+  - mkl_fft==1.0.6=py36h7dd41cf_0 -> mkl[version='>=2018.0.3,<2019.0a0']
+Use "conda info <package>" to see the dependencies for each package.
+
+

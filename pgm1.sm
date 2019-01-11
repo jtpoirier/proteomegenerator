@@ -1,0 +1,430 @@
+# Inputs fastq reads and creates customs genome file
+# Output feeds into Proteome Generator 1.0
+
+shell.executable("/bin/bash")
+singularity: "docker://continuumio/miniconda3:4.5.4"
+
+import os, multiprocessing
+import os.path
+#Retrieve Snakemake directory (Variant-calling)
+SMDir = os.getcwd()
+
+# PAR initializes to template parameter file unless one is provided (MaxQuant)
+MQ = SMDir + "/MaxQuant/bin/MaxQuantCmd.exe"
+PAR = SMDir + "/MaxQuant/mqpar_template.xml"
+
+### Begin User Variables - edit in config-pgm2.yaml file ###
+WD = config["directories"]["work_directory"]
+workdir: WD
+TMP = config["directories"]["temporary_directory"]
+INDEX = config["directories"]["index"]
+
+# Reference assembly must have dictionary and index in same directory
+REF_FASTA = config["references"]["fasta"]
+REF_SNP = config["references"]["snp"]
+REF_INDEL = config["references"]["indel"]
+# If GTF file exists, then use it. Else, run on de novo mode
+GTF = config["references"]["gtf"]
+UNIPROT = config["references"]["uniprot"]
+
+# Preprocessing
+FASTQ1 = config["preprocess"]["fastq1"]
+FASTQ2 = config["preprocess"]["fastq2"]
+ID_NAME = config["readgroup"]["id"]
+SAMPLE_NAME = config["readgroup"]["sample"]
+LIBRARY_NAME = config["readgroup"]["library"]
+PLATFORM = config["readgroup"]["platform"]
+SEQUENCING_CENTER = config["readgroup"]["sequencing_center"]
+RUN_DATE = config["readgroup"]["run_date"]
+
+# Variant-calling
+RG_TUMOR = config["readgroup"]["sample"]
+NORMAL = config["variant"]["normal"]["file"]
+RG_NORMAL = config["variant"]["normal"]["name"]
+
+# RNA Samples
+SAMPLES = config["rna"]["name"].split()
+READ_ONE = ",".join(list(config["rna"]["read_one"]))
+READ_TWO = ",".join(list(config["rna"]["read_two"]))
+ORF = config["rna"]["orf"]
+
+# MaxQuant
+RAW = config["maxquant"]["raw_directory"]
+THREADS = config["maxquant"]["threads"]
+### End User Variables ###
+
+# Create readgroup header used in alignment
+RG_HEADER = "@RG\\tID:"+ID_NAME+"\\tSM:"+SAMPLE_NAME+"\\tLB:"+LIBRARY_NAME+"\\tPL:"+PLATFORM+"\\tCN:"+SEQUENCING_CENTER+"\\tDT:"+RUN_DATE
+
+# MaxQuant uses user param file if it exists
+if os.path.exists(SMDir + "/MaxQuant/mqpar.xml") :
+    PAR = SMDir + "/MaxQuant/mqpar.xml"
+
+# Uses GTF if exists
+if os.path.exists(GTF):
+    ruleorder: STAR_GTF > STAR_denovo
+    MODELS = 'merged reference'.split()
+else:
+    ruleorder: STAR_denovo > STAR_GTF
+    MODELS = 'merged'
+
+snakemake.utils.makedirs('out')
+snakemake.utils.makedirs('out/logs/preprocess')
+snakemake.utils.makedirs('out/logs/variants')
+snakemake.utils.makedirs('out/logs/custom_ref')
+snakemake.utils.makedirs(TMP)
+snakemake.utils.makedirs('out/benchmarks')
+snakemake.utils.makedirs('out/all-merge')
+
+rule all:
+    input: expand("out/all-merge/{model}/combined/txt/summary.txt", model=MODELS), expand("out/all-merge/{model}/proteome.bed",model=MODELS)
+
+rule STAR_GTF:
+    input: index=INDEX, gtf= GTF
+    output: temp("out/{sample}.Aligned.sortedByCoord.out.bam")
+    benchmark: "out/benchmarks/{sample}.align.json"
+    log: "out/logs/{sample}.align.txt"
+    conda: "envs/myenv.yaml"
+    params: n="20", R="'span[hosts=1] rusage[mem=20]'", J="align", o="out/logs/align.out", eo="out/logs/align.err"
+    shell: "STAR \
+        --genomeDir {input.index} \
+        --readFilesIn {READ_ONE} {READ_TWO} \
+        --outFileNamePrefix out/{wildcards.sample}. \
+        --outSAMattributes NH HI XS \
+        --outSAMattrRGline ID:{wildcards.sample} LB:1 PL:illumina PU:1 SM:{wildcards.sample} \
+        --runThreadN {params.n} \
+        --outSAMtype BAM SortedByCoordinate \
+        --clip3pAdapterSeq AGATCGGAAGAG \
+        --readFilesCommand zcat \
+        --twopassMode Basic \
+        --outSAMstrandField intronMotif \
+        --outFilterIntronMotifs None \
+        --outReadsUnmapped None \
+        --chimSegmentMin 15 \
+        --chimJunctionOverhangMin 15 \
+        --alignMatesGapMax 1000000 \
+        --alignIntronMax 1000000 \
+        --outFilterType Normal \
+        --alignSJDBoverhangMin 1 \
+        --alignSJoverhangMin 8 \
+        --outFilterMismatchNmax 1 \
+        --outSJfilterReads Unique \
+        --outFilterMultimapNmax 10 \
+        --sjdbOverhang 100 \
+        --sjdbGTFfile {input.gtf} \2 > {log}"
+
+rule STAR_denovo:
+    input: index=INDEX
+    output: temp("out/{sample}.Aligned.sortedByCoord.out.bam")
+    benchmark: "out/benchmarks/{sample}.align.json"
+    log: "out/logs/{sample}.align.txt"
+    conda: "envs/myenv.yaml"
+    params: n="20", R="'span[hosts=1] rusage[mem=20]'", J="align", o="out/logs/align.out", eo="out/logs/align.err"
+    shell: "STAR \
+        --genomeDir {input.index} \
+        --readFilesIn {READ_ONE} {READ_TWO} \
+        --outFileNamePrefix out/{wildcards.sample}. \
+        --outSAMattributes NH HI XS \
+        --outSAMattrRGline ID:{wildcards.sample} LB:1 PL:illumina PU:1 SM:{wildcards.sample} \
+        --runThreadN {params.n} \
+        --outSAMtype BAM SortedByCoordinate \
+        --clip3pAdapterSeq AGATCGGAAGAG \
+        --readFilesCommand zcat \
+        --twopassMode Basic \
+        --outSAMstrandField intronMotif \
+        --outFilterIntronMotifs None \
+        --outReadsUnmapped None \
+        --chimSegmentMin 15 \
+        --chimJunctionOverhangMin 15 \
+        --alignMatesGapMax 1000000 \
+        --alignIntronMax 1000000 \
+        --outFilterType Normal \
+        --alignSJDBoverhangMin 1 \
+        --alignSJoverhangMin 8 \
+        --outFilterMismatchNmax 1 \
+        --outSJfilterReads Unique \
+        --outFilterMultimapNmax 10 \
+        --sjdbOverhang 100 \2 > {log}"
+
+rule index:
+    input: fasta= REF_FASTA, gtf= GTF
+    output: INDEX
+    benchmark: "out/benchmarks/index.txt"
+    log: "out/logs/index.txt"
+    conda: "envs/myenv.yaml"
+    params: n="22", R="'span[hosts=1] rusage[mem=22]'", J="index", o="out/logs/index.out", eo="out/logs/index.err"
+    shell: "mkdir -p {output} ; \
+            STAR \
+            --runThreadN {params.n} \
+            --runMode genomeGenerate --genomeChrBinNbits 10 \
+            --genomeDir {output} --sjdbGTFfile {input.gtf} --sjdbOverhang 100 --genomeSuffixLengthMax 1000 \
+            --genomeFastaFiles {input.fasta} 2> {log}"
+
+rule filter:
+    input: bam="out/{sample}.Aligned.sortedByCoord.out.bam"
+    output: "out/{sample}.Aligned.trimmed.out.bam"
+    benchmark: "out/benchmarks/{sample}.filter.txt"
+    log: "out/logs/{sample}.filter.txt"
+    conda: "envs/myenv.yaml"
+    params: n="1", R="'span[hosts=1] rusage[mem=10]'", J="filter", o="out/logs/filter.out", eo="out/logs/filter.err"
+    shell: "samtools view -b -h -F 4 -F 256 -F 512 -q 30 {input.bam} > {output} 2> {log}"
+
+rule BuildBamIndex:
+    input: "out/{sample}.Aligned.trimmed.out.bam"
+    output: "out/{sample}.Aligned.trimmed.out.bai"
+    benchmark: "out/benchmarks/{sample}.BuildBamIndex.txt"
+    log: "out/logs/{sample}.BuildBamIndex.txt"
+    conda: "envs/myenv.yaml"
+    params: n="1", R="'span[hosts=1] rusage[mem=10]'", J="BuildBamIndex", o="out/logs/BuildBamIndex.out", eo="out/logs/BuildBamIndex.err"
+    shell: "picard \
+            BuildBamIndex \
+            INPUT={input} 2> {log}"
+
+if os.path.exists(GTF):
+    rule StringTie_GTF:
+        input: bam="out/{sample}.Aligned.trimmed.out.bam", bai="out/{sample}.Aligned.trimmed.out.bai", gtf= GTF
+        output: "out/{sample}-stringtie.gtf"
+        benchmark: "out/benchmarks/{sample}.StringTie.txt"
+        log: "out/logs/{sample}.filterAndTrimBed.txt"
+        conda: "envs/myenv.yaml"
+        params: n="6", R="'span[hosts=1] rusage[mem=20]'", J="StringTie", o="out/logs/StringTie.out", eo="out/logs/StringTie.err"
+        shell: "stringtie \
+                -G {input.gtf} \
+                {input.bam} \
+                -p {params.n} \
+                -o {output} \
+                -c 2.5 \
+                -m 300 \
+                -f .01 2> {log}"
+
+else:
+    rule StringTie_denovo:
+        input: bam="out/{sample}.Aligned.trimmed.out.bam", bai="out/{sample}.Aligned.trimmed.out.bai"
+        output: "out/{sample}-stringtie.gtf"
+        benchmark: "out/benchmarks/{sample}.StringTie.txt"
+        log: "out/logs/{sample}.filterAndTrimBed.txt"
+        conda: "envs/myenv.yaml"
+        params: n="6", R="'span[hosts=1] rusage[mem=20]'", J="StringTie", o="out/logs/StringTie.out", eo="out/logs/StringTie.err"
+        shell: "stringtie \
+                {input.bam} \
+                -p {params.n} \
+                -o {output} \
+                -c 2.5 \
+                -m 300 \
+                -f .01 2> {log}"
+
+rule merge:
+    input: expand("out/{sample}-stringtie.gtf",sample=SAMPLES)
+    output: "out/all-merge/merged.gtf"
+    benchmark: "out/benchmarks/merge.txt"
+    log: "out/logs/merge.txt"
+    conda: "envs/myenv.yaml"
+    params: n="12", R="'span[hosts=1] rusage[mem=4]'", J="merge", o="out/logs/merge.out", eo="out/logs/merge.err"
+    shell: "stringtie \
+            --merge \
+            -o {output} \
+            -p {params.n} \
+            -c 2.5 \
+            -m 300 \
+            -T 1 \
+            -f .01 \
+            -i \
+            {input} 2> {log}"
+
+if os.path.exists(GTF):
+    localrules: UCSC_GTF, mqpar_conversion
+    rule UCSC_GTF:
+        input: merge = "out/all-merge/merged.gtf", gtf = GTF
+        output: merged ="out/all-merge/merged-UCSC.gtf", reference = "out/all-merge/reference-UCSC.gtf"
+        benchmark: "out/benchmarks/UCSC.txt"
+        log: "out/logs/UCSC.txt"
+        params: n="1", R="'span[hosts=1] rusage[mem=10]'", J="UCSC", o="out/logs/UCSC.out", eo="out/logs/UCSC.err"
+        shell: "cat {input.gtf} | grep chr > {output.reference}; \
+            cat {input.merge} | grep chr > {output.merged} 2> {log}"
+
+else:
+    localrules: UCSC_denovo, mqpar_conversion
+    rule UCSC_denovo:
+        input: "out/all-merge/merged.gtf"
+        output: merged ="out/all-merge/merged-UCSC.gtf"
+        benchmark: "out/benchmarks/UCSC.txt"
+        log: "out/logs/UCSC.txt"
+        params: n="1", R="'span[hosts=1] rusage[mem=10]'", J="UCSC", o="out/logs/UCSC.out", eo="out/logs/UCSC.err"
+        shell: "cat {input} | grep chr > {output.merged} 2> {log}"
+
+rule gtf_file_to_cDNA_seqs:
+    input: ucsc = "out/all-merge/{model}-UCSC.gtf", custom_fasta = REF_FASTA
+    output: fasta = "out/all-merge/{model}.transcripts.fasta",
+        gtf="out/all-merge/{model}.transcripts.gtf"
+    benchmark: "out/benchmarks/{model}.gtf_file_to_cDNA_seqs.txt"
+    log: "out/logs/{model}.gtf_file_to_cDNA_seqs.txt"
+    conda: "envs/myenv.yaml"
+    params: n="1", R="'span[hosts=1] rusage[mem=10]'", J="gtf_file_to_cDNA_seqs", o="out/logs/gtf_file_to_cDNA_seqs.out", eo="out/logs/gtf_file_to_cDNA_seqs.err"
+    shell: "gffread {input.ucsc} -T -o {output.gtf} \
+        --no-pseudo \
+        --force-exons \
+        -M -Q; \
+        gffread -w {output.fasta} -g {input.custom_fasta} {output.gtf} 2> {log}"
+
+rule LongOrfs:
+    input: "out/all-merge/{model}.transcripts.fasta"
+    output: "out/all-merge/{model}.transcripts.fasta.transdecoder_dir/longest_orfs.pep"
+    benchmark: "out/benchmarks/{model}.LongOrfs.json"
+    log: "../logs/{model}.LongOrfs.txt"
+    conda: "envs/myenv.yaml"
+    params: n="1", R="'span[hosts=1] rusage[mem=10]'", J="LongOrfs", o="out/logs/LongOrfs.out", eo="out/logs/LongOrfs.err"
+    shell: "cd out/all-merge ; \
+        TransDecoder.LongOrfs \
+        -t {wildcards.model}.transcripts.fasta \
+        -m {ORF} 2> {log}"
+
+rule makeblastdb:
+    input: UNIPROT
+    output: [UNIPROT+'.pin', UNIPROT+'.phr', UNIPROT+'.psq']
+    benchmark: "out/benchmarks/makeblastdb.json"
+    log: "out/logs/makeblastdb.txt"
+    conda: "envs/myenv.yaml"
+    params: n="1", R="'span[hosts=1] rusage[mem=4]'", J="makeblastdb", o="out/logs/makeblastdb.out", eo="out/logs/makeblastdb.err"
+    shell: "makeblastdb \
+        -in {UNIPROT} \
+        -dbtype prot 2> {log}"
+
+rule blastp:
+    input: pep="out/all-merge/{model}.transcripts.fasta.transdecoder_dir/longest_orfs.pep",
+        blastdb=[UNIPROT+'.pin', UNIPROT+'.phr', UNIPROT+'.psq']
+    output: "out/all-merge/{model}.blastp.outfmt6"
+    benchmark: "out/benchmarks/{model}.blastp.json"
+    log: "out/logs/{model}.blastp.txt"
+    conda: "envs/myenv.yaml"
+    params: n="24", R="'span[hosts=1] rusage[mem=4]'", J="blastp", o="out/logs/blastp.out", eo="out/logs/blastp.err"
+    shell: "blastp \
+        -num_threads {params.n} \
+        -query {input.pep}  \
+        -db {UNIPROT}  \
+        -max_target_seqs 1 \
+        -outfmt 6 \
+        -evalue 1e-5 \
+        > {output} 2> {log}"
+
+rule Predict:
+    input: orfs="out/all-merge/{model}.transcripts.fasta.transdecoder_dir/longest_orfs.pep",
+        fasta="out/all-merge/{model}.transcripts.fasta",
+        blastp="out/all-merge/{model}.blastp.outfmt6"
+    output: "out/all-merge/{model}.transcripts.fasta.transdecoder.pep",
+        gff3="out/all-merge/{model}.transcripts.fasta.transdecoder.gff3"
+    benchmark: "out/benchmarks/{model}.Predict.json"
+    log: "../logs/{model}.Predict.txt"
+    conda: "envs/myenv.yaml"
+    params: n="1", R="'span[hosts=1] rusage[mem=18]'", J="Predict", o="out/logs/Predict.out", eo="out/logs/Predict.err"
+    shell: "cd out/all-merge; TransDecoder.Predict \
+        -t {wildcards.model}.transcripts.fasta \
+        --single_best_only \
+        --retain_blastp_hits {wildcards.model}.blastp.outfmt6 2> {log}"
+
+rule gtf_to_alignment_gff3:
+    input: "out/all-merge/{model}.transcripts.gtf"
+    output: "out/all-merge/{model}/transcripts.gff3"
+    benchmark: "out/benchmarks/{model}.gtf_to_alignment_gff3.txt"
+    log: "out/logs/{model}.gtf_to_alignment_gff3.txt"
+    conda: "envs/myenv.yaml"
+    params: n="1", R="'span[hosts=1] rusage[mem=10]'", J="gtf_to_alignment_gff3", o="out/logs/gtf_to_alignment_gff3.out", eo="out/logs/gtf_to_alignment_gff3.err"
+    shell: "gtf_to_alignment_gff3.pl {input} > {output} 2> {log}"
+
+rule cdna_alignment_orf_to_genome_orf:
+    input: gff3="out/all-merge/{model}/transcripts.gff3",
+        fasta_td="out/all-merge/{model}.transcripts.fasta",
+        gff3_td="out/all-merge/{model}.transcripts.fasta.transdecoder.gff3"
+    output: "out/all-merge/{model}/transcripts.genome.gff3"
+    benchmark: "out/benchmarks/{model}.cdna_alignment_orf_to_genome_orf.txt"
+    log: "out/logs/{model}.cdna_alignment_orf_to_genome_orf.txt"
+    conda: "envs/myenv.yaml"
+    params: n="1", R="'span[hosts=1] rusage[mem=10]'", J="cdna_alignment_orf_to_genome_orf", o="out/logs/cdna_alignment_orf_to_genome_orf.out", eo="out/logs/cdna_alignment_orf_to_genome_orf.err"
+    shell: "cdna_alignment_orf_to_genome_orf.pl {input.gff3_td} {input.gff3} {input.fasta_td} > {output} 2> {log}"
+
+rule gff3_file_to_bed:
+    input: "out/all-merge/{model}/transcripts.genome.gff3"
+    output: temp("out/all-merge/{model}/proteome_temp.bed")
+    benchmark: "out/benchmarks/{model}.gff3_file_to_bed.txt"
+    log: "out/logs/{model}.gff3_file_to_bed.txt"
+    conda: "envs/myenv.yaml"
+    params: n="1", R="'span[hosts=1] rusage[mem=10]'", J="gff3_file_to_bed", o="out/logs/gff3_file_to_bed.out", eo="out/logs/gff3_file_to_bed.err"
+    shell: "cat {input} | grep -P \"\tCDS\t\" | gffread --force-exons - -o- | gff3_file_to_bed.pl /dev/stdin | tail -n +2 > {output} 2> {log}"
+    
+rule proteome_bed_merge:
+    input: "out/all-merge/{model}/proteome_temp.bed"
+    output: "out/all-merge/{model}/proteome.bed"
+    benchmark: "out/benchmarks/{model}.proteome_bed_merge.txt"
+    log: "out/logs/{model}.proteome_bed_merge.txt"
+    conda: "envs/myenv.yaml"
+    params: n="1", R="'span[hosts=1] rusage[mem=10]'", J="proteome_bed_merge", o="out/logs/proteome_bed_merge.out", eo="out/logs/proteome_bed_merge.err"
+    shell: "sed 's/_R//1' {input} | sed 's/_L//1' > {output}"
+
+rule gff3_file_to_proteins:
+    input: gff3 = "out/all-merge/{model}/transcripts.genome.gff3", fasta=REF_FASTA
+    output: "out/all-merge/{model}/proteome.fasta"
+    benchmark: "out/benchmarks/{model}.gff3_file_to_proteins.txt"
+    log: "out/logs/{model}.gff3_file_to_proteins.txt"
+    conda: "envs/myenv.yaml"
+    params: n="1", R="'span[hosts=1] rusage[mem=10]'", J="gff3_file_to_proteins", o="out/logs/gff3_file_to_proteins.out", eo="out/logs/gff3_file_to_proteins.err"
+    shell: "cat {input.gff3} | grep -P \"\tCDS\t\" | gffread --force-exons - -o- | gff3_file_to_proteins.pl --gff3 /dev/stdin --fasta {input.fasta} | egrep -o '^[^*]+' > {output} 2> {log}"
+
+rule reorderFASTA:
+    input: "out/all-merge/{model}/proteome.fasta"
+    output: "out/all-merge/{model}/proteome.unique.fasta"
+    benchmark: "out/benchmarks/{model}.reorderFASTA.txt"
+    log: "out/logs/{model}.reorderFASTA.txt"
+    conda: "envs/myenv.yaml"
+    params: n="1", R="'span[hosts=1] rusage[mem=2]'", J="reorderFASTA", o="out/logs/reorderFASTA.out", eo="out/logs/reorderFASTA.err", wd=WD
+    script: "scripts/reorderFASTA.R"
+
+### MaxQuant
+rule mqpar_conversion:
+    input: "out/all-merge/{model}/proteome.unique.fasta"
+    output: "out/{model}_mqpar.xml"
+    benchmark: "out/benchmarks/{model}.mqpar_conversion.txt"
+    log: "out/logs/{model}.mqpar_conversion.txt"
+    params: n="1", R="'span[hosts=1] rusage[mem=10]'", J="mqpar_conversion", o="out/logs/mqpar_conversion.out", eo="out/logs/mqpar_conversion.err"
+    run:
+        import os
+        raw_files = []
+        for file in os.listdir(RAW):
+            if file.endswith(".raw"):
+                raw_files.append(os.path.join(RAW, file))
+        with open(PAR) as oldMQPar, open(output[0],"w") as newMQPar:
+            for line in oldMQPar:
+                if '<fastaFilePath>' not in line and '<tempFolder>' not in line and '<fixedCombinedFolder>' not in line and '<numThreads>' not in line and '<string>temp</string>' not in line and '<fixedSearchFolder></fixedSearchFolder>' not in line:
+                    newMQPar.write(line)
+                if '<FastaFileInfo>' in line:
+                    newMQPar.write("<fastaFilePath>" + os.getcwd() + "/"+ input[0] + "</fastaFilePath>\n")
+                if '<maxQuantVersion>' in line:
+                    newMQPar.write("<tempFolder>" +  TMP + "/" + wildcards.model + "</tempFolder>\n")
+                if '</fastaFilesFirstSearch>' in line:
+                    newMQPar.write("<fixedSearchFolder>" +  os.path.dirname(os.path.abspath(input[0])) + "/search" + "</fixedSearchFolder>\n")
+                if '<emailFromAddress>' in line:
+                    newMQPar.write("<fixedCombinedFolder>"  + os.path.dirname(os.path.abspath(input[0])) + "</fixedCombinedFolder>\n")
+                if '<pluginFolder></pluginFolder>' in line:
+                    newMQPar.write("<numThreads>"+ THREADS +"</numThreads>\n")
+                if '<filePaths>' in line:
+                    for k in range(len(raw_files)):
+                        newMQPar.write("<string>" + raw_files[k] + "</string>\n")
+                if '<experiments>' in line:
+                    for k in range(len(raw_files)-1):
+                        newMQPar.write("<string></string>\n")
+                if '<fractions>' in line:
+                    for k in range(len(raw_files)-1):
+                        newMQPar.write("<short>32767</short>\n")
+                if '<ptms>' in line:
+                    for k in range(len(raw_files)-1):
+                        newMQPar.write("<boolean>False</boolean>\n")
+                if '<paramGroupIndices>' in line:
+                    for k in range(len(raw_files)-1):
+                        newMQPar.write("<int>0</int>\n")
+
+rule maxQuant:
+    input: par = "out/{model}_mqpar.xml"
+    output: "out/all-merge/{model}/combined/txt/summary.txt"
+    benchmark: "out/benchmarks/{model}.maxQuant.txt"
+    log: "out/logs/{model}.maxQuant.txt"
+    singularity: "docker://mono:5.12.0.226"
+    params: n=THREADS, J="MQ", R="'span[ptile=" + THREADS +  "] rusage[mem=10]'", o="out/logs/mq.out", eo="out/logs/mq.err"
+    shell: "mono {MQ} {input.par}"

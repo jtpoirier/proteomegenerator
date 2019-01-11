@@ -1,7 +1,7 @@
 directories:
-  work_directory: "/lila/data/kentsis/testfiles/pgm2_test_full_2/"
-  temporary_directory: "/scratch/chenz4"
-  index: "/lila/data/kentsis/Databases/STAR_Full_2/"
+  work_directory: "/lila/data/kentsis/testfiles/pgm1_test_full_3/"
+  temporary_directory: "/scratch/chenz41"
+  index: "/lila/data/kentsis/Databases/STAR_Full_pgm1/"
 references:
   fasta: "/lila/data/kentsis/Databases/GRCh38/GRCh38.genome.fa"
   snp: "/lila/data/kentsis/Databases/resources_broad_hg38_v0_Homo_sapiens_assembly38.dbsnp138.vcf"

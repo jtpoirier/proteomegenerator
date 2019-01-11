@@ -12,47 +12,49 @@ dependencies:
   - gatk4=4.0.9.0=0
   - htslib=1.9=hc238db4_4
   - libdeflate=1.0=h470a237_0
-  - picard=2.18.14=0
+  - picard=2.18.21=0
   - pysam=0.15.1=py36h0380709_0
-  - sambamba=0.6.6=2
+  - sambamba=0.6.8=h682856c_1
   - samtools=1.9=h8ee4bcc_1
-  - python-lzo=1.11=py36_0
+  - ca-certificates=2018.11.29=ha4d7672_0
+  - certifi=2018.11.29=py36_1000
+  - curl=7.63.0=h74213dd_0
+  - krb5=1.16.2=hbb41f41_0
+  - ldc=1.11.0=hb2c9046_0
+  - libcurl=7.63.0=hbdb9355_0
+  - libssh2=1.8.0=h5b517e9_3
+  - ncurses=6.1=hfc679d8_2
+  - openssl=1.0.2p=h470a237_1
+  - python=3.6.6=h5001a0f_3
+  - python-lzo=1.12=py36h0480d78_0
   - blas=1.0=mkl
   - bzip2=1.0.6=h14c3975_5
-  - ca-certificates=2018.03.07=0
-  - certifi=2018.10.15=py36_0
-  - curl=7.61.0=h84994c4_0
-  - cython=0.29=py36he6710b0_0
-  - future=0.16.0=py36_0
-  - intel-openmp=2019.0=118
-  - libcurl=7.61.0=h1ad7b7a_0
+  - cython=0.29.2=py36he6710b0_0
+  - future=0.17.1=py36_0
+  - intel-openmp=2019.1=144
   - libedit=3.1.20170329=h6b74fdf_2
   - libffi=3.2.1=hd88cf55_4
   - libgcc-ng=8.2.0=hdf63c60_1
   - libgfortran-ng=7.3.0=hdf63c60_0
-  - libssh2=1.8.0=h9cfc8f7_4
   - libstdcxx-ng=8.2.0=hdf63c60_1
   - lzo=2.10=h49e0be7_2
-  - mkl=2019.0=118
-  - mkl_fft=1.0.6=py36h7dd41cf_0
-  - mkl_random=1.0.1=py36h4414c95_1
-  - natsort=5.4.1=py36_0
-  - ncurses=6.1=hf484d3e_0
-  - numpy=1.15.2=py36h1d66e8a_1
-  - numpy-base=1.15.2=py36h81de0dd_1
+  - mkl=2019.1=144
+  - mkl_fft=1.0.6=py36hd81dba3_0
+  - mkl_random=1.0.2=py36hd81dba3_0
+  - natsort=5.5.0=py36_0
+  - numpy=1.15.4=py36h7e9f1db_0
+  - numpy-base=1.15.4=py36hde5b4d6_0
   - openjdk=8.0.152=h46b5887_1
-  - openssl=1.0.2p=h14c3975_0
   - perl=5.26.2=h14c3975_0
-  - pip=10.0.1=py36_0
-  - python=3.6.6=hc3d631a_0
+  - pip=18.1=py36_0
   - readline=7.0=h7b6447c_5
-  - setuptools=40.4.3=py36_0
-  - six=1.11.0=py36_1
-  - sqlite=3.24.0=h84994c4_0
+  - setuptools=40.6.3=py36_0
+  - six=1.12.0=py36_0
+  - sqlite=3.26.0=h7b6447c_0
   - tk=8.6.8=hbc83047_0
-  - wheel=0.32.1=py36_0
+  - wheel=0.32.3=py36_0
   - xz=5.2.4=h14c3975_4
-  - zlib=1.2.11=ha838bed_2
+  - zlib=1.2.11=h7b6447c_3
   - g2gtools=0.2.7=py36_0
 prefix: /home/chenz4/miniconda3/envs/pgm2
 
