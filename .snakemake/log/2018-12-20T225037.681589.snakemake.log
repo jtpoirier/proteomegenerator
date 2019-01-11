@@ -1,5 +1,0 @@
-Building DAG of jobs...
-MissingInputException in line 89 of /lila/home/chenz4/proteomegenerator/pgm2.sm:
-Missing input files for rule UnalignFastqReadsByRG:
-/lila/home/chenz4/proteomegenerator/testfiles/K052_DNA_subset_r1.fastq
-/lila/home/chenz4/proteomegenerator/testfiles/K052_DNA_subset_r2.fastq
